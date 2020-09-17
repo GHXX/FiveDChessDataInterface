@@ -11,14 +11,13 @@ namespace FiveDChessDataInterface
         static void Main(string[] args)
         {
             Console.Title = "5D Chess Data Interface";
-            Console.WriteLine("Finding 5d chess process...");
 
             Process gameProcessHandle;
 
             const string executableName = "5dchesswithmultiversetimetravel";
             while (true)
             {
-                Console.WriteLine("Finding process...");
+                Console.WriteLine("Finding 5d chess process...");
                 var filteredProcesses = Process.GetProcessesByName(executableName);
                 if (filteredProcesses.Length == 1)
                 {
@@ -66,9 +65,17 @@ namespace FiveDChessDataInterface
             Console.WriteLine($"The pointer to the chessboards is located at: 0x{chessboardPointerLocation.ToString("X16")}");
             Console.WriteLine($"The chessboard array size is located at: 0x{chessboardSizeLocation.ToString("X16")}");
             Console.WriteLine($"The chessboard sizes width and height are located at 0x{(chessboardPointerLocation + 0x98).ToString("X16")} and 0x{(chessboardPointerLocation + 0x98 + 0x4).ToString("X16")}");
+
+            var currTurnLocation = IntPtr.Add(chessboardPointerLocation, 256);
+            Console.WriteLine($"The current turn is stored at: 0x{currTurnLocation.ToString("X16")}");
+            Console.WriteLine($"Currently it's {(MemoryUtil.ReadValue<int>(gameProcessHandle.Handle, currTurnLocation) == 0 ? "WHITE's" : "BLACK's")} turn!");
+
+
             var chessboardLocation = MemoryUtil.ReadValue<IntPtr>(gameProcessHandle.Handle, chessboardPointerLocation);
 
             Console.WriteLine($"The chessboards are currently located at: 0x{chessboardLocation.ToString("X16")}");
+
+
 
             Console.WriteLine("Press enter to exit...");
             Console.ReadLine();
