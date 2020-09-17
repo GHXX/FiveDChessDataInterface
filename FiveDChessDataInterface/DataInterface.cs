@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 namespace FiveDChessDataInterface
 {
@@ -67,6 +68,7 @@ namespace FiveDChessDataInterface
 
         public void Initialize()
         {
+            Thread.Sleep(250); // wait 250ms so that all read/write memory commands work fine
             CalculatePointers();
         }
 
