@@ -2,6 +2,7 @@
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Types;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -113,10 +114,29 @@ namespace FiveDChessDataInterface
         /// <summary>
         /// Gets all currently available chessboards. Chessboards are ordered by their id, indicating when they were created. (<see cref="ChessBoard.Id"/>).
         /// </summary>
-        /// <returns>An array of <see cref="ChessBoard"/>, each representing a single chessboard.</returns>
-        public ChessBoard[] GetChessBoards()
+        /// <returns>A list of <see cref="ChessBoard"/>, each representing a single chessboard.</returns>
+        public List<ChessBoard> GetChessBoards()
         {
-            throw new NotImplementedException();
+            var len = this.MemLocChessArraySize.GetValue();
+            var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
+            var boardLoc = this.MemLocChessArrayPointer.GetValue();
+            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
+
+            if (bytesToRead != bytesRead)
+                throw new Exception("Not all bytes have been read!");
+
+            var chunks = new List<byte[]>();
+            for (int i = 0; i < len; i++)
+            {
+                var dest = new byte[ChessBoardMemory.structSize];
+                Array.Copy(bytes, i * ChessBoardMemory.structSize, dest, 0, ChessBoardMemory.structSize);
+                chunks.Add(dest);
+            }
+
+            var cbms = chunks.Select(x => ChessBoardMemory.ParseFromByteArray(x)).ToList();
+            var chessboardSize = GetChessBoardSize();
+            var cbs = cbms.Select(x => new ChessBoard(x, chessboardSize.Width, chessboardSize.Height)).ToList();
+            return cbs;
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArraySize.GetValue();

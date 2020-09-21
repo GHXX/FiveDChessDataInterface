@@ -82,6 +82,7 @@ namespace DataInterfaceConsoleTest
 
             //    Thread.Sleep(100);
             //}
+            var cbs = di.GetChessBoards();
 
             Console.WriteLine("Done!");
             Console.ReadLine();
