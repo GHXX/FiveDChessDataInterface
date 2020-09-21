@@ -13,11 +13,15 @@ namespace FiveDChessDataInterface
     {
         const string executableName = "5dchesswithmultiversetimetravel";
         public Process GameProcess { get; }
-        public MemoryLocation<IntPtr> MemLocChessArrayPointer { get; private set; }
-        public MemoryLocation<int> MemLocChessArraySize { get; private set; }
+        public MemoryLocation<IntPtr> MemLocChessArrayPointer { get; private set; } // points to the chessboard array.
+        public MemoryLocation<int> MemLocChessArraySize { get; private set; } // located right before the chessboard array pointer
         public MemoryLocation<int> MemLocChessBoardSizeWidth { get; private set; }
         public MemoryLocation<int> MemLocChessBoardSizeHeight { get; private set; }
         public MemoryLocation<int> MemLocCurrentPlayersTurn { get; private set; }
+        //public MemoryLocation<int> MemLocInGameEndedScreen { get; private set; } // if 1 then the "you lost" / "you won" screen is shown
+        public MemoryLocation<int> MemLocGameEndedWinner { get; private set; } // if 0xFFFF FFFF then the game is still running, 0 is a win for white, or unstarted, 1 a win for black or a draw
+        public MemoryLocation<int> MemLocGameState { get; private set; } // if 0 then the game is running or unstarted, 1 means someone won, 2 is a draw
+
 
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
         public IntPtr GetEntryPoint() => this.GameProcess.MainModule.BaseAddress;
@@ -99,9 +103,11 @@ namespace FiveDChessDataInterface
 
             this.MemLocChessArrayPointer = new MemoryLocation<IntPtr>(GetGameHandle(), chessboardPointerLocation);
             this.MemLocChessArraySize = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -8);
-            this.MemLocChessBoardSizeWidth = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xA8+0x4);
+            this.MemLocChessBoardSizeWidth = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xA8 + 0x4);
             this.MemLocChessBoardSizeHeight = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xA8);
             this.MemLocCurrentPlayersTurn = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x110);
+            this.MemLocGameEndedWinner = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xCC);
+            this.MemLocGameState = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xD0);
         }
 
         /// <summary>
@@ -127,5 +133,47 @@ namespace FiveDChessDataInterface
         /// <returns>Returns 0 if it's WHITE's turn, and 1 if it's BLACK's turn.</returns>
         public int GetCurrentPlayersTurn() => this.MemLocCurrentPlayersTurn.GetValue();
 
+        public bool IsGameRunning() => this.MemLocChessArrayPointer.GetValue() != IntPtr.Zero;
+
+        public GameState GetCurrentGameState()
+        {
+            if (!IsGameRunning())
+            {
+                return GameState.NotStarted;
+            }
+            else
+            {
+                var whoWon = this.MemLocGameEndedWinner.GetValue();
+
+                if (whoWon == -1)
+                {
+                    return GameState.Running;
+                }
+                else
+                {
+                    if (whoWon == 0)
+                    {
+                        return GameState.EndedWhiteWon;
+                    }
+                    else
+                    {
+                        var gs = this.MemLocGameState.GetValue();
+
+                        if (gs == 2)
+                        {
+                            return GameState.EndedDraw;
+                        }
+                        else if (gs == 1) // someone won, which can only be black
+                        {
+                            return GameState.EndedBlackWon;
+                        }
+                        else
+                        {
+                            throw new UnexpectedChessDataException();
+                        }
+                    }
+                }
+            }
+        }
     }
 }

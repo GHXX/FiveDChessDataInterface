@@ -1,4 +1,5 @@
 ﻿using FiveDChessDataInterface;
+using FiveDChessDataInterface.Types;
 using System;
 using System.Threading;
 
@@ -21,7 +22,7 @@ namespace DataInterfaceConsoleTest
             Console.WriteLine("Ready!");
 
             DoDataDump(di);
-            
+
             const int pollingIntervalMs = 10;
 
             var lastPlayer = -1;
@@ -68,6 +69,19 @@ namespace DataInterfaceConsoleTest
             var chessboardLocation = di.MemLocChessArrayPointer.GetValue();
 
             Console.WriteLine($"The chessboards are currently located at: 0x{chessboardLocation.ToString("X16")}");
+
+            //GameState? gs = null;
+            //while (true)
+            //{
+            //    var ngs = di.GetCurrentGameState();
+            //    if (ngs != gs)
+            //    {
+            //        Console.WriteLine($"Gamestate changed:  {gs} -> {ngs}");
+            //        gs = ngs;
+            //    }
+
+            //    Thread.Sleep(100);
+            //}
 
             Console.WriteLine("Done!");
             Console.ReadLine();
