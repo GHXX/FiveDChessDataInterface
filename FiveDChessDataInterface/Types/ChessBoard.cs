@@ -16,7 +16,7 @@ namespace FiveDChessDataInterface
         public int width;
         public int height;
 
-        private ChessBoardMemory cbm;
+        public ChessBoardMemory cbm;
 
         public ChessBoard(ChessBoardMemory mem, int width, int height)
         {
@@ -63,6 +63,24 @@ namespace FiveDChessDataInterface
                 }
 
                 return $"[{(this.IsBlack ? "B" : "W")}]{this.Kind}";
+            }
+
+            public string SingleLetterNotation()
+            {
+                return this.Kind switch
+                {
+                    PieceKind.Unknown => "?",
+                    PieceKind.Pawn => "P",
+                    PieceKind.Knight => "N",
+                    PieceKind.Bishop => "B",
+                    PieceKind.Rook => "R",
+                    PieceKind.Queen => "Q",
+                    PieceKind.King => "K",
+                    PieceKind.Unicorn => "U",
+                    PieceKind.Dragon => "D",
+                    PieceKind.Princess => "q",
+                    _ => throw new NotImplementedException()
+                };
             }
 
             public ChessPiece(PieceKind kind, bool isBlack)
@@ -122,13 +140,19 @@ namespace FiveDChessDataInterface
         public int moveDestX;
         public int val16;
         public int val17;
-        public int val18;
+        public int previousBoardId; // the id of the board that was before this board, or this board branches off after
         public int val19;
-        public int val20;
-        public int val21;
-        public int val22;
-        public int val23;
-        public int val24;
+
+        public int ttPieceOriginId; // the board id where this piece came from, or -1 if no timetravel happened
+
+        // unconfirmed :
+
+        public int ttMoveSourceY; // source timetravel move y (on the board where the piece disappeared)
+        public int ttMoveSourceX; // source timetravel move X
+        public int ttMoveDestY;  // dest timetravel move y (on the board where the piece appeared)
+        public int ttMoveDestX;
+
+        // -----------
 
         public static ChessBoardMemory ParseFromByteArray(byte[] bytes)
         {

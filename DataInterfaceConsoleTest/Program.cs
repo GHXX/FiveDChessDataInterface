@@ -1,5 +1,4 @@
 ﻿using FiveDChessDataInterface;
-using FiveDChessDataInterface.Types;
 using System;
 using System.Threading;
 
@@ -82,11 +81,78 @@ namespace DataInterfaceConsoleTest
 
             //    Thread.Sleep(100);
             //}
-            var cbs = di.GetChessBoards();
+
+            var ccForegroundDefault = Console.ForegroundColor;
+            var ccBackgoundDefault = Console.BackgroundColor;
+
+            int oldCnt = -1;
+            while (true)
+            {
+                var cnt = di.GetChessBoardAmount();
+                if (cnt != oldCnt)
+                {
+                    oldCnt = cnt;
+
+
+                    var cbs = di.GetChessBoards();
+
+                    Console.Clear();
+                    Console.WriteLine("Chessboards: \n");
+                    for (int i = 0; i < cbs.Count; i++)
+                    {
+                        var board = cbs[i];
+                        Console.WriteLine($"Board: L{board.cbm.timeline:+#;-#;0}T{board.cbm.turn + 1}");
+
+
+
+                        for (int y = board.height - 1; y >= 0; y--)
+                        {
+                            for (int x = 0; x < board.width; x++)
+                            {
+                                var p = board.Pieces[x * board.width + y];
+
+                                if (!p.IsEmpty)
+                                {
+                                    WriteConsoleColored(p.SingleLetterNotation(), p.IsBlack ? ConsoleColor.White : ConsoleColor.Black, p.IsBlack ? ConsoleColor.Black : ConsoleColor.White);
+                                }
+                                else
+                                {
+                                    WriteConsoleColored(" ", ConsoleColor.Gray, ConsoleColor.Gray);
+                                }
+                            }
+                            Console.ResetColor();
+                            Console.WriteLine(" ");
+                        }
+                        Console.WriteLine();
+                    }
+                }
+                else
+                {
+                    Thread.Sleep(500);
+                }
+            }
+
 
             Console.WriteLine("Done!");
             Console.ReadLine();
             Environment.Exit(0);
+        }
+
+        internal static void WriteConsoleColored(string text, ConsoleColor foreground, ConsoleColor background)
+        {
+            var fOld = Console.ForegroundColor;
+            var bOld = Console.BackgroundColor;
+
+
+            Console.ForegroundColor = foreground;
+            Console.BackgroundColor = background;
+
+            Console.Write(text);
+
+
+            Console.ForegroundColor = fOld;
+            Console.BackgroundColor = bOld;
+
         }
     }
 }
