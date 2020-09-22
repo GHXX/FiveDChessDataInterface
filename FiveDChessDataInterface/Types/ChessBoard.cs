@@ -147,9 +147,9 @@ namespace FiveDChessDataInterface
 
         // unconfirmed :
 
-        public int ttMoveSourceY; // source timetravel move y (on the board where the piece disappeared)
+        public int ttMoveSourceY; // source timetravel move y (on the board where the piece disappeared) if source x and y are -1 then the piece is appearing on this board, coming from somewhere else
         public int ttMoveSourceX; // source timetravel move X
-        public int ttMoveDestY;  // dest timetravel move y (on the board where the piece appeared)
+        public int ttMoveDestY;  // dest timetravel move y (on the board where the piece appeared) if dest x and y are -1 then the piece is disappearing on this board, going to somewhere else
         public int ttMoveDestX;
 
         // -----------
