@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
 
 namespace FiveDChessDataInterface
 {
@@ -118,7 +119,15 @@ namespace FiveDChessDataInterface
     {
         public const int structSize = 228;
 
+        // I am 90% sure all of these are correct, the comments help define their exact behavior
+        // it's possible that some of these are slightly wrong, or there are edge cases that I have
+        // not fully tested
+
+
+        // when a board is created it is given a boardID, these are given sequentially
+        // and can be used to determine things like what order moves were made
         public int boardId;
+
         public int timeline;
         public int turn;
         public int isBlacksMove;
@@ -126,22 +135,50 @@ namespace FiveDChessDataInterface
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8 * 8 * 2)]
         public byte[] positionData;
 
-        public int val04;
-        public int val05;
-        public int val06;
-        public int val07;
-        public int val08;
+
+        
+        // this is -1 when no move has been made to advance this board
+        // every time a single move is made, the boards that are advanced by that move get 
+        // given a moveTurn value of the previous highest move turn+1 
+        // generally each moveTurn value is only given to one board, except when a non branching jump is made
+        // then two boards share the same move turn, because they were both advanced by the same single move
+        public int moveTurn;
+
+
+        // the below values through previousBoardMoveTurn are zero for a board that is active and waiting for a move
+
+        // only the least significatn byte of this number is important (it's probaby an enum that got byte aligned in a struct
+        // 0 means that no move has been made on this board
+        // 1 means that a standard physical move has been made on this board
+        // 2 means that a branching jump was made on this board
+        // 3 means that a non-branching jump was made on this board
+        // 4 means that a piece jump from another board onto this board
+        public int moveType;
+        // the number of the timeline that the move that advanced this board was from
+        // generally this is equal to the universe of the board, for physical moves and jumps originating from this board,
+        // but for jumps that land on this board it is not true
+        public int moveSourceUniverse;
+        // same deal as moveSourceUniverse except it's the time/turn of the move
+        public int moveSourceTime;
+        // color of the piece that did the move that advanced this board,
+        // should be the same as the isBlacksMove
+        public int movePieceColor;
         public int moveSourceY;
         public int moveSourceX;
-        public int val11;
-        public int val12;
-        public int val13;
+        public int moveDestUniverse;
+        public int moveDestTime;
+        public int movePieceOwner;
         public int moveDestY;
         public int moveDestX;
-        public int val16;
-        public int val17;
+        // the moveTurn of the board that made the move that created this board
+        // if this board was created by a branching move, then this value is the value from
+        // the board that the piece jump from
+        // to be honest i'm not actually sure what is value is used for, but so far as i can tell,
+        // this is the correct identification of it's behavior
+        public int previousBoardMoveTurn;
+        public int nextBoardId; // the id of the board that comes after this board, should always be the board one to the right on the same timeline as this board
         public int previousBoardId; // the id of the board that was before this board, or this board branches off after
-        public int val19;
+        public int createdBoardID; // if the move made on this board is branching, this is the board id of the board of the new board
 
         public int ttPieceOriginId; // the board id where this piece came from, or -1 if no timetravel happened
 
@@ -165,6 +202,50 @@ namespace FiveDChessDataInterface
             gch.Free();
 
             return s;
+        }
+
+        /**
+         * Returns a dictionary of all the fields, with their name
+         * this is just so we can easily print out all the fields with their name
+         */
+        public Dictionary<string, int> GetFieldsWithNames()
+        {
+            Dictionary<string, int> hash = new Dictionary<string, int>();
+            hash.Add("boardId", boardId);
+            hash.Add("timeline", timeline);
+            hash.Add("turn", turn);
+            hash.Add("isBlacksMove", isBlacksMove);
+
+            // board data
+
+            // after board data
+            hash.Add("move turn", moveTurn);
+            hash.Add("move type", moveType & 0xFF);
+            hash.Add("move source universe", moveSourceUniverse);
+            hash.Add("move source time", moveSourceTime);
+            hash.Add("move piece color", movePieceColor);
+            hash.Add("moveSourceY", moveSourceY);
+            hash.Add("moveSourceX", moveSourceX);
+            hash.Add("moveDestUniverse", moveDestUniverse);
+            hash.Add("moveDestTime", moveDestTime);
+            hash.Add("movePieceOwner", movePieceOwner);
+            hash.Add("moveDestY", moveDestY);
+            hash.Add("moveDestX", moveDestX);
+            hash.Add("previous board identifier?", val16);
+            hash.Add("nextBoardId", nextBoardId);
+            hash.Add("previousBoardId", previousBoardId);
+            hash.Add("createdBoardID", createdBoardID);
+
+            hash.Add("ttPieceOriginId", ttPieceOriginId);
+
+            // unconfirmed :
+
+            hash.Add("ttMoveSourceY", ttMoveSourceY);
+            hash.Add("ttMoveSourceX", ttMoveSourceX);
+            hash.Add("ttMoveDestY", ttMoveDestY);
+            hash.Add("ttMoveDestX", ttMoveDestX);
+
+            return hash;
         }
     }
 }
