@@ -97,6 +97,7 @@ namespace DataInterfaceConsoleTest
                     var cbs = di.GetChessBoards();
 
                     Console.Clear();
+                    Console.WriteLine($"Current chessboard ptr: {di.MemLocChessArrayPointer.ToString()}");
                     Console.WriteLine("Chessboards: \n");
                     for (int i = 0; i < cbs.Count; i++)
                     {
