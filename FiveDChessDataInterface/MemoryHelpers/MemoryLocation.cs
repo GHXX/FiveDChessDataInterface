@@ -20,9 +20,20 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return MemoryUtil.ReadValue<T>(this.Handle, this.Location);
         }
 
+        public string GetFormattedValue()
+        {
+            var val = GetValue();
+            return val switch
+            {
+                IntPtr ptr => "0x" + ptr.ToString("X8"),
+                int ptr2 => "int lol",
+                _ => val.ToString()
+            };
+        }
+
         public override string ToString()
         {
-            return $"[{this.Location.ToString("X16")}] -> ({typeof(T).FullName}) {GetValue()}";
+            return $"[{this.Location.ToString("X16")}] -> ({typeof(T).FullName}) {GetFormattedValue()}";
         }
     }
 }
