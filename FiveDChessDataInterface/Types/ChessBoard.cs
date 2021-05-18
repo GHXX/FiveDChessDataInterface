@@ -141,11 +141,21 @@ namespace FiveDChessDataInterface
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8 * 8 * 2)]
         public byte[] positionData;
 
-        public int val04; //This is the board ID while there's only one timeline. 
-        public int val05; //probably isn't an int - values seen: 1 257, 513, 1009807616 
+        public int moveNumber; //-1 until a before is made from this board. After a move is made, it becomes the number of moves made before this one.
+        
+        //val05 probably isn't an int - values seen: 1 257, 513, 1009807616
+        // The low byte indicates the move type:
+        // 0 means that no move has been made on this board
+        // 1 means that a standard physical move has been made on this board
+        // 2 means that a branching jump was made on this board
+        // 3 means that a non-branching jump was made on this board
+        // 4 means that a piece jumped from another board onto this board
+        public int val05;
+        
+        // Source and destination of the move made from this board
         public int moveSourceL;
         public int moveSourceT;
-        public int moveSourceIsBlack;
+        public int moveSourceIsBlack; // the 5th dimension :)
         public int moveSourceY;
         public int moveSourceX;
         public int moveDestL;
@@ -153,7 +163,8 @@ namespace FiveDChessDataInterface
         public int moveDestIsBlack;
         public int moveDestY;
         public int moveDestX;
-        public int moveNumber; // A monotone counter which has the same value among boards created by the same move NOT The id of the board with the move that created this board
+        
+        public int creatingMoveNumber; // the moveNumber of the move that created this board
         public int nextInTimelineBoardId;// The id of the next board in the same timeline as this one
         public int previousBoardId; // the id of the board that was before this board, or this board branches off after
         public int val19;
