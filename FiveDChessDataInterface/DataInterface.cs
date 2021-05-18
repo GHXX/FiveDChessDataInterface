@@ -22,13 +22,13 @@ namespace FiveDChessDataInterface
         //public MemoryLocation<int> MemLocInGameEndedScreen { get; private set; } // if 1 then the "you lost" / "you won" screen is shown
         public MemoryLocation<int> MemLocGameEndedWinner { get; private set; } // if 0xFFFF FFFF then the game is still running, 0 is a win for white, or unstarted, 1 a win for black or a draw
         public MemoryLocation<int> MemLocGameState { get; private set; } // if 0 then the game is running or unstarted, 1 means someone won, 2 is a draw
-		public MemoryLocation<int> MemLocWhiteTime { get; private set; }
-		public MemoryLocation<int> MemLocBlackTime { get; private set; }
-		public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
-		public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
-		public int GetWT() => this.MemLocWhiteTime.GetValue()+this.MemLocWhiteIncrement.GetValue();
-		public int GetBT() => this.MemLocBlackTime.GetValue()+this.MemLocBlackIncrement.GetValue();
-		public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue()==0?GetWT():GetBT();
+        public MemoryLocation<int> MemLocWhiteTime { get; private set; }
+        public MemoryLocation<int> MemLocBlackTime { get; private set; }
+        public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
+        public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+        public int GetWT() => this.MemLocWhiteTime.GetValue()+this.MemLocWhiteIncrement.GetValue();
+        public int GetBT() => this.MemLocBlackTime.GetValue()+this.MemLocBlackIncrement.GetValue();
+        public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue()==0?GetWT():GetBT();
 
 
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
@@ -119,8 +119,8 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTime = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1AC);
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
-			
-			
+            
+            
         }
 
         /// <summary>
