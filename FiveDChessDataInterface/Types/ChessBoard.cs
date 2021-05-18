@@ -50,7 +50,14 @@ namespace FiveDChessDataInterface
                 }
 
                 var isBlack = colorByte == 2;
-                var kind = Enum.IsDefined(typeof(PieceKind), pieceByte) ? (PieceKind)pieceByte : PieceKind.Unknown;
+                PieceKind kind;
+                if(Enum.IsDefined(typeof(PieceKind), pieceByte)){
+                    kind=(PieceKind)pieceByte;
+                }
+                else{
+                    Console.WriteLine($"{pieceByte}");
+                    kind=PieceKind.Unknown;
+                }
 
                 return new ChessPiece(kind, isBlack);
             }
@@ -70,6 +77,7 @@ namespace FiveDChessDataInterface
                 return this.Kind switch
                 {
                     PieceKind.Unknown => "?",
+                    PieceKind.AlsoUnknown => "?",
                     PieceKind.Pawn => "P",
                     PieceKind.Knight => "N",
                     PieceKind.Bishop => "B",
@@ -78,7 +86,10 @@ namespace FiveDChessDataInterface
                     PieceKind.King => "K",
                     PieceKind.Unicorn => "U",
                     PieceKind.Dragon => "D",
-                    PieceKind.Princess => "q",
+                    PieceKind.Princess => "S",
+                    PieceKind.Brawn => "W",
+                    PieceKind.RoyalQueen => "Y",
+                    PieceKind.Commoner => "C",
                     _ => throw new NotImplementedException()
                 };
             }
@@ -101,7 +112,11 @@ namespace FiveDChessDataInterface
                 King,
                 Unicorn,
                 Dragon,
-                Princess // TODO confirm value
+                AlsoUnknown,
+                Brawn,
+                Princess,
+                RoyalQueen,
+                Commoner
             }
         }
 
@@ -126,20 +141,20 @@ namespace FiveDChessDataInterface
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 8 * 8 * 2)]
         public byte[] positionData;
 
-        public int val04;
-        public int val05;
-        public int val06;
-        public int val07;
-        public int val08;
+        public int val04; //This is the board ID while there's only one timeline. 
+        public int val05; //probably isn't an int - values seen: 1 257, 513, 1009807616 
+        public int moveSourceL;
+        public int moveSourceT;
+        public int moveSourceIsBlack;
         public int moveSourceY;
         public int moveSourceX;
-        public int val11;
-        public int val12;
-        public int val13;
+        public int moveDestL;
+        public int moveDestT;
+        public int moveDestIsBlack;
         public int moveDestY;
         public int moveDestX;
-        public int val16;
-        public int val17;
+        public int moveNumber; // A monotone counter which has the same value among boards created by the same move NOT The id of the board with the move that created this board
+        public int nextInTimelineBoardId;// The id of the next board in the same timeline as this one
         public int previousBoardId; // the id of the board that was before this board, or this board branches off after
         public int val19;
 
