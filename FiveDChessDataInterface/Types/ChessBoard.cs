@@ -82,7 +82,7 @@ namespace FiveDChessDataInterface
                     PieceKind.Princess => "S",
                     PieceKind.Brawn => "W",
                     PieceKind.RoyalQueen => "Y",
-                    PieceKind.Commoner => "C",
+                    PieceKind.CommonKing => "C",
                     _ => throw new NotImplementedException()
                 };
             }
@@ -105,11 +105,11 @@ namespace FiveDChessDataInterface
                 King,
                 Unicorn,
                 Dragon,
-                AlsoUnknown,
-                Brawn,
+                // PIECE ID 9 is currently UNKNOWN
+                Brawn=10,
                 Princess,
                 RoyalQueen,
-                Commoner
+                CommonKing
             }
         }
 
@@ -212,18 +212,18 @@ namespace FiveDChessDataInterface
             // after board data
             hash.Add("move turn", moveTurn);
             hash.Add("move type", moveType & 0xFF);
-            hash.Add("move source universe", moveSourceUniverse);
-            hash.Add("move source time", moveSourceTime);
-            hash.Add("move piece color", movePieceColor);
+            hash.Add("move source timeline", moveSourceL);
+            hash.Add("move source time", moveSourceT);
+            hash.Add("move source piece color", moveSourceIsBlack);
             hash.Add("moveSourceY", moveSourceY);
             hash.Add("moveSourceX", moveSourceX);
-            hash.Add("moveDestUniverse", moveDestUniverse);
-            hash.Add("moveDestTime", moveDestTime);
-            hash.Add("movePieceOwner", movePieceOwner);
+            hash.Add("move dest timeline", moveDestL);
+            hash.Add("move source time", moveDestT);
+            hash.Add("move dest piece color", moveDestIsBlack);
             hash.Add("moveDestY", moveDestY);
             hash.Add("moveDestX", moveDestX);
-            hash.Add("previous board identifier?", val16);
-            hash.Add("nextBoardId", nextBoardId);
+            hash.Add("previous board identifier?", creatingMoveNumber);
+            hash.Add("nextBoardId", nextInTimelineBoardId);
             hash.Add("previousBoardId", previousBoardId);
             hash.Add("createdBoardID", createdBoardID);
 
