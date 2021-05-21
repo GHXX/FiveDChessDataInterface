@@ -131,7 +131,8 @@ namespace DataInterfaceConsoleTest
                         Console.WriteLine();
                     }
                 }
-                else if (currPlayersTurn != lastPlayersTurn) // if the turn changed
+                // piece replacement
+                else if (currPlayersTurn != lastPlayersTurn && false) // if the turn changed
                 {
                     lastPlayersTurn = currPlayersTurn;
 
