@@ -37,7 +37,6 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return val switch
             {
                 IntPtr ptr => "0x" + ptr.ToString("X8"),
-                int ptr2 => "int lol",
                 _ => val.ToString()
             };
         }
