@@ -15,7 +15,8 @@ namespace FiveDChessDataInterface
         const string executableName = "5dchesswithmultiversetimetravel";
         public Process GameProcess { get; }
         public MemoryLocation<IntPtr> MemLocChessArrayPointer { get; private set; } // points to the chessboard array.
-        public MemoryLocation<int> MemLocChessArraySize { get; private set; } // located right before the chessboard array pointer
+        public MemoryLocation<int> MemLocChessArrayElementCount { get; private set; } // located right before the chessboard array capactiy
+        public MemoryLocation<int> MemLocChessArrayCapacity { get; private set; } // located right before the chessboard array pointer
         public MemoryLocation<int> MemLocChessBoardSizeWidth { get; private set; }
         public MemoryLocation<int> MemLocChessBoardSizeHeight { get; private set; }
         public MemoryLocation<int> MemLocCurrentPlayersTurn { get; private set; }
@@ -109,7 +110,8 @@ namespace FiveDChessDataInterface
             var chessboardPointerLocation = IntPtr.Add(resultAddress, BitConverter.ToInt32(resultBytes, 3) + 7);
 
             this.MemLocChessArrayPointer = new MemoryLocation<IntPtr>(GetGameHandle(), chessboardPointerLocation);
-            this.MemLocChessArraySize = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -8);
+            this.MemLocChessArrayElementCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -8);
+            this.MemLocChessArrayCapacity = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -4);
             this.MemLocChessBoardSizeWidth = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xA8 + 0x4);
             this.MemLocChessBoardSizeHeight = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xA8);
             this.MemLocCurrentPlayersTurn = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x130);
@@ -129,7 +131,7 @@ namespace FiveDChessDataInterface
         /// <returns>A list of <see cref="ChessBoard"/>, each representing a single chessboard.</returns>
         public List<ChessBoard> GetChessBoards()
         {
-            var len = this.MemLocChessArraySize.GetValue();
+            var len = this.MemLocChessArrayElementCount.GetValue();
             var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
             var boardLoc = this.MemLocChessArrayPointer.GetValue();
             var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
@@ -153,7 +155,7 @@ namespace FiveDChessDataInterface
 
         public void ModifyChessBoards(Func<ChessBoard, ChessBoard> lambda)
         {
-            var len = this.MemLocChessArraySize.GetValue();
+            var len = this.MemLocChessArrayElementCount.GetValue();
             var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
             var boardLoc = this.MemLocChessArrayPointer.GetValue();
             var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
@@ -222,7 +224,7 @@ namespace FiveDChessDataInterface
             }
         }
 
-        public int GetChessBoardAmount() => this.MemLocChessArraySize.GetValue();
+        public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();
 
         /// <summary>
         /// Gets the current chessboard size.

@@ -59,8 +59,9 @@ namespace DataInterfaceConsoleTest
         private static void DoDataDump(DataInterface di)
         {
             Console.WriteLine($"The pointer to the chessboards is located at: 0x{di.MemLocChessArrayPointer.Location.ToString("X16")}");
-            Console.WriteLine($"The chessboard array size is located at: 0x{di.MemLocChessArraySize.Location.ToString("X16")}");
+            Console.WriteLine($"The chessboard array size is located at: 0x{di.MemLocChessArrayElementCount.Location.ToString("X16")}");
             Console.WriteLine($"The chessboard sizes width and height are located at 0x{di.MemLocChessBoardSizeWidth.Location.ToString("X16")} and 0x{di.MemLocChessBoardSizeHeight.Location.ToString("X16")}");
+            Console.WriteLine($"Current chessboard count: {di.MemLocChessArrayElementCount.GetValue()}; Current chessboard array capacity: {di.MemLocChessArrayCapacity.GetValue()}");
 
             Console.WriteLine($"The current turn is stored at: 0x{di.MemLocCurrentPlayersTurn.Location.ToString("X16")}");
             Console.WriteLine($"Currently it's {(di.GetCurrentPlayersTurn() == 0 ? "WHITE's" : "BLACK's")} turn!");
