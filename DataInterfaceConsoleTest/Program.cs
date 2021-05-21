@@ -140,7 +140,7 @@ namespace DataInterfaceConsoleTest
                                 cb.cbm.turn >= 3) // if its turn 3
                         {
                             cb.Pieces = cb.Pieces
-                            .Select(x => new ChessBoard.ChessPiece(x.Kind == ChessBoard.ChessPiece.PieceKind.King ? ChessBoard.ChessPiece.PieceKind.CommonKing : x.Kind, x.IsBlack))
+                            .Select(x => new ChessBoard.ChessPiece((x.IsBlack != (cb.cbm.isBlacksMove == 1) && x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
                             .ToArray();
                         }
 

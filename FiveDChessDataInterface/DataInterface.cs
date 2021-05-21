@@ -183,8 +183,42 @@ namespace FiveDChessDataInterface
                     }
                 }
 
+                // resolve deltas, to not overwrite potentially modified data -- experimental but seems to work, but doesnt solve the problem where an AI gets stuck
+                // if we swap pieces while the ai is thinking
                 if (updateRequired)
-                    KernelMethods.WriteMemory(GetGameHandle(), boardLoc + i * ChessBoardMemory.structSize, newBytes);
+                {
+                    // var byteDelta = newBytes.Select((x, i) => x == bytes[i] ? (byte?)null : x).ToArray();
+                    var lengths = new List<(int, int)>(); // tuples of start index, length
+
+                    int currStartIndex = -1;
+                    for (int bi = 0; bi < newBytes.Length; bi++)
+                    {
+                        var byteDiffers = bytes[bi] != newBytes[bi];
+                        if (currStartIndex == -1) // not currently in a group
+                        {
+                            if (byteDiffers)
+                            {
+                                currStartIndex = bi;
+                            }
+                        }
+                        else
+                        {
+                            if (!byteDiffers)
+                            {
+                                lengths.Add((currStartIndex, bi - currStartIndex));
+                                currStartIndex = -1;
+                            }
+                        }
+                    }
+
+                    if (currStartIndex != -1)
+                    {
+                        lengths.Add((currStartIndex, newBytes.Length - currStartIndex));
+                    }
+
+                    foreach (var (startindex, length) in lengths)
+                        KernelMethods.WriteMemory(GetGameHandle(), boardLoc + i * ChessBoardMemory.structSize + startindex, newBytes.Skip(startindex).Take(length).ToArray());
+                }
             }
         }
 
