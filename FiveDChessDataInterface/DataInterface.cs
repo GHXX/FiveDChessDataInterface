@@ -26,9 +26,9 @@ namespace FiveDChessDataInterface
         public MemoryLocation<int> MemLocBlackTime { get; private set; }
         public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
-        public int GetWT() => this.MemLocWhiteTime.GetValue()+this.MemLocWhiteIncrement.GetValue();
-        public int GetBT() => this.MemLocBlackTime.GetValue()+this.MemLocBlackIncrement.GetValue();
-        public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue()==0?GetWT():GetBT();
+        public int GetWT() => this.MemLocWhiteTime.GetValue() + this.MemLocWhiteIncrement.GetValue();
+        public int GetBT() => this.MemLocBlackTime.GetValue() + this.MemLocBlackIncrement.GetValue();
+        public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue() == 0 ? GetWT() : GetBT();
 
 
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
@@ -119,8 +119,8 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTime = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1AC);
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
-            
-            
+
+
         }
 
         /// <summary>
@@ -149,6 +149,43 @@ namespace FiveDChessDataInterface
             var chessboardSize = GetChessBoardSize();
             var cbs = cbms.Select(x => new ChessBoard(x, chessboardSize.Width, chessboardSize.Height)).ToList();
             return cbs;
+        }
+
+        public void ModifyChessBoards(Func<ChessBoard, ChessBoard> lambda)
+        {
+            var len = this.MemLocChessArraySize.GetValue();
+            var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
+            var boardLoc = this.MemLocChessArrayPointer.GetValue();
+            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
+
+            if (bytesToRead != bytesRead)
+                throw new Exception("Not all bytes have been read!");
+
+            var size = GetChessBoardSize();
+            for (int i = 0; i < len; i++)
+            {
+                var dest = new byte[ChessBoardMemory.structSize];
+                Array.Copy(bytes, i * ChessBoardMemory.structSize, dest, 0, ChessBoardMemory.structSize);
+                var board = ChessBoardMemory.ParseFromByteArray(dest);
+                var modifiedBoard = lambda.Invoke(new ChessBoard(board, size.Width, size.Height));
+                var newBytes = ChessBoardMemory.ToByteArray(modifiedBoard.cbm);
+
+                if (newBytes.Length != ChessBoardMemory.structSize)
+                    throw new Exception("For some reason the modified ChessBaordMemory struct is smaller than the original which is not allowed");
+
+                var updateRequired = false;
+                for (int j = 0; j < newBytes.Length; j++)
+                {
+                    if (newBytes[j] != bytes[i * ChessBoardMemory.structSize + j]) // if any of the bytes changed
+                    {
+                        updateRequired = true;
+                        break;
+                    }
+                }
+
+                if (updateRequired)
+                    KernelMethods.WriteMemory(GetGameHandle(), boardLoc + i * ChessBoardMemory.structSize, newBytes);
+            }
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArraySize.GetValue();

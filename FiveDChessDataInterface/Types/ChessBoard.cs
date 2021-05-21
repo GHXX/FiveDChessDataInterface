@@ -1,16 +1,69 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Collections.Generic;
 
 namespace FiveDChessDataInterface
 {
     public class ChessBoard
     {
-        public ChessPiece[] Pieces { get; set; }
+        private ChessPiece[] _pieces;
 
-        // 84 bytes remaining
+        /// <summary>
+        /// Contains a neater representation of the pieces that are available.
+        /// WARNING: WRITING TO THIS WILL UPDATE THE INTERNAL STATE, BUT NOT WRITE IT TO GAME MEMORY!
+        /// </summary>
+        public ChessPiece[] Pieces
+        {
+            get
+            {
+                return this._pieces; // TODO maybe make readonly
+            }
+            set
+            {
+                SetPieces(value);
+            }
+        }
+
+        /// <summary>
+        /// THIS MODIFIES THE CHESSBOARD VALUES, BUT DOES NOT UPDATE THE BITBOARDS JUST YET. SO ONLY REPLACE PIECES, BUT DONT ADD OR REMOVE!
+        /// </summary>
+        /// <param name="newPieces"></param>
+        public void SetPieces(ChessPiece[] newPieces)
+        {
+            // TODO FIND AND UPDATE BITBOARDS!
+
+            if (newPieces.Length * 2 > this.cbm.positionData.Length)
+            {
+                throw new ArgumentException("Array size mismatch!");
+            }
+
+            for (int i = 0; i < newPieces.Length; i++)
+            {
+                var newPiecesRow = i / this.width;
+                var newPiecesCol = i % this.width;
+
+                var cbmpos = (newPiecesRow * 8 + newPiecesCol) * 2;
+                this.cbm.positionData[cbmpos] = (byte)newPieces[i].Kind;
+                var color = newPieces[i];
+                this.cbm.positionData[cbmpos + 1] = color.IsEmpty ? (byte)0 : color.IsWhite ? (byte)1 : (byte)2;
+            }
+
+            // recompute the _pieces array
+            UpdatePieceArrayFromInternalData();
+            // and validate the pieces
+            if (this._pieces.Length != newPieces.Length)
+                throw new Exception("Write validation length check failed!");
+
+            for (int i = 0; i < this._pieces.Length; i++)
+            {
+                if (!this._pieces[i].Equals(newPieces[i]))
+                    throw new Exception("Write validation failed!");
+            }
+        }
+
+
 
 
 
@@ -24,14 +77,18 @@ namespace FiveDChessDataInterface
             this.width = width;
             this.height = height;
             this.cbm = mem;
+            UpdatePieceArrayFromInternalData();
+        }
 
-            this.Pieces = new ChessPiece[width * height];
-            for (int x = 0; x < width; x++)
+        private void UpdatePieceArrayFromInternalData()
+        {
+            this._pieces = new ChessPiece[this.width * this.height];
+            for (int x = 0; x < this.width; x++)
             {
-                for (int y = height - 1; y >= 0; y--)
+                for (int y = this.height - 1; y >= 0; y--)
                 {
                     var srcIndex = (x * 8 + y) * 2;
-                    this.Pieces[x * height + y] = ChessPiece.ParseFromTwoByteNotation(mem.positionData[srcIndex], mem.positionData[srcIndex + 1]);
+                    this._pieces[x * this.height + y] = ChessPiece.ParseFromTwoByteNotation(this.cbm.positionData[srcIndex], this.cbm.positionData[srcIndex + 1]);
                 }
             }
         }
@@ -106,16 +163,25 @@ namespace FiveDChessDataInterface
                 Unicorn,
                 Dragon,
                 // PIECE ID 9 is currently UNKNOWN
-                Brawn=10,
+                Brawn = 10,
                 Princess,
                 RoyalQueen,
                 CommonKing
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (obj is ChessPiece cp)
+                    return this.Kind == cp.Kind && this.IsBlack == cp.IsBlack;
+                else
+                    return false;
+
             }
         }
 
         public override string ToString()
         {
-            var nonempty = this.Pieces.Where(x => x.Kind != ChessPiece.PieceKind.Empty).ToList();
+            var nonempty = this._pieces.Where(x => x.Kind != ChessPiece.PieceKind.Empty).ToList();
             return $"Id: {this.cbm.boardId}, T{this.cbm.turn + 1}L{this.cbm.timeline}, PieceCount: {nonempty.Count(x => x.IsWhite)}/{nonempty.Count(x => x.IsBlack)} ";
         }
     }
@@ -153,7 +219,12 @@ namespace FiveDChessDataInterface
         // 2 means that a branching jump was made on this board
         // 3 means that a non-branching jump was made on this board
         // 4 means that a piece jump from another board onto this board
-        public int moveType;
+        public byte moveType;
+        public byte bval1;
+        public byte bval2;
+        public byte bval3;
+
+
         // Source and destination of the move made from this board
         public int moveSourceL;
         public int moveSourceT;
@@ -165,7 +236,7 @@ namespace FiveDChessDataInterface
         public int moveDestIsBlack;
         public int moveDestY;
         public int moveDestX;
-        
+
         public int creatingMoveNumber; // the moveNumber of the move that created this board
         public int nextInTimelineBoardId;// The id of the next board in the same timeline as this one
         public int previousBoardId; // the id of the board that was before this board, or this board branches off after
@@ -195,6 +266,19 @@ namespace FiveDChessDataInterface
             return s;
         }
 
+        public static byte[] ToByteArray(ChessBoardMemory cbm)
+        {
+            var size = Marshal.SizeOf<ChessBoardMemory>();
+
+            var ptr = Marshal.AllocHGlobal(size);
+            Marshal.StructureToPtr(cbm, ptr, true);
+            var bytes = new byte[size];
+            Marshal.Copy(ptr, bytes, 0, size);
+            Marshal.FreeHGlobal(ptr);
+
+            return bytes;
+        }
+
         /**
          * Returns a dictionary of all the fields, with their name
          * this is just so we can easily print out all the fields with their name
@@ -202,39 +286,39 @@ namespace FiveDChessDataInterface
         public Dictionary<string, int> GetFieldsWithNames()
         {
             Dictionary<string, int> hash = new Dictionary<string, int>();
-            hash.Add("boardId", boardId);
-            hash.Add("timeline", timeline);
-            hash.Add("turn", turn);
-            hash.Add("isBlacksMove", isBlacksMove);
+            hash.Add("boardId", this.boardId);
+            hash.Add("timeline", this.timeline);
+            hash.Add("turn", this.turn);
+            hash.Add("isBlacksMove", this.isBlacksMove);
 
             // board data
 
             // after board data
-            hash.Add("move turn", moveTurn);
-            hash.Add("move type", moveType & 0xFF);
-            hash.Add("move source timeline", moveSourceL);
-            hash.Add("move source time", moveSourceT);
-            hash.Add("move source piece color", moveSourceIsBlack);
-            hash.Add("moveSourceY", moveSourceY);
-            hash.Add("moveSourceX", moveSourceX);
-            hash.Add("move dest timeline", moveDestL);
-            hash.Add("move source time", moveDestT);
-            hash.Add("move dest piece color", moveDestIsBlack);
-            hash.Add("moveDestY", moveDestY);
-            hash.Add("moveDestX", moveDestX);
-            hash.Add("previous board identifier?", creatingMoveNumber);
-            hash.Add("nextBoardId", nextInTimelineBoardId);
-            hash.Add("previousBoardId", previousBoardId);
-            hash.Add("createdBoardID", createdBoardID);
+            hash.Add("move turn", this.moveTurn);
+            hash.Add("move type", this.moveType & 0xFF);
+            hash.Add("move source timeline", this.moveSourceL);
+            hash.Add("move source time", this.moveSourceT);
+            hash.Add("move source piece color", this.moveSourceIsBlack);
+            hash.Add("moveSourceY", this.moveSourceY);
+            hash.Add("moveSourceX", this.moveSourceX);
+            hash.Add("move dest timeline", this.moveDestL);
+            hash.Add("move source time", this.moveDestT);
+            hash.Add("move dest piece color", this.moveDestIsBlack);
+            hash.Add("moveDestY", this.moveDestY);
+            hash.Add("moveDestX", this.moveDestX);
+            hash.Add("previous board identifier?", this.creatingMoveNumber);
+            hash.Add("nextBoardId", this.nextInTimelineBoardId);
+            hash.Add("previousBoardId", this.previousBoardId);
+            hash.Add("createdBoardID", this.createdBoardID);
 
-            hash.Add("ttPieceOriginId", ttPieceOriginId);
+            hash.Add("ttPieceOriginId", this.ttPieceOriginId);
 
             // unconfirmed :
 
-            hash.Add("ttMoveSourceY", ttMoveSourceY);
-            hash.Add("ttMoveSourceX", ttMoveSourceX);
-            hash.Add("ttMoveDestY", ttMoveDestY);
-            hash.Add("ttMoveDestX", ttMoveDestX);
+            hash.Add("ttMoveSourceY", this.ttMoveSourceY);
+            hash.Add("ttMoveSourceX", this.ttMoveSourceX);
+            hash.Add("ttMoveDestY", this.ttMoveDestY);
+            hash.Add("ttMoveDestX", this.ttMoveDestX);
 
             return hash;
         }

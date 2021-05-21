@@ -1,5 +1,6 @@
 ﻿using FiveDChessDataInterface;
 using System;
+using System.Linq;
 using System.Threading;
 
 
@@ -86,9 +87,11 @@ namespace DataInterfaceConsoleTest
             var ccBackgoundDefault = Console.BackgroundColor;
 
             int oldCnt = -1;
+            int lastPlayersTurn = -1;
             while (true)
             {
                 var cnt = di.GetChessBoardAmount();
+                var currPlayersTurn = di.GetCurrentPlayersTurn();
                 if (cnt != oldCnt)
                 {
                     oldCnt = cnt;
@@ -126,6 +129,26 @@ namespace DataInterfaceConsoleTest
                         }
                         Console.WriteLine();
                     }
+                }
+                else if (currPlayersTurn != lastPlayersTurn) // if the turn changed
+                {
+                    lastPlayersTurn = currPlayersTurn;
+
+                    di.ModifyChessBoards(cb =>
+                    {
+                        if (cb.cbm.moveType == 0 && // no move has been made on this board yet
+                                cb.cbm.turn >= 3) // if its turn 3
+                        {
+                            cb.Pieces = cb.Pieces
+                            .Select(x => new ChessBoard.ChessPiece(x.Kind == ChessBoard.ChessPiece.PieceKind.King ? ChessBoard.ChessPiece.PieceKind.CommonKing : x.Kind, x.IsBlack))
+                            .ToArray();
+                        }
+
+
+
+
+                        return cb;
+                    });
                 }
                 else
                 {
