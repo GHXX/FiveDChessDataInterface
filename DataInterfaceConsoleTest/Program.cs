@@ -84,6 +84,8 @@ namespace DataInterfaceConsoleTest
             //    Thread.Sleep(100);
             //}
 
+            // set custom starting boards
+
             var ccForegroundDefault = Console.ForegroundColor;
             var ccBackgoundDefault = Console.BackgroundColor;
 
@@ -132,10 +134,8 @@ namespace DataInterfaceConsoleTest
                     }
                 }
                 // piece replacement
-                else if (currPlayersTurn != lastPlayersTurn && false) // if the turn changed
+                else if (false) // if the turn changed
                 {
-                    lastPlayersTurn = currPlayersTurn;
-
                     di.ModifyChessBoards(cb =>
                     {
                         if (cb.cbm.moveType == 0 && // no move has been made on this board yet
