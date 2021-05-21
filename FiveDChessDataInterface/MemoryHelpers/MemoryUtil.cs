@@ -79,5 +79,36 @@ namespace FiveDChessDataInterface.MemoryHelpers
                     throw new NotImplementedException("Invalid type");
             }
         }
+
+        internal static void WriteValue<T>(IntPtr handle, IntPtr location, T newValue)
+        {
+            var t = typeof(T);
+            byte[] bytesToWrite = null;
+            switch (Type.GetTypeCode(t))
+            {
+                case TypeCode.Int16:
+                case TypeCode.Int32:
+                case TypeCode.Int64:
+                case TypeCode.UInt16:
+                case TypeCode.UInt32:
+                case TypeCode.UInt64:
+                    bytesToWrite = BitConverter.GetBytes((dynamic)newValue); break;
+
+                case TypeCode.Object:
+                    switch (t.FullName)
+                    {
+                        case "System.IntPtr":
+                            bytesToWrite = BitConverter.GetBytes(((IntPtr)(object)newValue).ToInt64()); break;
+                        default:
+                            throw new NotImplementedException("Invalid obj type");
+                    }
+                    break;
+
+                default:
+                    throw new NotImplementedException("Invalid type");
+            }
+
+            KernelMethods.WriteMemory(handle, location, bytesToWrite);
+        }
     }
 }

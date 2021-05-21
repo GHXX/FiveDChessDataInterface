@@ -15,5 +15,21 @@ namespace FiveDChessDataInterface.MemoryHelpers
             ReadProcessMemory(handle, address, buffer, size, ref bytesRead);
             return buffer;
         }
+
+
+        [DllImport("kernel32.dll")]
+        private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, ref uint lpNumberOfBytesWritten);
+
+        public static void WriteMemory(IntPtr handle, IntPtr address, byte[] newData)
+        {
+            uint bytesWrittenCount = 0;
+            WriteProcessMemory(handle, address, newData, newData.Length, ref bytesWrittenCount);
+
+            // validate write action
+            if (bytesWrittenCount != newData.Length)
+                throw new Exception($"Write operation to address 0x{address.ToString("X8")} failed! Expected number of bytes written: {newData.Length}; Actual amount: {bytesWrittenCount}");
+        }
+
+
     }
 }
