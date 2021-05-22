@@ -89,8 +89,9 @@ namespace FiveDChessDataInterface
 
         private void CalculatePointers()
         {
-            var bytesToFind = new byte[] { 0x4c, 0x8b, 0x35,
-                0x90, 0x90, 0x90, 0x90,// = 0x55, 0xfa, 0x0c, 0x00 WILDCARDS
+            var bytesToFind = new byte[] {
+                0x4c, 0x8b, 0x35,
+                0x90, 0x90, 0x90, 0x90, // = 0x55, 0xfa, 0x0c, 0x00 WILDCARDS
                 0x4c, 0x69, 0xf8,
                 0x90, 0x90, 0x90, 0x90,
                 0x4c, 0x89, 0xf0,
@@ -173,7 +174,7 @@ namespace FiveDChessDataInterface
                 var newBytes = ChessBoardMemory.ToByteArray(modifiedBoard.cbm);
 
                 if (newBytes.Length != ChessBoardMemory.structSize)
-                    throw new Exception("For some reason the modified ChessBaordMemory struct is smaller than the original which is not allowed");
+                    throw new Exception("For some reason the modified ChessBoardMemory struct is smaller than the original which is not allowed");
 
                 var updateRequired = false;
                 for (int j = 0; j < newBytes.Length; j++)
@@ -219,7 +220,13 @@ namespace FiveDChessDataInterface
                     }
 
                     foreach (var (startindex, length) in lengths)
-                        KernelMethods.WriteMemory(GetGameHandle(), boardLoc + i * ChessBoardMemory.structSize + startindex, newBytes.Skip(startindex).Take(length).ToArray());
+                    {
+                        KernelMethods.WriteMemory(
+                            GetGameHandle(),
+                            boardLoc + i * ChessBoardMemory.structSize + startindex,
+                            newBytes.Skip(startindex).Take(length).ToArray()
+                        );
+                    }
                 }
             }
         }
@@ -243,42 +250,24 @@ namespace FiveDChessDataInterface
         public GameState GetCurrentGameState()
         {
             if (!IsGameRunning())
-            {
                 return GameState.NotStarted;
-            }
+
+            var whoWon = this.MemLocGameEndedWinner.GetValue();
+
+            if (whoWon == -1)
+                return GameState.Running;
+
+            else if (whoWon == 0)
+                return GameState.EndedWhiteWon;
+
+            var gs = this.MemLocGameState.GetValue();
+
+            if (gs == 2)
+                return GameState.EndedDraw;
+            else if (gs == 1) // someone won, which can only be black
+                return GameState.EndedBlackWon;
             else
-            {
-                var whoWon = this.MemLocGameEndedWinner.GetValue();
-
-                if (whoWon == -1)
-                {
-                    return GameState.Running;
-                }
-                else
-                {
-                    if (whoWon == 0)
-                    {
-                        return GameState.EndedWhiteWon;
-                    }
-                    else
-                    {
-                        var gs = this.MemLocGameState.GetValue();
-
-                        if (gs == 2)
-                        {
-                            return GameState.EndedDraw;
-                        }
-                        else if (gs == 1) // someone won, which can only be black
-                        {
-                            return GameState.EndedBlackWon;
-                        }
-                        else
-                        {
-                            throw new UnexpectedChessDataException();
-                        }
-                    }
-                }
-            }
+                throw new UnexpectedChessDataException();
         }
     }
 }
