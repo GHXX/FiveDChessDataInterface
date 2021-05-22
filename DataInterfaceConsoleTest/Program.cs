@@ -133,27 +133,28 @@ namespace DataInterfaceConsoleTest
                         Console.WriteLine();
                     }
                 }
-                // piece replacement
-                else if (false) // if the turn changed
-                {
-                    di.ModifyChessBoards(cb =>
-                    {
-                        if (cb.cbm.moveType == 0 && // no move has been made on this board yet
-                                cb.cbm.turn >= 3) // if its turn 3
-                        {
-                            cb.Pieces = cb.Pieces
-                            .Select(x => new ChessBoard.ChessPiece((x.IsBlack != (cb.cbm.isBlacksMove == 1) && x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
-                            .ToArray();
-                        }
-
-
-
-
-                        return cb;
-                    });
-                }
                 else
                 {
+                    // piece replacement
+                    if (false) // if the turn changed
+                    {
+                        di.ModifyChessBoards(cb =>
+                        {
+                            if (cb.cbm.moveType == 0 && // no move has been made on this board yet
+                                    cb.cbm.turn >= 3) // if its turn 3
+                            {
+                                cb.Pieces = cb.Pieces
+                                .Select(x => new ChessBoard.ChessPiece((x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
+                                .ToArray();
+                            }
+
+
+
+
+                            return cb;
+                        });
+
+                    }
                     Thread.Sleep(500);
                 }
             }
