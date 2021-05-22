@@ -173,7 +173,7 @@ namespace FiveDChessDataInterface
                 var newBytes = ChessBoardMemory.ToByteArray(modifiedBoard.cbm);
 
                 if (newBytes.Length != ChessBoardMemory.structSize)
-                    throw new Exception("For some reason the modified ChessBaordMemory struct is smaller than the original which is not allowed");
+                    throw new Exception("For some reason the modified ChessBoardMemory struct is smaller than the original which is not allowed");
 
                 var updateRequired = false;
                 for (int j = 0; j < newBytes.Length; j++)
