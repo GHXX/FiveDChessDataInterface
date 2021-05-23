@@ -252,9 +252,15 @@ namespace FiveDChessDataInterface
 
             KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
             Thread.Sleep(1000);
-            this.MemLocWhiteTimelineCountInternal.SetValue((uint)newBoards.Length);
+            this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
             Thread.Sleep(1000);
             this.MemLocSomeTurnCountOrSomething.SetValue(newBoards.Length);
+            Thread.Sleep(1000);
+            this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
+
+
+
+
             Thread.Sleep(1000);
             this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
             Thread.Sleep(1000);

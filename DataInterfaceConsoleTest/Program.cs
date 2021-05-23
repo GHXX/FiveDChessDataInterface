@@ -98,18 +98,18 @@ namespace DataInterfaceConsoleTest
                 var cnt = di.GetChessBoardAmount();
                 var currPlayersTurn = di.GetCurrentPlayersTurn();
 
-                if (currPlayersTurn == 0 && !timelinesDuplicated && cnt == 1 && false)
+                if ((currPlayersTurn == 0 && !timelinesDuplicated && cnt == 1 || true) && false) // incrementally spawn new timelines at t0
                 {
                     timelinesDuplicated = true;
                     var baseBoard = di.GetChessBoards()[0];
-                    int dimcnt = 3;
+                    int dimcnt = cnt + 2;
                     int boardId = 0;
-                    var boards = Enumerable.Range(0, dimcnt).Select(x =>
-                    {
-                        var cbm = baseBoard.cbm;
-                        cbm.timeline = x;
-                        return cbm;
-                    })
+                    var boards = Enumerable.Range(-dimcnt / 2, dimcnt).Select(x =>
+                      {
+                          var cbm = baseBoard.cbm;
+                          cbm.timeline = x;
+                          return cbm;
+                      })
                         .OrderBy(x => x.timeline * x.timeline)
                         .Select(x =>
                         {
@@ -119,6 +119,7 @@ namespace DataInterfaceConsoleTest
                     ).Select(x => new ChessBoard(x, baseBoard.width, baseBoard.height)).ToArray();
 
                     di.SetChessBoardArray(boards);
+                    Thread.Sleep(2000);
                 }
                 else if (cnt == 0)
                 {
