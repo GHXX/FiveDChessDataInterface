@@ -27,6 +27,18 @@ namespace FiveDChessDataInterface
         public MemoryLocation<int> MemLocBlackTime { get; private set; }
         public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+
+        private MemoryLocation<uint> MemLocWhiteTimelineCountInternal { get; set; }
+        private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
+        private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
+        private MemoryLocation<uint> MemLocBlackTimelineCountInternalInverted { get; set; }
+
+        // ONLY TESTED FOR ODD NUMBER OF STARTING BOARDS!!
+        // TODO TEST ON EVEN NUMBER OF STARTING TIMELINES
+        public uint GetNumberOfWhiteTimelines() => this.MemLocWhiteTimelineCountInternal.GetValue() - 1;
+        public uint GetNumberOfBlackTimelines() => (uint)0xFFFF_FFFF - this.MemLocBlackTimelineCountInternalInverted.GetValue();
+
+
         public int GetWT() => this.MemLocWhiteTime.GetValue() + this.MemLocWhiteIncrement.GetValue();
         public int GetBT() => this.MemLocBlackTime.GetValue() + this.MemLocBlackIncrement.GetValue();
         public int GetCurT() => this.MemLocCurrentPlayersTurn.GetValue() == 0 ? GetWT() : GetBT();
@@ -121,6 +133,12 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTime = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1AC);
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
+
+
+            this.MemLocWhiteTimelineCountInternal = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30);
+            this.MemLocBlackTimelineCountInternalInverted = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30 + 4);
+            this.MemLocSomeTurnCountOrSomething = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x30 + 0x38);
+            this.MemLocProbablyBoardCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x28);
 
 
         }
@@ -222,6 +240,25 @@ namespace FiveDChessDataInterface
                         KernelMethods.WriteMemory(GetGameHandle(), boardLoc + i * ChessBoardMemory.structSize + startindex, newBytes.Skip(startindex).Take(length).ToArray());
                 }
             }
+        }
+
+        public void SetChessBoardArray(ChessBoard[] newBoards)
+        {
+            var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
+            if (newBoards.Length > maxCapacity)
+                throw new NotImplementedException($"Currently you can only write {maxCapacity} boards to memory!");
+
+            var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
+
+            KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
+            Thread.Sleep(1000);
+            this.MemLocWhiteTimelineCountInternal.SetValue((uint)newBoards.Length);
+            Thread.Sleep(1000);
+            this.MemLocSomeTurnCountOrSomething.SetValue(newBoards.Length);
+            Thread.Sleep(1000);
+            this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
+            Thread.Sleep(1000);
+            this.MemLocProbablyBoardCount.SetValue(newBoards.Length);
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();

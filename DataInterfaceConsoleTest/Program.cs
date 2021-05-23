@@ -89,12 +89,42 @@ namespace DataInterfaceConsoleTest
             var ccForegroundDefault = Console.ForegroundColor;
             var ccBackgoundDefault = Console.BackgroundColor;
 
+            bool timelinesDuplicated = false;
+
             int oldCnt = -1;
             int lastPlayersTurn = -1;
             while (true)
             {
                 var cnt = di.GetChessBoardAmount();
                 var currPlayersTurn = di.GetCurrentPlayersTurn();
+
+                if (currPlayersTurn == 0 && !timelinesDuplicated && cnt == 1 && false)
+                {
+                    timelinesDuplicated = true;
+                    var baseBoard = di.GetChessBoards()[0];
+                    int dimcnt = 3;
+                    int boardId = 0;
+                    var boards = Enumerable.Range(0, dimcnt).Select(x =>
+                    {
+                        var cbm = baseBoard.cbm;
+                        cbm.timeline = x;
+                        return cbm;
+                    })
+                        .OrderBy(x => x.timeline * x.timeline)
+                        .Select(x =>
+                        {
+                            x.boardId = boardId++;
+                            return x;
+                        }
+                    ).Select(x => new ChessBoard(x, baseBoard.width, baseBoard.height)).ToArray();
+
+                    di.SetChessBoardArray(boards);
+                }
+                else if (cnt == 0)
+                {
+                    timelinesDuplicated = false;
+                }
+
                 if (cnt != oldCnt)
                 {
                     oldCnt = cnt;
@@ -104,6 +134,7 @@ namespace DataInterfaceConsoleTest
 
                     Console.Clear();
                     Console.WriteLine($"Current chessboard ptr: {di.MemLocChessArrayPointer.ToString()}");
+                    Console.WriteLine($"Current timeline stats: White: {di.GetNumberOfWhiteTimelines()}; Black: {di.GetNumberOfBlackTimelines()}");
                     Console.WriteLine("Chessboards: \n");
                     for (int i = 0; i < cbs.Count; i++)
                     {
