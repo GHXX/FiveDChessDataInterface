@@ -244,9 +244,45 @@ namespace FiveDChessDataInterface
 
         public void SetChessBoardArray(ChessBoard[] newBoards)
         {
+            var firstTurn = newBoards.Min(x => x.cbm.turn * 2); // first board subturn
+            var boardCountToAdd = 1 - firstTurn;
+
+            var timelineLengths = newBoards
+                .GroupBy(x => x.cbm.timeline)
+                .Select(group => (timeline: group.Key, boardVirtualSubTurnCount: group.Last().cbm.turn * 2 + (group.Last().cbm.isBlacksMove == 1 ? 1 : 0) + boardCountToAdd, lastBoard: group.Last()))
+                .ToArray();
+
+
+            //var timelinesByLength = timelineLengths.Select((x, index) =>
+            //            (index, boardVirtualSubTurnCount: x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0), timeline: x.timeline))
+            //    .OrderByDescending(x => x.boardVirtualSubTurnCount).ToList();
+
+
+            var lastTurn = timelineLengths.Max(x => x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0)); // last board subturn
+            var maxTimeLineLen = lastTurn - firstTurn + 1;
+
+            var timelinesByTimeline = timelineLengths.OrderByDescending(x => x.timeline).ToArray(); // go from white to black (+L -> -L)
+            bool replaceValues = false;
+
+            for (int i = 0; i < timelinesByTimeline.Length; i++)
+            {
+                if (replaceValues)
+                    timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen;
+                else if (timelinesByTimeline[i].boardVirtualSubTurnCount == maxTimeLineLen)
+                    replaceValues = true;
+                else
+                    timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen - 1;
+
+            }
+
+
+            var memlocsometurncountorsomethingNewValue = timelinesByTimeline.Sum(x => x.boardVirtualSubTurnCount);
+
             var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
             if (newBoards.Length > maxCapacity)
                 throw new NotImplementedException($"Currently you can only write {maxCapacity} boards to memory!");
+
+
 
             var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
             Thread.Sleep(1000);
@@ -254,7 +290,7 @@ namespace FiveDChessDataInterface
             Thread.Sleep(1000);
             this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
             Thread.Sleep(1000);
-            this.MemLocSomeTurnCountOrSomething.SetValue(newBoards.Length + 3);
+            this.MemLocSomeTurnCountOrSomething.SetValue(memlocsometurncountorsomethingNewValue);
             Thread.Sleep(1000);
             this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
 

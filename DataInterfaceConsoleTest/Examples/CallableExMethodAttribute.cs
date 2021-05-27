@@ -17,6 +17,8 @@ namespace DataInterfaceConsoleTest.Examples
         public bool Enabled => this.enabled && this.invKind != InvokeKind.None;
         public InvokeKind WhenToCall => this.invKind;
 
+
+        // TODO ADD GAMESTATE CHANGED
         [Flags]
         public enum InvokeKind
         {
