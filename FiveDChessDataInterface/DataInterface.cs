@@ -249,12 +249,12 @@ namespace FiveDChessDataInterface
                 throw new NotImplementedException($"Currently you can only write {maxCapacity} boards to memory!");
 
             var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
-
+            Thread.Sleep(1000);
             KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
             Thread.Sleep(1000);
             this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
             Thread.Sleep(1000);
-            this.MemLocSomeTurnCountOrSomething.SetValue(newBoards.Length);
+            this.MemLocSomeTurnCountOrSomething.SetValue(newBoards.Length + 3);
             Thread.Sleep(1000);
             this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
 
