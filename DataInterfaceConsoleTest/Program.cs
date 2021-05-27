@@ -1,8 +1,9 @@
-﻿using FiveDChessDataInterface;
+﻿using DataInterfaceConsoleTest.Examples;
+using FiveDChessDataInterface;
 using System;
-using System.Linq;
+using System.Reflection;
 using System.Threading;
-
+using static DataInterfaceConsoleTest.Examples.CallableExMethodAttribute;
 
 namespace DataInterfaceConsoleTest
 {
@@ -71,124 +72,50 @@ namespace DataInterfaceConsoleTest
 
             Console.WriteLine($"The chessboards are currently located at: 0x{chessboardLocation.ToString("X16")}");
 
-            //GameState? gs = null;
-            //while (true)
-            //{
-            //    var ngs = di.GetCurrentGameState();
-            //    if (ngs != gs)
-            //    {
-            //        Console.WriteLine($"Gamestate changed:  {gs} -> {ngs}");
-            //        gs = ngs;
-            //    }
+            InvokeEnabledExamples(di, InvokeKind.Startup);
 
-            //    Thread.Sleep(100);
-            //}
 
-            // set custom starting boards
 
-            var ccForegroundDefault = Console.ForegroundColor;
-            var ccBackgoundDefault = Console.BackgroundColor;
+            var previousPlayersTurn = di.GetCurrentPlayersTurn();
 
-            bool timelinesDuplicated = false;
+            var initialBoardCnt = di.GetChessBoardAmount();
+            bool matchIsUnstarted = initialBoardCnt == 0;
+            int previousBoardCount = initialBoardCnt;
 
-            int oldCnt = -1;
-            int lastPlayersTurn = -1;
+
             while (true)
             {
                 var cnt = di.GetChessBoardAmount();
                 var currPlayersTurn = di.GetCurrentPlayersTurn();
 
-                if ((currPlayersTurn == 0 && !timelinesDuplicated && cnt == 1 || true) && false) // incrementally spawn new timelines at t0
+                if (matchIsUnstarted && cnt > 0) // a new match was started
                 {
-                    timelinesDuplicated = true;
-                    var baseBoard = di.GetChessBoards()[0];
-                    int dimcnt = cnt + 2;
-                    int boardId = 0;
-                    var boards = Enumerable.Range(-dimcnt / 2, dimcnt).Select(x =>
-                      {
-                          var cbm = baseBoard.cbm;
-                          cbm.timeline = x;
-                          return cbm;
-                      })
-                        .OrderBy(x => x.timeline * x.timeline)
-                        .Select(x =>
-                        {
-                            x.boardId = boardId++;
-                            return x;
-                        }
-                    ).Select(x => new ChessBoard(x, baseBoard.width, baseBoard.height)).ToArray();
-
-                    di.SetChessBoardArray(boards);
-                    Thread.Sleep(2000);
-                }
-                else if (cnt == 0)
-                {
-                    timelinesDuplicated = false;
+                    matchIsUnstarted = false;
+                    InvokeEnabledExamples(di, InvokeKind.MatchStart);
                 }
 
-                if (cnt != oldCnt)
+                if (previousPlayersTurn != currPlayersTurn && cnt > 0) // current turn changed (submit was pressed), and there are any chessboards
                 {
-                    oldCnt = cnt;
+                    previousPlayersTurn = currPlayersTurn;
+                    InvokeEnabledExamples(di, InvokeKind.TurnChange);
+                }
 
-
-                    var cbs = di.GetChessBoards();
-
-                    Console.Clear();
-                    Console.WriteLine($"Current chessboard ptr: {di.MemLocChessArrayPointer.ToString()}");
-                    Console.WriteLine($"Current timeline stats: White: {di.GetNumberOfWhiteTimelines()}; Black: {di.GetNumberOfBlackTimelines()}");
-                    Console.WriteLine("Chessboards: \n");
-                    for (int i = 0; i < cbs.Count; i++)
+                if (previousBoardCount != cnt) // the board count changed
+                {
+                    if (previousBoardCount != 0) // if the boardCount was not zero before this means that the game was not just started
                     {
-                        var board = cbs[i];
-                        Console.WriteLine($"Board: L{board.cbm.timeline:+#;-#;0}T{board.cbm.turn + 1}");
-
-
-
-                        for (int y = board.height - 1; y >= 0; y--)
+                        if (cnt > 0) // if there are boards right now, that means that the board count changed, but is not zero and wasnt zero before -> a board was added or removed
+                            InvokeEnabledExamples(di, InvokeKind.BoardCountChanged);
+                        else if (cnt == 0)// otherwise the count now is zero, meaning the board count changed from nonzero to zero, meaning the match was exited
                         {
-                            for (int x = 0; x < board.width; x++)
-                            {
-                                var p = board.Pieces[x * board.width + y];
-
-                                if (!p.IsEmpty)
-                                {
-                                    WriteConsoleColored(p.SingleLetterNotation(), p.IsBlack ? ConsoleColor.White : ConsoleColor.Black, p.IsBlack ? ConsoleColor.Black : ConsoleColor.White);
-                                }
-                                else
-                                {
-                                    WriteConsoleColored(" ", ConsoleColor.Gray, ConsoleColor.Gray);
-                                }
-                            }
-                            Console.ResetColor();
-                            Console.WriteLine(" ");
+                            InvokeEnabledExamples(di, InvokeKind.MatchExited);
+                            matchIsUnstarted = true;
                         }
-                        Console.WriteLine();
                     }
+
+                    previousBoardCount = cnt;
                 }
-                else
-                {
-                    // piece replacement
-                    if (false) // if the turn changed
-                    {
-                        di.ModifyChessBoards(cb =>
-                        {
-                            if (cb.cbm.moveType == 0 && // no move has been made on this board yet
-                                    cb.cbm.turn >= 3) // if its turn 3
-                            {
-                                cb.Pieces = cb.Pieces
-                                .Select(x => new ChessBoard.ChessPiece((x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
-                                .ToArray();
-                            }
-
-
-
-
-                            return cb;
-                        });
-
-                    }
-                    Thread.Sleep(500);
-                }
+                Thread.Sleep(500);
             }
 
 
@@ -212,6 +139,29 @@ namespace DataInterfaceConsoleTest
             Console.ForegroundColor = fOld;
             Console.BackgroundColor = bOld;
 
+        }
+
+        private static void InvokeEnabledExamples(DataInterface di, InvokeKind ik)
+        {
+            var callableMethods = ExampleSnippets.GetEnabledMethods();
+            foreach (var method in callableMethods)
+            {
+                var attrib = method.GetCustomAttribute<CallableExMethodAttribute>();
+                if (attrib.Enabled && attrib.WhenToCall.HasFlag(ik))
+                {
+                    var parameters = method.GetParameters();
+                    if (parameters.Length == 0)
+                        method.Invoke(null, null);
+                    else if (parameters.Length == 1)
+                        if (parameters[0].ParameterType == typeof(DataInterface))
+                            method.Invoke(null, new object[] { di });
+                        else
+                            throw new TargetException($"The target method has an invalid signature. Make sure it only has one argument of the type {nameof(DataInterface)}");
+
+                    else
+                        throw new TargetException("Invoking a example-snippet-method with more than one parameter is not used and thus not supported currently.");
+                }
+            }
         }
     }
 }
