@@ -69,13 +69,25 @@ namespace DataInterfaceConsoleTest.Examples
                 {
                     x.boardId = boardId++;
                     return x;
-                }
-            ).Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
+                })
+                .GroupBy(x => x.timeline)
+                .SelectMany(group =>
+                {
+                    var boards = group.ToArray();
+                    for (int i = 1; i < boards.Length; i++)
+                    {
+                        boards[i].previousBoardId = boards[i - 1].boardId;
+                    }
+
+                    return boards;
+                })
+                .OrderBy(x => x.boardId)
+                .Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
 
             Console.WriteLine("Some block here");
 
-            //di.SetChessBoardArray(baseBoards.ToArray());
-            di.SetChessBoardArray(boards);
+            di.SetChessBoardArray(boards.ToArray());
+            //di.SetChessBoardArray(boards);
         }
 
         [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
