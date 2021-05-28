@@ -27,6 +27,7 @@ namespace FiveDChessDataInterface
         public MemoryLocation<int> MemLocBlackTime { get; private set; }
         public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+        public MemoryLocation<int> MemLocCosmeticTurnOffset { get; private set; }
 
         private MemoryLocation<uint> MemLocWhiteTimelineCountInternal { get; set; }
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
@@ -139,6 +140,7 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTimelineCountInternalInverted = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30 + 4);
             this.MemLocSomeTurnCountOrSomething = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x30 + 0x38);
             this.MemLocProbablyBoardCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x28);
+            this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
 
 
         }
