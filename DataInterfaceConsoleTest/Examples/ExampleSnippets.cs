@@ -49,7 +49,65 @@ namespace DataInterfaceConsoleTest.Examples
             });
         }
 
+
         [CallableExMethod(true, InvokeKind.MatchStart)]
+        public static void PrependTurnZero(DataInterface di)
+        {
+            var baseBoards = di.GetChessBoards();
+
+            if (baseBoards.First(x => x.cbm.boardId == 0).cbm.isBlacksMove != 0)
+                return; // exit if this is a turnzero game
+
+            var timelines = baseBoards.Select(x => x.cbm).GroupBy(x => x.timeline).ToList();
+
+            int boardId = 0;
+            var newBoards = timelines.SelectMany(timeLineBoards =>
+                {
+                    var tlBoards = timeLineBoards.Prepend(timeLineBoards.First()).ToList();
+
+                    for (int boardIndex = 0; boardIndex < tlBoards.Count; boardIndex++)
+                    {
+                        var cbm = tlBoards[boardIndex];
+                        if (boardIndex == 0)
+                        {
+                            cbm.isBlacksMove = 1;
+                            cbm.turn = 0;
+                            cbm.moveTurn = 0;
+                            cbm.moveType = 5;
+                        }
+                        else
+                            cbm.turn++;
+
+                        tlBoards[boardIndex] = cbm;
+                    }
+                    return tlBoards;
+                })
+                .OrderBy(x => x.turn)
+                .ThenBy(x => x.timeline * x.timeline)
+                .Select(x =>
+                {
+                    x.boardId = boardId++;
+                    return x;
+                })
+                .GroupBy(x => x.timeline)
+                .SelectMany(group =>
+                {
+                    var boards = group.ToArray();
+                    for (int i = 1; i < boards.Length; i++)
+                    {
+                        boards[i].previousBoardId = boards[i - 1].boardId;
+                        boards[i].creatingMoveNumber = boards[i - 1].boardId;
+                        boards[i - 1].nextInTimelineBoardId = boards[i].boardId;
+                    }
+
+                    return boards;
+                })
+                .Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
+
+            di.SetChessBoardArray(newBoards.ToArray());
+        }
+
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
@@ -84,10 +142,7 @@ namespace DataInterfaceConsoleTest.Examples
                 .OrderBy(x => x.boardId)
                 .Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
 
-            Console.WriteLine("Some block here");
-
             di.SetChessBoardArray(boards.ToArray());
-            //di.SetChessBoardArray(boards);
         }
 
         [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
