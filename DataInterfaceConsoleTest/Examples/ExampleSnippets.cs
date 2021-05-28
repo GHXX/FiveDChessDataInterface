@@ -20,13 +20,13 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine("Shouldnt run");
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void OnMatchStarted(DataInterface di)
         {
             Console.WriteLine("A match was started!");
         }
 
-        [CallableExMethod(true, InvokeKind.TurnChange)]
+        [CallableExMethod(false, InvokeKind.TurnChange)]
         public static void OnTurnChanged(DataInterface di)
         {
             Console.WriteLine($"The turn changed! Currently it is {(di.GetCurrentPlayersTurn() == 0 ? "WHITE" : "BLACK")}'s turn.");
