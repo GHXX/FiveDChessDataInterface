@@ -52,5 +52,11 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             return CreateRemoteThread(handle, IntPtr.Zero, stackSize, startAddress, IntPtr.Zero, startSuspended ? 4 : 0, IntPtr.Zero);
         }
+
+        [DllImport("ntdll.dll", PreserveSig = false)]
+        public static extern void NtSuspendProcess(IntPtr processHandle);
+
+        [DllImport("ntdll.dll", PreserveSig = false, SetLastError = true)]
+        public static extern void NtResumeProcess(IntPtr processHandle);
     }
 }
