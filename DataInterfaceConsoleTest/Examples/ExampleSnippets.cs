@@ -49,8 +49,8 @@ namespace DataInterfaceConsoleTest.Examples
                 return cb;
             });
         }
-
-
+        
+        
         [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
         {
@@ -63,26 +63,26 @@ namespace DataInterfaceConsoleTest.Examples
 
             int boardId = 0;
             var newBoards = timelines.SelectMany(timeLineBoards =>
+            {
+                var tlBoards = timeLineBoards.Prepend(timeLineBoards.First()).ToList();
+
+                for (int boardIndex = 0; boardIndex < tlBoards.Count; boardIndex++)
                 {
-                    var tlBoards = timeLineBoards.Prepend(timeLineBoards.First()).ToList();
-
-                    for (int boardIndex = 0; boardIndex < tlBoards.Count; boardIndex++)
+                    var cbm = tlBoards[boardIndex];
+                    if (boardIndex == 0)
                     {
-                        var cbm = tlBoards[boardIndex];
-                        if (boardIndex == 0)
-                        {
-                            cbm.isBlacksMove = 1;
-                            cbm.turn = 0;
-                            cbm.moveTurn = 0;
-                            cbm.moveType = 5;
-                        }
-                        else
-                            cbm.turn++;
-
-                        tlBoards[boardIndex] = cbm;
+                        cbm.isBlacksMove = 1;
+                        cbm.turn = 0;
+                        cbm.moveTurn = 0;
+                        cbm.moveType = 5;
                     }
-                    return tlBoards;
-                })
+                    else
+                        cbm.turn++;
+
+                    tlBoards[boardIndex] = cbm;
+                }
+                return tlBoards;
+            })
                 .OrderBy(x => x.turn)
                 .ThenBy(x => x.timeline * x.timeline)
                 .Select(x =>
@@ -146,6 +146,7 @@ namespace DataInterfaceConsoleTest.Examples
                 .Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
 
             di.SetChessBoardArray(boards.ToArray());
+            di.RecalculateBitboards();
         }
 
         [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
