@@ -21,9 +21,10 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
-        public static void OnMatchStarted(DataInterface di)
+        public static void ChangeBoardSize(DataInterface di)
         {
-            Console.WriteLine("A match was started!");
+            di.MemLocChessBoardSizeHeight.SetValue(8);
+            di.MemLocChessBoardSizeWidth.SetValue(8);
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]
