@@ -48,6 +48,8 @@ namespace FiveDChessDataInterface
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
         public IntPtr GetEntryPoint() => this.GameProcess.MainModule.BaseAddress;
 
+        private AssemblyHelper asmHelper;
+
         public static bool TryCreateAutomatically(out DataInterface di)
         {
             var filteredProcesses = Process.GetProcessesByName(executableName);
@@ -96,8 +98,37 @@ namespace FiveDChessDataInterface
         {
             Thread.Sleep(250); // wait 250ms so that all read/write memory commands work fine
             CalculatePointers();
+            SetupAssemblyHelper();
         }
 
+
+        IntPtr recalcBitboardsMemLoc;
+        private void SetupAssemblyHelper()
+        {
+            this.asmHelper = new AssemblyHelper(GetGameHandle());
+            var recalc_bitboards_func = FindMemoryInGameCode(new byte[]
+            {
+                0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x78,
+                0x48, 0x8D, 0x6C, 0x24, 0x70, 0x49, 0x89, 0xCC, 0xC7, 0x41, 0x40, 0x00, 0x00, 0x00, 0x00, 0xC7,
+                0x41, 0x50, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x41, 0x60, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x41, 0x70,
+                0x00, 0x00, 0x00, 0x00, 0xC7, 0x81, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x81,
+                0x90, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x81, 0xA0, 0x00, 0x00, 0x00, 0x00, 0x00,
+                0x00, 0x00, 0xC7, 0x81, 0xB0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x81, 0xC0, 0x00,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xC7, 0x81, 0xD0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+            }).Keys.Single();
+
+            var recalcBitBoardsThreadSetupCode = new List<byte>
+            {
+                0x48, 0xB9 // MOV RCX
+            };
+            recalcBitBoardsThreadSetupCode.AddRange(BitConverter.GetBytes((long)(this.MemLocChessArrayPointer.Location - 0x38)));
+
+            this.recalcBitboardsMemLoc = this.asmHelper.AllocCodeInTargetProcessWithJump(recalcBitBoardsThreadSetupCode.ToArray(), recalc_bitboards_func);
+        }
+
+
+        private Dictionary<IntPtr, byte[]> FindMemoryInGameCode(byte[] bytesToFind) =>
+            MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, bytesToFind);
 
 
         private void CalculatePointers()
@@ -143,6 +174,15 @@ namespace FiveDChessDataInterface
             this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
 
 
+        }
+
+        /// <summary>
+        /// Creates a new thread in the game's process which calls a function to recalculate bitboards and fix chessboards.
+        /// WARNING: THIS IS AN ACITION WHICH CAN POTENTIALLY CRASH THE GAME.
+        /// </summary>
+        public void RecalculateBitboards()
+        {
+            KernelMethods.CreateRemoteThread(GetGameHandle(), recalcBitboardsMemLoc);
         }
 
         /// <summary>
@@ -287,22 +327,13 @@ namespace FiveDChessDataInterface
 
 
             var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
-            Thread.Sleep(1000);
             KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
-            Thread.Sleep(1000);
             this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
-            Thread.Sleep(1000);
             this.MemLocSomeTurnCountOrSomething.SetValue(memlocsometurncountorsomethingNewValue);
-            Thread.Sleep(1000);
             this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
-
-
-
-
-            Thread.Sleep(1000);
-            this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
-            Thread.Sleep(1000);
             this.MemLocProbablyBoardCount.SetValue(newBoards.Length);
+            Thread.Sleep(5000);
+            this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();

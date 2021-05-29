@@ -31,5 +31,26 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
 
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpBaseAddress, int dwSize, int flAllocationType, int flProtect);
+        // lpBaseAddress = NULL -> automatically determine location
+
+        public static IntPtr AllocProcessMemory(IntPtr handle, int size)
+        {
+            return VirtualAllocEx(handle, IntPtr.Zero, size, 0x00001000 | 0x00002000 /* MEM_COMMIT | MEM_RESERVE */, 0x40 /* PAGE_EXEC_READWRITE */ );
+        }
+
+
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, int dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, int dwCreationFlags, IntPtr lpThreadId);
+        // lpThreadAttribs == 0 -> use default value
+        // dwStackSize == 0 -> use default value
+        // dwCreationFlags: 0 -> runs immediately; 4-> starts suspended
+        // lpThreadId == NULL: then no thread identifier is returned
+
+        public static IntPtr CreateRemoteThread(IntPtr handle, IntPtr startAddress, int stackSize = 0, bool startSuspended = false)
+        {
+            return CreateRemoteThread(handle, IntPtr.Zero, stackSize, startAddress, IntPtr.Zero, startSuspended ? 4 : 0, IntPtr.Zero);
+        }
     }
 }

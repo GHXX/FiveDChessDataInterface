@@ -107,6 +107,7 @@ namespace DataInterfaceConsoleTest.Examples
 
             di.SetChessBoardArray(newBoards.ToArray());
             di.MemLocCosmeticTurnOffset.SetValue(-1);
+            di.RecalculateBitboards();
         }
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
