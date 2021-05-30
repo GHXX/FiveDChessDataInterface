@@ -40,9 +40,9 @@ namespace FiveDChessDataInterface.MemoryHelpers
         private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpBaseAddress, int dwSize, int flAllocationType, int flProtect);
         // lpBaseAddress = NULL -> automatically determine location
 
-        public static IntPtr AllocProcessMemory(IntPtr handle, int size)
+        public static IntPtr AllocProcessMemory(IntPtr handle, int size, bool executable)
         {
-            return VirtualAllocEx(handle, IntPtr.Zero, size, 0x00001000 | 0x00002000 /* MEM_COMMIT | MEM_RESERVE */, 0x40 /* PAGE_EXEC_READWRITE */ );
+            return VirtualAllocEx(handle, IntPtr.Zero, size, 0x00001000 | 0x00002000 /* MEM_COMMIT | MEM_RESERVE */, executable ? 0x40 /* PAGE_EXEC_READWRITE */ : 0x04 /* PAGE_READWRITE */);
         }
 
 

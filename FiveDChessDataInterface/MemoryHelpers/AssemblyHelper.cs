@@ -22,7 +22,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         /// <returns></returns>
         public IntPtr AllocMemAndInjectCode(byte[] codeToLoad)
         {
-            var ptr = KernelMethods.AllocProcessMemory(this.gameHandle, codeToLoad.Length);
+            var ptr = KernelMethods.AllocProcessMemory(this.gameHandle, codeToLoad.Length, true);
             KernelMethods.WriteMemory(this.gameHandle, ptr, codeToLoad);
             return ptr;
         }
@@ -66,7 +66,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 var newCapacity = minCapacity + 16;
 
                 // otherwise allocate a new array
-                var newArrayPtr = KernelMethods.AllocProcessMemory(this.gameHandle, newCapacity * arrayElementSize);
+                var newArrayPtr = KernelMethods.AllocProcessMemory(this.gameHandle, newCapacity * arrayElementSize, false);
 
                 // copy contents
                 existingArrayPointerLocation.SetValue(newArrayPtr);
