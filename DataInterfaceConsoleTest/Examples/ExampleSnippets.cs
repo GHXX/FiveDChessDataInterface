@@ -8,7 +8,7 @@ namespace DataInterfaceConsoleTest.Examples
 {
     static class ExampleSnippets
     {
-        private const bool ENABLE_SNIPPETS = true;
+        private const bool ENABLE_SNIPPETS = true; // enables use of snippets, the individual snippet must also be set to true
 
         public static MethodInfo[] GetEnabledMethods() => !ENABLE_SNIPPETS ? new MethodInfo[] { } :
             typeof(ExampleSnippets).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
@@ -21,10 +21,14 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
-        public static void ChangeBoardSize(DataInterface di)
+        public static void ChangeBoardSize(DataInterface di) // changes board size for all boards
         {
-            di.MemLocChessBoardSizeHeight.SetValue(8);
-            di.MemLocChessBoardSizeWidth.SetValue(8);
+            var height = 8;
+            var width = 8;
+            di.MemLocChessBoardSizeHeight.SetValue(height);
+            di.MemLocChessBoardSizeWidth.SetValue(width);
+
+            Console.WriteLine($"Set new height to {height} and width to {width}.");
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]
@@ -34,7 +38,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
-        public static void UpgradePawnsToQueensAfterTurn3(DataInterface di)
+        public static void UpgradePawnsToQueensAfterTurn3(DataInterface di) // turns pawns to queens after turn 3
         {
             di.ModifyChessBoards(cb =>
             {
@@ -49,8 +53,8 @@ namespace DataInterfaceConsoleTest.Examples
                 return cb;
             });
         }
-        
-        
+
+
         [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
         {
