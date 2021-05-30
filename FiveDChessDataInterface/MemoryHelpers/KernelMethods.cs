@@ -8,11 +8,16 @@ namespace FiveDChessDataInterface.MemoryHelpers
         [DllImport("Kernel32.dll")]
         private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, ref uint lpNumberOfBytesRead);
 
-        public static byte[] ReadMemory(IntPtr handle, IntPtr address, uint size, out uint bytesRead)
+        public static byte[] ReadMemory(IntPtr handle, IntPtr address, uint size)
         {
             byte[] buffer = new byte[size];
-            bytesRead = 0;
+            uint bytesRead = 0;
             ReadProcessMemory(handle, address, buffer, size, ref bytesRead);
+
+            // validate read action
+            if (bytesRead != size)
+                throw new Exception($"Read operation from address 0x{address.ToString("X8")} was partial! Expected number of bytes read: {size}; Actual amount: {bytesRead}");
+
             return buffer;
         }
 
@@ -53,10 +58,17 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return CreateRemoteThread(handle, IntPtr.Zero, stackSize, startAddress, IntPtr.Zero, startSuspended ? 4 : 0, IntPtr.Zero);
         }
 
+        /// <summary>
+        /// DO NOT USE DIRECTLY, TO LOCK THE GAME PROCESS. USE <see cref="Util.SuspendGameProcessLock.Lock(Action)"/> INSTEAD!
+        /// </summary>
         [DllImport("ntdll.dll", PreserveSig = false)]
-        public static extern void NtSuspendProcess(IntPtr processHandle);
+        internal static extern void NtSuspendProcess(IntPtr processHandle);
+
+        /// <summary>
+        /// DO NOT USE DIRECTLY, TO LOCK THE GAME PROCESS. USE <see cref="Util.SuspendGameProcessLock.Lock(Action)"/> INSTEAD!
+        /// </summary>
 
         [DllImport("ntdll.dll", PreserveSig = false, SetLastError = true)]
-        public static extern void NtResumeProcess(IntPtr processHandle);
+        internal static extern void NtResumeProcess(IntPtr processHandle);
     }
 }

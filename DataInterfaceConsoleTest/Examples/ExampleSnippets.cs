@@ -110,7 +110,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.RecalculateBitboards();
         }
 
-        [CallableExMethod(false, InvokeKind.MatchStart)]
+        [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();

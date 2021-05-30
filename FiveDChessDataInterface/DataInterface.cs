@@ -1,6 +1,7 @@
 ﻿using FiveDChessDataInterface.Exceptions;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Types;
+using FiveDChessDataInterface.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -49,6 +50,7 @@ namespace FiveDChessDataInterface
         public IntPtr GetEntryPoint() => this.GameProcess.MainModule.BaseAddress;
 
         private AssemblyHelper asmHelper;
+        private readonly SuspendGameProcessLock suspendGameprocessLock;
 
         public static bool TryCreateAutomatically(out DataInterface di)
         {
@@ -92,6 +94,7 @@ namespace FiveDChessDataInterface
         public DataInterface(Process gameProcess)
         {
             this.GameProcess = gameProcess;
+            this.suspendGameprocessLock = new SuspendGameProcessLock(this.GameProcess.Handle);
         }
 
         public void Initialize()
@@ -105,7 +108,7 @@ namespace FiveDChessDataInterface
         IntPtr recalcBitboardsMemLoc;
         private void SetupAssemblyHelper()
         {
-            this.asmHelper = new AssemblyHelper(GetGameHandle());
+            this.asmHelper = new AssemblyHelper(this);
             var recalc_bitboards_func = FindMemoryInGameCode(new byte[]
             {
                 0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x83, 0xEC, 0x78,
@@ -194,10 +197,7 @@ namespace FiveDChessDataInterface
             var len = this.MemLocChessArrayElementCount.GetValue();
             var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
             var boardLoc = this.MemLocChessArrayPointer.GetValue();
-            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
-
-            if (bytesToRead != bytesRead)
-                throw new Exception("Not all bytes have been read!");
+            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead);
 
             var chunks = new List<byte[]>();
             for (int i = 0; i < len; i++)
@@ -218,10 +218,7 @@ namespace FiveDChessDataInterface
             var len = this.MemLocChessArrayElementCount.GetValue();
             var bytesToRead = (uint)(len * ChessBoardMemory.structSize);
             var boardLoc = this.MemLocChessArrayPointer.GetValue();
-            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead, out uint bytesRead);
-
-            if (bytesToRead != bytesRead)
-                throw new Exception("Not all bytes have been read!");
+            var bytes = KernelMethods.ReadMemory(GetGameHandle(), boardLoc, bytesToRead);
 
             var size = GetChessBoardSize();
             for (int i = 0; i < len; i++)
@@ -233,7 +230,7 @@ namespace FiveDChessDataInterface
                 var newBytes = ChessBoardMemory.ToByteArray(modifiedBoard.cbm);
 
                 if (newBytes.Length != ChessBoardMemory.structSize)
-                    throw new Exception("For some reason the modified ChessBoardMemory struct is smaller than the original which is not allowed");
+                    throw new Exception("For some reason the modified ChessBoardMemory struct is of different length than the original which is not allowed");
 
                 var updateRequired = false;
                 for (int j = 0; j < newBytes.Length; j++)
@@ -284,67 +281,67 @@ namespace FiveDChessDataInterface
             }
         }
 
-        private readonly object suspendGameprocessLock = new object();
+        /// <summary>
+        /// Acquires a lock, and suspends the game process while this lock is held.
+        /// Threadsafe.
+        /// </summary>
+        /// <param name="a">The inner action to be executed, while the process is suspended.</param>
+        public void ExecuteWhileGameSuspendedLocked(Action a) => this.suspendGameprocessLock.Lock(a);
+
         public void SetChessBoardArray(ChessBoard[] newBoards)
         {
             Thread.Sleep(250);
-            KernelMethods.NtSuspendProcess(GetGameHandle());
-            lock (this.suspendGameprocessLock)
-                try
+            ExecuteWhileGameSuspendedLocked(() =>
+            {
+                var firstTurn = newBoards.Min(x => x.cbm.turn * 2); // first board subturn
+                var boardCountToAdd = 1 - firstTurn;
+
+                var timelineLengths = newBoards
+                    .GroupBy(x => x.cbm.timeline)
+                    .Select(group => (timeline: group.Key, boardVirtualSubTurnCount: group.Last().cbm.turn * 2 + (group.Last().cbm.isBlacksMove == 1 ? 1 : 0) + boardCountToAdd, lastBoard: group.Last()))
+                    .ToArray();
+
+
+                //var timelinesByLength = timelineLengths.Select((x, index) =>
+                //            (index, boardVirtualSubTurnCount: x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0), timeline: x.timeline))
+                //    .OrderByDescending(x => x.boardVirtualSubTurnCount).ToList();
+
+
+                var lastTurn = timelineLengths.Max(x => x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0)); // last board subturn
+                var maxTimeLineLen = lastTurn - firstTurn + 1;
+
+                var timelinesByTimeline = timelineLengths.OrderByDescending(x => x.timeline).ToArray(); // go from white to black (+L -> -L)
+                bool replaceValues = false;
+
+                for (int i = 0; i < timelinesByTimeline.Length; i++)
                 {
-                    var firstTurn = newBoards.Min(x => x.cbm.turn * 2); // first board subturn
-                    var boardCountToAdd = 1 - firstTurn;
+                    if (replaceValues)
+                        timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen;
+                    else if (timelinesByTimeline[i].boardVirtualSubTurnCount == maxTimeLineLen)
+                        replaceValues = true;
+                    else
+                        timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen - 1;
 
-                    var timelineLengths = newBoards
-                        .GroupBy(x => x.cbm.timeline)
-                        .Select(group => (timeline: group.Key, boardVirtualSubTurnCount: group.Last().cbm.turn * 2 + (group.Last().cbm.isBlacksMove == 1 ? 1 : 0) + boardCountToAdd, lastBoard: group.Last()))
-                        .ToArray();
-
-
-                    //var timelinesByLength = timelineLengths.Select((x, index) =>
-                    //            (index, boardVirtualSubTurnCount: x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0), timeline: x.timeline))
-                    //    .OrderByDescending(x => x.boardVirtualSubTurnCount).ToList();
-
-
-                    var lastTurn = timelineLengths.Max(x => x.lastBoard.cbm.turn * 2 + (x.lastBoard.cbm.isBlacksMove == 1 ? 1 : 0)); // last board subturn
-                    var maxTimeLineLen = lastTurn - firstTurn + 1;
-
-                    var timelinesByTimeline = timelineLengths.OrderByDescending(x => x.timeline).ToArray(); // go from white to black (+L -> -L)
-                    bool replaceValues = false;
-
-                    for (int i = 0; i < timelinesByTimeline.Length; i++)
-                    {
-                        if (replaceValues)
-                            timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen;
-                        else if (timelinesByTimeline[i].boardVirtualSubTurnCount == maxTimeLineLen)
-                            replaceValues = true;
-                        else
-                            timelinesByTimeline[i].boardVirtualSubTurnCount = maxTimeLineLen - 1;
-
-                    }
-
-
-                    var memlocsometurncountorsomethingNewValue = timelinesByTimeline.Sum(x => x.boardVirtualSubTurnCount);
-
-                    var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
-                    if (newBoards.Length > maxCapacity)
-                        throw new NotImplementedException($"Currently you can only write {maxCapacity} boards to memory!");
-
-
-
-                    var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
-                    KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
-                    this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
-                    this.MemLocSomeTurnCountOrSomething.SetValue(memlocsometurncountorsomethingNewValue);
-                    this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
-                    this.MemLocProbablyBoardCount.SetValue(newBoards.Length);
-                    //Thread.Sleep(5000);
-                    this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
                 }
-                finally
-                {
-                    KernelMethods.NtResumeProcess(GetGameHandle());
-                }
+
+
+                var memlocsometurncountorsomethingNewValue = timelinesByTimeline.Sum(x => x.boardVirtualSubTurnCount);
+
+                var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
+                if (newBoards.Length > maxCapacity)
+                    asmHelper.EnsureArrayCapacity<ChessBoardMemory>(MemLocChessArrayPointer, newBoards.Length);
+
+
+
+                var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
+                KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
+                this.MemLocWhiteTimelineCountInternal.SetValue((uint)(newBoards.Max(x => x.cbm.timeline) + 1));
+                this.MemLocSomeTurnCountOrSomething.SetValue(memlocsometurncountorsomethingNewValue);
+                this.MemLocBlackTimelineCountInternalInverted.SetValue((uint)0xFFFF_FFFF - (uint)(-newBoards.Min(x => x.cbm.timeline)));
+                this.MemLocProbablyBoardCount.SetValue(newBoards.Length);
+                //Thread.Sleep(5000);
+                this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
+            });
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();

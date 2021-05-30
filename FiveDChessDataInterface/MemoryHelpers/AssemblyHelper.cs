@@ -1,15 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
     class AssemblyHelper
     {
         private readonly IntPtr gameHandle;
+        private readonly DataInterface di;
 
-        public AssemblyHelper(IntPtr gameHandle)
+        public AssemblyHelper(DataInterface di)
         {
-            this.gameHandle = gameHandle;
+            this.gameHandle = di.GetGameHandle();
+            this.di = di;
         }
 
         /// <summary>
@@ -32,8 +35,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         private byte[] GetAbsoluteJumpCode(IntPtr targetLocation)
         {
-            var bytes = new byte[] 
-            { 
+            var bytes = new byte[]
+            {
                 0x48, 0xB8, // MOVABS RAX,
                 0, 0, 0, 0, 0, 0, 0, 0, // 8 byte (jump dest)
 
@@ -44,5 +47,35 @@ namespace FiveDChessDataInterface.MemoryHelpers
             Array.Copy(targetBytes, 0, bytes, 2, targetBytes.Length);
             return bytes;
         }
+
+        // TODO maybe free the old memory, if the game allows it
+        internal void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
+        {
+            this.di.ExecuteWhileGameSuspendedLocked(() =>
+            {
+                var memLocElementCnt = new MemoryLocation<int>(this.gameHandle, existingArrayPointerLocation.Location - 0x8);
+                var memLocCapacity = new MemoryLocation<int>(this.gameHandle, existingArrayPointerLocation.Location - 0x4);
+
+                if (memLocCapacity.GetValue() >= minCapacity) // skip if the required capacity is already available
+                    return;
+
+                // read old contents
+                var oldContents = KernelMethods.ReadMemory(this.gameHandle, existingArrayPointerLocation.GetValue(), (uint)(memLocCapacity.GetValue() * arrayElementSize));
+
+
+                var newCapacity = minCapacity + 16;
+
+                // otherwise allocate a new array
+                var newArrayPtr = KernelMethods.AllocProcessMemory(this.gameHandle, newCapacity * arrayElementSize);
+
+                // copy contents
+                existingArrayPointerLocation.SetValue(newArrayPtr);
+                KernelMethods.WriteMemory(this.gameHandle, newArrayPtr, oldContents);
+
+                memLocCapacity.SetValue(newCapacity);
+            });
+        }
+        internal void EnsureArrayCapacity<ArrayElemType>(MemoryLocation<IntPtr> existingArrayPointerLocation, int minCapacity)
+            => EnsureArrayCapacity(existingArrayPointerLocation, Marshal.SizeOf(typeof(ArrayElemType)), minCapacity);
     }
 }

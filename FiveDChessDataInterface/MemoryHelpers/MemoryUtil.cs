@@ -11,7 +11,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             var foundElements = new Dictionary<IntPtr, byte[]>();
 
-            var bytes = KernelMethods.ReadMemory(gameHandle, start, length, out uint _);
+            var bytes = KernelMethods.ReadMemory(gameHandle, start, length);
 
             int index2 = 0;
             for (int i = 0; i < bytes.Length; i++)
@@ -48,7 +48,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         internal static T ReadValue<T>(IntPtr gameHandle, IntPtr location)
         {
-            var bytes = KernelMethods.ReadMemory(gameHandle, location, (uint)Marshal.SizeOf<T>(), out _);
+            var bytes = KernelMethods.ReadMemory(gameHandle, location, (uint)Marshal.SizeOf<T>());
             var t = typeof(T);
 
             switch (Type.GetTypeCode(t))
