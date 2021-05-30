@@ -110,7 +110,7 @@ namespace DataInterfaceConsoleTest
 
         private static void InvokeEnabledExamples(DataInterface di, InvokeKind ik)
         {
-            var callableMethods = ExampleSnippets.GetEnabledMethods();
+            var callableMethods = featureToggleSnippetss.GetEnabledMethods();
             foreach (var method in callableMethods)
             {
                 var attrib = method.GetCustomAttribute<CallableExMethodAttribute>();

@@ -6,29 +6,29 @@ using static DataInterfaceConsoleTest.Examples.CallableExMethodAttribute;
 
 namespace DataInterfaceConsoleTest.Examples
 {
-    static class ExampleSnippets
+    static class featureToggleSnippetss
     {
-        private const bool ENABLE_SNIPPETS = true;
-
+        private const bool ENABLE_SNIPPETS = true; //enables use of snippets, the individual snippet must also be set to true
         public static MethodInfo[] GetEnabledMethods() => !ENABLE_SNIPPETS ? new MethodInfo[] { } :
-            typeof(ExampleSnippets).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
+            typeof(featureToggleSnippetss).GetMethods(BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic)
             .Where(x => x.GetCustomAttribute<CallableExMethodAttribute>()?.Enabled == true).ToArray();
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
-        public static void DuplicateTimelines(DataInterface di)
+        public static void DuplicateTimelinesMsg(DataInterface di)
         {
-            Console.WriteLine("Shouldnt run");
+            Console.WriteLine("Timeline Duplicated or the console crashed");
         }
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
-        public static void ChangeBoardSize(DataInterface di)
+        public static void ChangeBoardSize(DataInterface di) //Changes board size for all boards
         {
             di.MemLocChessBoardSizeHeight.SetValue(8);
             di.MemLocChessBoardSizeWidth.SetValue(8);
+            Console.WriteLine("Board Sized has Changed");
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]
-        public static void OnTurnChanged(DataInterface di)
+        public static void OnTurnChangedMsg(DataInterface di)
         {
             Console.WriteLine($"The turn changed! Currently it is {(di.GetCurrentPlayersTurn() == 0 ? "WHITE" : "BLACK")}'s turn.");
         }
@@ -43,7 +43,7 @@ namespace DataInterfaceConsoleTest.Examples
                 {
                     cb.Pieces = cb.Pieces
                     .Select(x => new ChessBoard.ChessPiece((x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
-                    .ToArray();
+                    .ToArray(); //Changes Pawns to Queens
                 }
 
                 return cb;
@@ -51,7 +51,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
         
         
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
@@ -110,7 +110,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.RecalculateBitboards();
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
