@@ -19,11 +19,11 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine("Timeline Duplicated or the console crashed");
         }
 
-        [CallableExMethod(false, InvokeKind.MatchStart)]
+        [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void ChangeBoardSize(DataInterface di) //Changes board size for all boards
         {
-            di.MemLocChessBoardSizeHeight.SetValue(8);
-            di.MemLocChessBoardSizeWidth.SetValue(8);
+            di.MemLocChessBoardSizeHeight.SetValue(7);
+            di.MemLocChessBoardSizeWidth.SetValue(7);
             Console.WriteLine("Board Sized has Changed");
         }
 
