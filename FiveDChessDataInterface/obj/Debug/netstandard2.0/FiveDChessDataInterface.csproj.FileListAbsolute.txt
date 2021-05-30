@@ -1,0 +1,9 @@
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\bin\Debug\netstandard2.0\FiveDChessDataInterface.deps.json
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\bin\Debug\netstandard2.0\FiveDChessDataInterface.dll
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\bin\Debug\netstandard2.0\FiveDChessDataInterface.pdb
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.csprojAssemblyReference.cache
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.AssemblyInfoInputs.cache
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.AssemblyInfo.cs
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.csproj.CoreCompileInputs.cache
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.dll
+C:\Users\echun\Source\Repos\FiveDChessDataInterface\FiveDChessDataInterface\obj\Debug\netstandard2.0\FiveDChessDataInterface.pdb
