@@ -1,0 +1,127 @@
+{
+  "format": 1,
+  "restore": {
+    "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\DataInterfaceConsoleTest\\DataInterfaceConsoleTest.csproj": {}
+  },
+  "projects": {
+    "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\DataInterfaceConsoleTest\\DataInterfaceConsoleTest.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\DataInterfaceConsoleTest\\DataInterfaceConsoleTest.csproj",
+        "projectName": "DataInterfaceConsoleTest",
+        "projectPath": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\DataInterfaceConsoleTest\\DataInterfaceConsoleTest.csproj",
+        "packagesPath": "C:\\Users\\echun\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\DataInterfaceConsoleTest\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\echun\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netcoreapp3.1"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netcoreapp3.1": {
+            "targetAlias": "netcoreapp3.1",
+            "projectReferences": {
+              "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\FiveDChessDataInterface.csproj": {
+                "projectPath": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\FiveDChessDataInterface.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netcoreapp3.1": {
+          "targetAlias": "netcoreapp3.1",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.203\\RuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\FiveDChessDataInterface.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\FiveDChessDataInterface.csproj",
+        "projectName": "FiveDChessDataInterface",
+        "projectPath": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\FiveDChessDataInterface.csproj",
+        "packagesPath": "C:\\Users\\echun\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\echun\\Source\\Repos\\FiveDChessDataInterface\\FiveDChessDataInterface\\obj\\",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "C:\\Users\\echun\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        ],
+        "originalTargetFrameworks": [
+          "netstandard2.0"
+        ],
+        "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "netstandard2.0": {
+            "targetAlias": "netstandard2.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        }
+      },
+      "frameworks": {
+        "netstandard2.0": {
+          "targetAlias": "netstandard2.0",
+          "dependencies": {
+            "Microsoft.CSharp": {
+              "target": "Package",
+              "version": "[4.7.0, )"
+            },
+            "NETStandard.Library": {
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[2.0.3, )",
+              "autoReferenced": true
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\5.0.203\\RuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
