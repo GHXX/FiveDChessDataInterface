@@ -11,53 +11,25 @@ namespace DataInterfaceConsoleTest
     {
         static void Main()
         {
-            DataInterface di;
-            while (!DataInterface.TryCreateAutomatically(out di, out int numberOfProcesses))
-            {
-                Thread.Sleep(1000);
-                Console.WriteLine("Current number of processes: " + numberOfProcesses);
-            }
-
-            Console.WriteLine("Process found. Initializing...");
-            di.Initialize();
-            Console.WriteLine("Ready!");
-
-            DoDataDump(di);
-
-            const int pollingIntervalMs = 10;
-
-            var lastPlayer = -1;
-            bool gameRunning = false;
             while (true)
             {
-                while (di.GetChessBoardAmount() > 0)
+                DataInterface di;
+                while (!DataInterface.TryCreateAutomatically(out di, out int numberOfProcesses))
                 {
-                    if (!gameRunning)
-                    {
-                        Console.WriteLine("Game has started!");
-                        gameRunning = true;
-                    }
-
-                    var cp = di.GetCurrentPlayersTurn();
-                    if (cp >= 0 && lastPlayer != cp) // if its any players turn, and the player changed
-                    {
-                        Console.WriteLine($"It's now {(cp == 0 ? "WHITE" : "BLACK")}'s turn!");
-                        lastPlayer = cp;
-                    }
-                    Thread.Sleep(pollingIntervalMs);
+                    Thread.Sleep(1000);
+                    Console.WriteLine("Current number of processes: " + numberOfProcesses);
                 }
 
-                if (gameRunning)
-                {
-                    Console.WriteLine("Game has ended!");
-                    gameRunning = false;
-                }
+                Console.WriteLine("Process found. Initializing...");
+                di.Initialize();
+                Console.WriteLine("Ready!");
 
-                Thread.Sleep(pollingIntervalMs);
+                ShowInfoAndRunExamples(di);
+                Console.WriteLine("Game was closed, or died. Rescanning...");
             }
         }
 
-        private static void DoDataDump(DataInterface di)
+        private static void ShowInfoAndRunExamples(DataInterface di)
         {
             Console.WriteLine($"The pointer to the chessboards is located at: 0x{di.MemLocChessArrayPointer.Location.ToString("X16")}");
             Console.WriteLine($"The chessboard array size is located at: 0x{di.MemLocChessArrayElementCount.Location.ToString("X16")}");
@@ -83,7 +55,7 @@ namespace DataInterfaceConsoleTest
             int previousBoardCount = initialBoardCnt;
 
 
-            while (true)
+            while (!di.GameProcess.HasExited)
             {
                 var cnt = di.GetChessBoardAmount();
                 var currPlayersTurn = di.GetCurrentPlayersTurn();
@@ -117,11 +89,6 @@ namespace DataInterfaceConsoleTest
                 }
                 Thread.Sleep(500);
             }
-
-
-            Console.WriteLine("Done!");
-            Console.ReadLine();
-            Environment.Exit(0);
         }
 
         internal static void WriteConsoleColored(string text, ConsoleColor foreground, ConsoleColor background)
