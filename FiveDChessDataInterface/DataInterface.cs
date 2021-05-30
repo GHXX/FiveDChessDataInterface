@@ -328,8 +328,22 @@ namespace FiveDChessDataInterface
                 var memlocsometurncountorsomethingNewValue = timelinesByTimeline.Sum(x => x.boardVirtualSubTurnCount);
 
                 var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
+
+                // TODO remove debug code
+
+                const bool allowBoardReallocation = false;
+
                 if (newBoards.Length > maxCapacity)
-                    asmHelper.EnsureArrayCapacity<ChessBoardMemory>(MemLocChessArrayPointer, newBoards.Length);
+                {
+                    if (allowBoardReallocation)
+                    {
+                        this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("Board reallocation would have been necessary, but is currently disabled (see above boolean const)!");
+                    }
+                }
 
 
 
