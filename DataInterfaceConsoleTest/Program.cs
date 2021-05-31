@@ -11,6 +11,7 @@ namespace DataInterfaceConsoleTest
     {
         static void Main()
         {
+            Console.Title = "5D Chess with Multiverse Timetravel Data Interface Test Program";
             while (true)
             {
                 DataInterface di;
