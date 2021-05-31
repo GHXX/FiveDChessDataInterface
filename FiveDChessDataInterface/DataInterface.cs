@@ -329,22 +329,9 @@ namespace FiveDChessDataInterface
 
                 var maxCapacity = this.MemLocChessArrayCapacity.GetValue();
 
-                // TODO remove debug code
-
-                const bool allowBoardReallocation = false;
 
                 if (newBoards.Length > maxCapacity)
-                {
-                    if (allowBoardReallocation)
-                    {
-                        this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length);
-                    }
-                    else
-                    {
-                        throw new NotImplementedException("Board reallocation would have been necessary, but is currently disabled (see above boolean const)!");
-                    }
-                }
-
+                    this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length);
 
 
                 var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();

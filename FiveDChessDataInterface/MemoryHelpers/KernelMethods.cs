@@ -45,6 +45,17 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return VirtualAllocEx(handle, IntPtr.Zero, size, 0x00001000 | 0x00002000 /* MEM_COMMIT | MEM_RESERVE */, executable ? 0x40 /* PAGE_EXEC_READWRITE */ : 0x04 /* PAGE_READWRITE */);
         }
 
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr VirtualFreeEx(IntPtr hProcess, IntPtr lpBaseAddress, int dwSize, int deFreeType);
+
+        public static IntPtr FreeProcessMemory(IntPtr handle, IntPtr baseAddress, int size)
+        {
+            return VirtualFreeEx(handle, baseAddress, size, 0x00008000 /* MEM_RELEASE */);
+        }
+
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
+        internal static extern IntPtr GetProcAddress(IntPtr hModule, string functionName);
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, int dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, int dwCreationFlags, IntPtr lpThreadId);
