@@ -45,5 +45,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             return $"[{this.Location.ToString("X16")}] -> ({typeof(T).FullName}) {GetFormattedValue()}";
         }
+
+        public MemoryLocation<T> WithOffset(int offset)
+        {
+            return new MemoryLocation<T>(this.Handle, IntPtr.Add(this.Location, offset));
+        }
     }
 }
