@@ -55,7 +55,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
@@ -118,7 +118,7 @@ namespace DataInterfaceConsoleTest.Examples
         public static void AddNewTimelines(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
-            int dimcnt = baseBoards.Select(x => x.cbm.timeline).Distinct().Count() + 2;
+            int dimcnt = baseBoards.Select(x => x.cbm.timeline).Distinct().Count() + 30;
             int boardId = 0;
             var boards = Enumerable.Range(-dimcnt / 2, dimcnt).SelectMany(timeline =>
                   baseBoards.Select(baseBoard =>
@@ -129,7 +129,7 @@ namespace DataInterfaceConsoleTest.Examples
                   })
                 )
                 .OrderBy(x => x.turn)
-                .ThenBy(x => x.timeline * x.timeline)
+                .ThenBy(x => Math.Abs(x.timeline))
                 .Select(x =>
                 {
                     x.boardId = boardId++;

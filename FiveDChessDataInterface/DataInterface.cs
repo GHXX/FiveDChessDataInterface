@@ -331,8 +331,23 @@ namespace FiveDChessDataInterface
 
 
                 if (newBoards.Length > maxCapacity)
-                    this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length);
+                {
+                    this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length); // 30*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x10), 8, newBoards.Length); // 40*
+                    var sz50_60 = 4; 
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x20), sz50_60, newBoards.Length); // 50*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x30), sz50_60, newBoards.Length); // 60*
+                    var szGlobalBitboards = 8;
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x40), szGlobalBitboards, newBoards.Length); // 70*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x50), szGlobalBitboards, newBoards.Length); // 80*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x60), szGlobalBitboards, newBoards.Length); // 90*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x80), szGlobalBitboards, newBoards.Length); // b0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x90), szGlobalBitboards, newBoards.Length); // c0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length); // d0*
 
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x338), 4, newBoards.Length); // 368*
+                }
 
                 var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
                 KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
