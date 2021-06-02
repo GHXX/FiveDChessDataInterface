@@ -327,5 +327,15 @@ namespace FiveDChessDataInterface
 
             return hash;
         }
+
+        /// <summary>
+        /// Returns the current subturn index. Is equivalent to turnindex*2 + isBlacksMove.
+        /// </summary>
+        public int GetSubturnIndex() => this.turn * 2 + (this.isBlacksMove == 1 ? 1 : 0);
+
+        public override string ToString()
+        {
+            return $"T{turn}{(isBlacksMove == 1 ? "Blck" : "Whte")}L{timeline} Id:{boardId}";
+        }
     }
 }
