@@ -288,7 +288,54 @@ namespace FiveDChessDataInterface
         /// <param name="a">The inner action to be executed, while the process is suspended.</param>
         public void ExecuteWhileGameSuspendedLocked(Action a) => this.suspendGameprocessLock.Lock(a);
 
+        /// <summary>
+        /// Sets the current match's chessboards to those. Does not perform ANY sanity checks. If you are unsure, consider using <see cref="SetChessBoardArray"/> instead.
+        /// </summary>
+        /// <param name="newBoards">A <see cref="ChessBoard[]"/> representing the new Chessboards to write into the memory.</param>
+        public void SetChessBoardArrayUnchecked(ChessBoard[] newBoards) => SetChessBoardArrayInternal(newBoards);
+        /// <summary>
+        /// Sets the current match's chessboards, but performs sanity checks before doing so. 
+        /// To override those sanity checks, to produce possibly unstable behaviour, use <see cref="SetChessBoardArrayUnchecked(ChessBoard[])"/> instead.
+        /// </summary>
+        /// <param name="newBoards"></param>
         public void SetChessBoardArray(ChessBoard[] newBoards)
+        {
+            void AssertTrue(bool success, string msg)
+            {
+                if (!success)
+                    throw new Exception($"Sanity check failed! Details: {msg}");
+            }
+
+            var minId = newBoards.Min(x => x.cbm.boardId);
+            AssertTrue(minId == 0, "the smallest boardId should be 0");
+
+
+            var idCount = newBoards.DistinctBy(x => x.cbm.boardId).Count();
+            AssertTrue(idCount == newBoards.Count(), "all boardIds have to be unique");
+
+            IEnumerable<int> RangeFromToInclusive(int start, int end)
+            {
+                return Enumerable.Range(start, end - start + 1);
+            }
+
+            var timelines = RangeFromToInclusive(newBoards.Min(x => x.cbm.timeline), newBoards.Max(x => x.cbm.timeline));
+            var subTurns = RangeFromToInclusive(newBoards.Min(x => x.cbm.GetSubturnIndex()), newBoards.Max(x => x.cbm.GetSubturnIndex()));
+
+            foreach (var timeline in timelines)
+            {
+                foreach (var subTurn in subTurns)
+                {
+                    var boardsAtLocation = newBoards.Where(x => x.cbm.timeline == timeline && x.cbm.GetSubturnIndex() == subTurn).ToList();
+                    // allow holes (Count = 0), but do not allow two boards to be in the same place
+                    AssertTrue(boardsAtLocation.Count <= 1,
+                        $"there are {boardsAtLocation.Count} boards in the timeline {timeline} on turn {subTurn / 2} in {(subTurn % 2 == 0 ? "White" : "Black")}'s subturn");
+                }
+            }
+
+            SetChessBoardArrayInternal(newBoards);
+        }
+
+        private void SetChessBoardArrayInternal(ChessBoard[] newBoards)
         {
             Thread.Sleep(250);
             ExecuteWhileGameSuspendedLocked(() =>
@@ -333,8 +380,8 @@ namespace FiveDChessDataInterface
                 if (newBoards.Length > maxCapacity)
                 {
                     this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length); // 30*
-                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x10), 8, newBoards.Length); // 40*
-                    var sz50_60 = 4; 
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x10), 8, newBoards.Length); // 40* MemLocSomeTurnCountOrSomething+0x8 // element size is <= 170 bytes (decimal)
+                    var sz50_60 = 1;
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x20), sz50_60, newBoards.Length); // 50*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x30), sz50_60, newBoards.Length); // 60*
                     var szGlobalBitboards = 8;

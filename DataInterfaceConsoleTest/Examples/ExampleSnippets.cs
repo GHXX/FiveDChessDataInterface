@@ -122,7 +122,7 @@ namespace DataInterfaceConsoleTest.Examples
 
             // adds the following amount of timelines for both black and white each.
             // e.g. a value of 1 would add one timeline on the bottom and one at the top
-            int timelinesToAddForEachPlayer = 1;
+            int timelinesToAddForEachPlayer = 10;
 
 
             var baseBoards = di.GetChessBoards();
