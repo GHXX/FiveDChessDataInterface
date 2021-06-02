@@ -50,5 +50,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             return new MemoryLocation<T>(this.Handle, IntPtr.Add(this.Location, offset));
         }
+
+        public MemoryLocation<NewT> WithOffset<NewT>(int offset)
+        {
+            return new MemoryLocation<NewT>(this.Handle, IntPtr.Add(this.Location, offset));
+        }
     }
 }
