@@ -34,7 +34,7 @@ namespace FiveDChessDataInterface
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
         private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
         private MemoryLocation<uint> MemLocBlackTimelineCountInternalInverted { get; set; }
-        private MemoryLocation<int> MemLocSusProbablyBoardCntAgain { get; set; }
+        private MemoryLocation<int> MemLocSusProbablyBoardCntAgain { get; set; } // still a candidate, not sure if its actually needed or what it does, but it seems to equal to the boardcount
 
         // ONLY TESTED FOR ODD NUMBER OF STARTING BOARDS!!
         // TODO TEST ON EVEN NUMBER OF STARTING TIMELINES
