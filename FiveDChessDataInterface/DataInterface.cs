@@ -34,6 +34,7 @@ namespace FiveDChessDataInterface
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
         private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
         private MemoryLocation<uint> MemLocBlackTimelineCountInternalInverted { get; set; }
+        private MemoryLocation<int> MemLocSusProbablyBoardCntAgain { get; set; }
 
         // ONLY TESTED FOR ODD NUMBER OF STARTING BOARDS!!
         // TODO TEST ON EVEN NUMBER OF STARTING TIMELINES
@@ -175,6 +176,7 @@ namespace FiveDChessDataInterface
             this.MemLocSomeTurnCountOrSomething = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x30 + 0x38);
             this.MemLocProbablyBoardCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x28);
             this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
+            this.MemLocSusProbablyBoardCntAgain = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x24);
 
 
         }
@@ -394,6 +396,7 @@ namespace FiveDChessDataInterface
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length); // d0*
 
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x338), 4, newBoards.Length); // 368*
+                    this.MemLocSusProbablyBoardCntAgain.SetValue(newBoards.Length);
                 }
 
                 var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
