@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
-    class KernelMethods
+    public class KernelMethods
     {
         [DllImport("Kernel32.dll")]
         private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, ref uint lpNumberOfBytesRead);

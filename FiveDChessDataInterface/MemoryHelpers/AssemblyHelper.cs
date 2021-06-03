@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
-    class AssemblyHelper
+    public class AssemblyHelper
     {
         private readonly IntPtr gameHandle;
         private readonly DataInterface di;
@@ -51,7 +51,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
         // TODO maybe free the old memory, if the game allows it
-        internal void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
+        public void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
         {
             this.di.ExecuteWhileGameSuspendedLocked(() =>
             {
@@ -67,8 +67,14 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
                 var newCapacity = minCapacity + 16;
 
+                var newArraySize = newCapacity * arrayElementSize;
+
+                if (newArraySize < oldContents.Length)
+                    throw new Exception("Heap array size miscalculation!");
+
+
                 // otherwise allocate a new array
-                var newArrayPtr = AllocHeapMem(newCapacity * arrayElementSize);
+                var newArrayPtr = AllocHeapMem(newArraySize);
 
                 // copy contents
                 existingArrayPointerLocation.SetValue(newArrayPtr);
@@ -78,11 +84,11 @@ namespace FiveDChessDataInterface.MemoryHelpers
             });
         }
 
-        internal void EnsureArrayCapacity<ArrayElemType>(MemoryLocation<IntPtr> existingArrayPointerLocation, int minCapacity)
+        public void EnsureArrayCapacity<ArrayElemType>(MemoryLocation<IntPtr> existingArrayPointerLocation, int minCapacity)
             => EnsureArrayCapacity(existingArrayPointerLocation, Marshal.SizeOf(typeof(ArrayElemType)), minCapacity);
 
         // TODO implement memory freeing if memleak is a problem
-        internal IntPtr AllocHeapMem(int size)
+        public IntPtr AllocHeapMem(int size)
         {
             ProcessModule k32Module = null;
             var modules = this.di.GameProcess.Modules;

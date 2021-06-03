@@ -1,4 +1,5 @@
 ﻿using FiveDChessDataInterface;
+using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Util;
 using System;
 using System.Collections.Generic;
@@ -37,6 +38,14 @@ namespace DataInterfaceConsoleTest.Examples
         public static void OnTurnChanged(DataInterface di)
         {
             Console.WriteLine($"The turn changed! Currently it is {(di.GetCurrentPlayersTurn() == 0 ? "WHITE" : "BLACK")}'s turn.");
+        }
+
+        [CallableExMethod(true, InvokeKind.TurnChange)]
+        public static void HeapCorruptTest(DataInterface di)
+        {
+            var sz = 256;
+            var heap = di.asmHelper.AllocHeapMem(sz);
+            KernelMethods.WriteMemory(di.GetGameHandle(), heap, Enumerable.Repeat((byte)0, sz).ToArray());
         }
 
         [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
@@ -116,7 +125,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.RecalculateBitboards();
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
 
