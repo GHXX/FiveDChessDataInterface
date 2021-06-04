@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using static DataInterfaceConsoleTest.Examples.CallableExMethodAttribute;
 
 namespace DataInterfaceConsoleTest.Examples
@@ -128,7 +129,7 @@ namespace DataInterfaceConsoleTest.Examples
         [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
-
+            Thread.Sleep(100);
             // adds the following amount of timelines for both black and white each.
             // e.g. a value of 1 would add one timeline on the bottom and one at the top
             int timelinesToAddForEachPlayer = 10;
