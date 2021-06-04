@@ -395,7 +395,7 @@ namespace FiveDChessDataInterface
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x90), szGlobalBitboards, newBoards.Length*newBoards.Length); // c0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length*newBoards.Length); // d0*
 
-                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x338), 4, newBoards.Length); // 368*
+                    //this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x338), 4, newBoards.Length); // 368*
                     this.MemLocSusProbablyBoardCntAgain.SetValue(newBoards.Length);
                 }
 
