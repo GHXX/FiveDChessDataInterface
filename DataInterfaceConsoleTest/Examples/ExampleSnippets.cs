@@ -40,11 +40,11 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine($"The turn changed! Currently it is {(di.GetCurrentPlayersTurn() == 0 ? "WHITE" : "BLACK")}'s turn.");
         }
 
-        [CallableExMethod(true, InvokeKind.TurnChange)]
+        [CallableExMethod(false, InvokeKind.TurnChange)]
         public static void HeapCorruptTest(DataInterface di)
         {
             var sz = 256;
-            var heap = di.asmHelper.AllocHeapMem(sz);
+            var heap = di.asmHelper.GameMalloc(sz, false);
             KernelMethods.WriteMemory(di.GetGameHandle(), heap, Enumerable.Repeat((byte)0, sz).ToArray());
         }
 
@@ -125,7 +125,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.RecalculateBitboards();
         }
 
-        [CallableExMethod(false, InvokeKind.MatchStart)]
+        [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
 
