@@ -34,6 +34,7 @@ namespace FiveDChessDataInterface
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
         private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
         private MemoryLocation<uint> MemLocBlackTimelineCountInternalInverted { get; set; }
+        private MemoryLocation<int> MemLocSusProbablyBoardCntAgain { get; set; } // still a candidate, not sure if its actually needed or what it does, but it seems to equal to the boardcount
 
         // ONLY TESTED FOR ODD NUMBER OF STARTING BOARDS!!
         // TODO TEST ON EVEN NUMBER OF STARTING TIMELINES
@@ -49,7 +50,7 @@ namespace FiveDChessDataInterface
         public IntPtr GetGameHandle() => this.GameProcess.Handle;
         public IntPtr GetEntryPoint() => this.GameProcess.MainModule.BaseAddress;
 
-        private AssemblyHelper asmHelper;
+        public AssemblyHelper asmHelper;
         private readonly SuspendGameProcessLock suspendGameprocessLock;
 
         public static bool TryCreateAutomatically(out DataInterface di)
@@ -175,6 +176,7 @@ namespace FiveDChessDataInterface
             this.MemLocSomeTurnCountOrSomething = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x30 + 0x38);
             this.MemLocProbablyBoardCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x28);
             this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
+            this.MemLocSusProbablyBoardCntAgain = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x24);
 
 
         }
@@ -288,7 +290,60 @@ namespace FiveDChessDataInterface
         /// <param name="a">The inner action to be executed, while the process is suspended.</param>
         public void ExecuteWhileGameSuspendedLocked(Action a) => this.suspendGameprocessLock.Lock(a);
 
+        /// <summary>
+        /// Sets the current match's chessboards to those and recalcualtes bitboards. Does not perform ANY sanity checks. 
+        /// If you are unsure, consider using <see cref="SetChessBoardArray"/> instead.
+        /// </summary>
+        /// <param name="newBoards">A <see cref="ChessBoard[]"/> representing the new Chessboards to write into the memory.</param>
+        public void SetChessBoardArrayUnchecked(ChessBoard[] newBoards) => SetChessBoardArrayInternal(newBoards);
+        /// <summary>
+        /// Sets the current match's chessboards and recalculates bitboards, but performs sanity checks before doing so. 
+        /// To override those sanity checks, to produce possibly unstable behaviour, use <see cref="SetChessBoardArrayUnchecked(ChessBoard[])"/> instead.
+        /// </summary>
+        /// <param name="newBoards"></param>
         public void SetChessBoardArray(ChessBoard[] newBoards)
+        {
+            void AssertTrue(bool success, string msg)
+            {
+                if (!success)
+                    throw new Exception($"Sanity check failed! Details: {msg}");
+            }
+
+            var minId = newBoards.Min(x => x.cbm.boardId);
+            AssertTrue(minId == 0, "the smallest boardId should be 0");
+
+
+            var idCount = newBoards.DistinctBy(x => x.cbm.boardId).Count();
+            AssertTrue(idCount == newBoards.Count(), "all boardIds have to be unique");
+
+            AssertTrue(newBoards.Skip(1).All(x => x.height == newBoards[0].height && x.width == newBoards[0].width), "all boards have to be of the same size");
+
+
+            IEnumerable<int> RangeFromToInclusive(int start, int end)
+            {
+                return Enumerable.Range(start, end - start + 1);
+            }
+
+            var timelines = RangeFromToInclusive(newBoards.Min(x => x.cbm.timeline), newBoards.Max(x => x.cbm.timeline));
+            var subTurns = RangeFromToInclusive(newBoards.Min(x => x.cbm.GetSubturnIndex()), newBoards.Max(x => x.cbm.GetSubturnIndex()));
+
+            foreach (var timeline in timelines)
+            {
+                foreach (var subTurn in subTurns)
+                {
+                    var boardsAtLocation = newBoards.Where(x => x.cbm.timeline == timeline && x.cbm.GetSubturnIndex() == subTurn).ToList();
+                    // allow holes (Count = 0), but do not allow two boards to be in the same place
+                    AssertTrue(boardsAtLocation.Count <= 1,
+                        $"there are {boardsAtLocation.Count} boards in the timeline {timeline} on turn {subTurn / 2} in {(subTurn % 2 == 0 ? "White" : "Black")}'s subturn");
+                }
+            }
+
+            this.MemLocChessBoardSizeHeight.SetValue(newBoards[0].height);
+            this.MemLocChessBoardSizeWidth.SetValue(newBoards[0].width);
+            SetChessBoardArrayInternal(newBoards);
+        }
+
+        private void SetChessBoardArrayInternal(ChessBoard[] newBoards)
         {
             Thread.Sleep(250);
             ExecuteWhileGameSuspendedLocked(() =>
@@ -331,8 +386,24 @@ namespace FiveDChessDataInterface
 
 
                 if (newBoards.Length > maxCapacity)
-                    this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length);
+                {
+                    this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length); // 30*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x10), 4, newBoards.Length); // 40* MemLocSomeTurnCountOrSomething+0x8 // element size is <= 170 bytes (decimal)
+                    var sz50_60 = 1;
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x20), sz50_60, newBoards.Length); // 50*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x30), sz50_60, newBoards.Length); // 60*
+                    var szGlobalBitboards = 8;
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x40), szGlobalBitboards, newBoards.Length); // 70*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x50), szGlobalBitboards, newBoards.Length); // 80*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x60), szGlobalBitboards, newBoards.Length); // 90*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x80), szGlobalBitboards, newBoards.Length); // b0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x90), szGlobalBitboards, newBoards.Length); // c0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length); // d0*
 
+                    //this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x338), 4, newBoards.Length); // 368*
+                    this.MemLocSusProbablyBoardCntAgain.SetValue(newBoards.Length);
+                }
 
                 var bytes = newBoards.SelectMany(x => ChessBoardMemory.ToByteArray(x.cbm)).ToArray();
                 KernelMethods.WriteMemory(GetGameHandle(), this.MemLocChessArrayPointer.GetValue(), bytes);
@@ -343,6 +414,9 @@ namespace FiveDChessDataInterface
                 //Thread.Sleep(5000);
                 this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
             });
+
+            Thread.Sleep(10);
+            RecalculateBitboards();
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();

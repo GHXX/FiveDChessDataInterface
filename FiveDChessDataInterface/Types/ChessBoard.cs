@@ -123,26 +123,33 @@ namespace FiveDChessDataInterface
                 return $"[{(this.IsBlack ? "B" : "W")}]{this.Kind}";
             }
 
+            public byte[] ToByteArray() => new byte[] { this.IsEmpty ? (byte)0 : (byte)this.Kind, this.IsEmpty ? (byte)0 : (this.IsWhite ? (byte)1 : (byte)2) };
+
             public string SingleLetterNotation()
             {
-                return this.Kind switch
-                {
-                    PieceKind.Unknown => "?",
-                    PieceKind.Pawn => "P",
-                    PieceKind.Knight => "N",
-                    PieceKind.Bishop => "B",
-                    PieceKind.Rook => "R",
-                    PieceKind.Queen => "Q",
-                    PieceKind.King => "K",
-                    PieceKind.Unicorn => "U",
-                    PieceKind.Dragon => "D",
-                    PieceKind.Princess => "S",
-                    PieceKind.Brawn => "W",
-                    PieceKind.RoyalQueen => "Y",
-                    PieceKind.CommonKing => "C",
-                    _ => throw new NotImplementedException()
-                };
+                if (SingleLetterPieceTable.TryGetValue(this.Kind, out string result))
+                    return result;
+                else
+                    throw new NotImplementedException("This piece is not defined!");
             }
+
+            // make sure there are only uppercase letters, not lowercase as that would break the fen code
+            public static Dictionary<PieceKind, string> SingleLetterPieceTable = new Dictionary<PieceKind, string>()
+            {
+                { PieceKind.Unknown, "?" },
+                { PieceKind.Pawn, "P"},
+                { PieceKind.Knight, "N"},
+                { PieceKind.Bishop, "B"},
+                { PieceKind.Rook, "R"},
+                { PieceKind.Queen, "Q"},
+                { PieceKind.King, "K"},
+                { PieceKind.Unicorn, "U"},
+                { PieceKind.Dragon, "D"},
+                { PieceKind.Princess, "S"},
+                { PieceKind.Brawn, "W"},
+                { PieceKind.RoyalQueen, "Y"},
+                { PieceKind.CommonKing, "C"}
+            };
 
             public ChessPiece(PieceKind kind, bool isBlack)
             {
@@ -326,6 +333,16 @@ namespace FiveDChessDataInterface
             hash.Add("ttMoveDestX", this.ttMoveDestX);
 
             return hash;
+        }
+
+        /// <summary>
+        /// Returns the current subturn index. Is equivalent to turnindex*2 + isBlacksMove.
+        /// </summary>
+        public int GetSubturnIndex() => this.turn * 2 + (this.isBlacksMove == 1 ? 1 : 0);
+
+        public override string ToString()
+        {
+            return $"T{this.turn}{(this.isBlacksMove == 1 ? "Blck" : "Whte")}L{this.timeline} Id:{this.boardId}";
         }
     }
 }

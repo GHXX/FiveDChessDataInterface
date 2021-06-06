@@ -1,7 +1,12 @@
 ﻿using FiveDChessDataInterface;
+using FiveDChessDataInterface.Builders;
+using FiveDChessDataInterface.MemoryHelpers;
+using FiveDChessDataInterface.Util;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using static DataInterfaceConsoleTest.Examples.CallableExMethodAttribute;
 
 namespace DataInterfaceConsoleTest.Examples
@@ -31,10 +36,33 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine($"Set new height to {height} and width to {width}.");
         }
 
+        [CallableExMethod(true, InvokeKind.MatchStart)]
+        public static void LoadCustomVariant(DataInterface di)
+        {
+            var height = 3;
+            var width = 3;
+            var gb = new GameBuilderOdd(height, width);
+            gb["-1L"].AddBoardFromFen("kkk/3/3");
+            gb["0L"].AddBoardFromFen("ppp/3/PPP");
+            gb["1L"].AddBoardFromFen("3/3/KKK");
+
+
+            var boards = gb.Build();
+            di.SetChessBoardArray(boards.ToArray());
+        }
+
         [CallableExMethod(false, InvokeKind.TurnChange)]
         public static void OnTurnChanged(DataInterface di)
         {
             Console.WriteLine($"The turn changed! Currently it is {(di.GetCurrentPlayersTurn() == 0 ? "WHITE" : "BLACK")}'s turn.");
+        }
+
+        [CallableExMethod(false, InvokeKind.TurnChange)]
+        public static void HeapCorruptTest(DataInterface di)
+        {
+            var sz = 256;
+            var heap = di.asmHelper.GameMalloc(sz, false);
+            KernelMethods.WriteMemory(di.GetGameHandle(), heap, Enumerable.Repeat((byte)0, sz).ToArray());
         }
 
         [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
@@ -55,7 +83,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
         {
             var baseBoards = di.GetChessBoards();
@@ -111,46 +139,66 @@ namespace DataInterfaceConsoleTest.Examples
 
             di.SetChessBoardArray(newBoards.ToArray());
             di.MemLocCosmeticTurnOffset.SetValue(-1);
-            di.RecalculateBitboards();
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
-            var baseBoards = di.GetChessBoards();
-            int dimcnt = baseBoards.Select(x => x.cbm.timeline).Distinct().Count() + 2;
-            int boardId = 0;
-            var boards = Enumerable.Range(-dimcnt / 2, dimcnt).SelectMany(timeline =>
-                  baseBoards.Select(baseBoard =>
-                  {
-                      var cbm = baseBoard.cbm;
-                      cbm.timeline = timeline;
-                      return cbm;
-                  })
-                )
-                .OrderBy(x => x.turn)
-                .ThenBy(x => x.timeline * x.timeline)
-                .Select(x =>
-                {
-                    x.boardId = boardId++;
-                    return x;
-                })
-                .GroupBy(x => x.timeline)
-                .SelectMany(group =>
-                {
-                    var boards = group.ToArray();
-                    for (int i = 1; i < boards.Length; i++)
-                    {
-                        boards[i].previousBoardId = boards[i - 1].boardId;
-                    }
+            Thread.Sleep(100);
+            // adds the following amount of timelines for both black and white each.
+            // e.g. a value of 1 would add one timeline on the bottom and one at the top
+            int timelinesToAddForEachPlayer = 10;
 
-                    return boards;
-                })
-                .OrderBy(x => x.boardId)
-                .Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
+
+            var baseBoards = di.GetChessBoards();
+
+            var baseCbms = baseBoards.Select(x => x.cbm).ToList();
+            int newId = baseBoards.Max(x => x.cbm.boardId) + 1;
+            for (int _ = 0; _ < timelinesToAddForEachPlayer; _++)
+            {
+                var newBoards = baseCbms;
+
+                // add new black timeline
+                var minTL = baseCbms.Min(x => x.timeline);
+                var newMinTLBoards = baseCbms.Where(x => x.timeline == minTL)
+                    .Select(x =>
+                    {
+                        var newCbm = x;
+                        newCbm.timeline--;
+                        newCbm.boardId = newId++;
+                        return newCbm;
+                    })
+                    .OrderBy(x => x.GetSubturnIndex()).ToList();
+
+
+                // add new white timeline
+                var maxTL = baseCbms.Max(x => x.timeline);
+                var newMaxTLBoards = baseCbms.Where(x => x.timeline == maxTL)
+                    .Select(x =>
+                    {
+                        var newCbm = x;
+                        newCbm.timeline++;
+                        newCbm.boardId = newId++;
+                        return newCbm;
+                    })
+                    .OrderBy(x => x.GetSubturnIndex()).ToList();
+
+                IEnumerable<int> RangeFromToInclusive(int start, int end)
+                {
+                    return Enumerable.Range(start, end - start + 1);
+                }
+
+                // combine new boards 
+                var boardsToInsert = newMinTLBoards.Concat(newMaxTLBoards).ToList();
+                newBoards.AddRange(boardsToInsert);
+
+                baseCbms = newBoards;
+            }
+
+            var sortedBoards = GameUtil.ReassignBoardIds(baseCbms.ToArray());
+            var boards = sortedBoards.OrderBy(x => x.boardId).Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
 
             di.SetChessBoardArray(boards.ToArray());
-            di.RecalculateBitboards();
         }
 
         [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]

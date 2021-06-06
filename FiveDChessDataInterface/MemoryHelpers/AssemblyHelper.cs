@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
-    class AssemblyHelper
+    public class AssemblyHelper
     {
         private readonly IntPtr gameHandle;
         private readonly DataInterface di;
@@ -51,7 +51,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
         // TODO maybe free the old memory, if the game allows it
-        internal void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
+        public void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
         {
             this.di.ExecuteWhileGameSuspendedLocked(() =>
             {
@@ -62,13 +62,19 @@ namespace FiveDChessDataInterface.MemoryHelpers
                     return;
 
                 // read old contents
-                var oldContents = KernelMethods.ReadMemory(this.gameHandle, existingArrayPointerLocation.GetValue(), (uint)(memLocCapacity.GetValue() * arrayElementSize));
+                var oldContents = KernelMethods.ReadMemory(this.gameHandle, existingArrayPointerLocation.GetValue(), (uint)(memLocElementCnt.GetValue() * arrayElementSize));
 
 
                 var newCapacity = minCapacity + 16;
 
+                var newArraySize = newCapacity * arrayElementSize;
+
+                if (newArraySize < oldContents.Length)
+                    throw new Exception("Heap array size miscalculation!");
+
+
                 // otherwise allocate a new array
-                var newArrayPtr = AllocHeapMem(newCapacity * arrayElementSize);
+                var newArrayPtr = GameMalloc(newArraySize, true);
 
                 // copy contents
                 existingArrayPointerLocation.SetValue(newArrayPtr);
@@ -78,11 +84,12 @@ namespace FiveDChessDataInterface.MemoryHelpers
             });
         }
 
-        internal void EnsureArrayCapacity<ArrayElemType>(MemoryLocation<IntPtr> existingArrayPointerLocation, int minCapacity)
+        public void EnsureArrayCapacity<ArrayElemType>(MemoryLocation<IntPtr> existingArrayPointerLocation, int minCapacity)
             => EnsureArrayCapacity(existingArrayPointerLocation, Marshal.SizeOf(typeof(ArrayElemType)), minCapacity);
 
         // TODO implement memory freeing if memleak is a problem
-        internal IntPtr AllocHeapMem(int size)
+        [Obsolete("Use the malloc version instead!")]
+        public IntPtr AllocHeapMem(int size)
         {
             ProcessModule k32Module = null;
             var modules = this.di.GameProcess.Modules;
@@ -180,6 +187,113 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 throw new Exception("Heap memory allocation failed!");
 
             KernelMethods.FreeProcessMemory(this.gameHandle, memLocHeapAllocResult.Location, 8);
+
+            return result;
+        }
+
+        public IntPtr GameMalloc(int size, bool initMemToZero)
+        {
+            ProcessModule gameModule = this.di.GameProcess.MainModule;
+            //var modules = this.di.GameProcess.Modules;
+            //for (int i = 0; i < modules.Count; i++)
+            //{
+            //    var m = modules[i];
+            //    if (m.ModuleName == "5dchesswithmultiversetimetravel.exe")
+            //    {
+            //        gameModule = m;
+            //        break;
+            //    }
+            //}
+
+            if (gameModule == null)
+                throw new DllNotFoundException("Could not resolve KERNEL32.DLL in the game process!");
+
+            var mallocPtr = gameModule.BaseAddress + 0xF1BF0;
+
+            /*
+            0:  48 bb a0 a9 f9 e8 f8    movabs rbx,0x7ff8e8f9a9a0
+            7:  7f 00 00
+            a:  53                      push   rbx
+            b:  48 b8 a0 a9 f9 e8 f8    movabs rax,0x7ff8e8f9a9a0
+            12: 7f 00 00
+            15: 48 b9 a0 a9 f9 e8 00    movabs rcx,0xe8f9a9a0
+            1c: 00 00 00
+            1f: ff d0                   call   rax
+            21: 5b                      pop    rbx
+            22: 48 89 03                mov    QWORD PTR [rbx],rax
+            25: c3                      ret
+
+            mov rbx, 0x00007ff8e8f9a9a0
+            push rbx
+
+            mov rax, 0x00007ff8e8f9a9a0
+            mov rcx, 0xe8f9a9a0
+
+            // push junk
+            //push 0
+            // call GameMalloc
+            call rax
+            // pop some junk
+            //pop rbx
+
+            // pop the original rbx
+            pop rbx
+            mov [rbx], rax
+            ret
+
+            */
+
+            var memPtr = KernelMethods.AllocProcessMemory(this.gameHandle, 8, false);
+            var memLocHeapAllocResult = new MemoryLocation<IntPtr>(this.gameHandle, memPtr);
+            memLocHeapAllocResult.SetValue(new IntPtr(-1L));
+
+            var code = new byte[] {
+                0x48, 0xBB, // mov rbx,
+                }
+            .Concat(BitConverter.GetBytes(memPtr.ToInt64())) // TARGET_ADDRESS 8byte
+            .Concat(
+            new byte[]{
+                0x53, // push rbx
+                0x48, 0xB8, // mov rax
+                })
+            .Concat(BitConverter.GetBytes(mallocPtr.ToInt64())) // GetProcessHeap() 8byte
+            .Concat(
+            new byte[]{
+            //    0xFF, 0xD0, // call rax
+            //    0x48, 0x89, 0xC1, // mov rcx, rax -- heapHandle
+            //    0x48, 0xC7, 0xC2, 0x00, 0x00, 0x00, 0x00, // mov rdx, 0, -- flags
+                0x48, 0xB9, // mov rcx
+                })
+            .Concat(BitConverter.GetBytes((long)size)) // allocation size, 4byte, padded to 8
+            .Concat(
+            new byte[]{
+                //0x6A, 0x00, // push 0
+                //0x48, 0xB8, // mov rax,
+                })
+            //.Concat(BitConverter.GetBytes(mallocPtr.ToInt64())) // HeapAlloc() 8byte
+            .Concat(
+            new byte[]{
+                0xFF, 0xD0, // call rax
+                //0x5B, // pop rbx -- junk
+                0x5B, // pop rbx -- allocated heap address
+                0x48, 0x89, 0x03, // mov [rbx], rax -- mov allocated heap address to TARGET_ADDRESS
+                0xC3 // ret
+            }).ToArray();
+
+            var ptr = AllocMemAndInjectCode(code);
+            KernelMethods.CreateRemoteThread(this.gameHandle, ptr);
+            IntPtr result = IntPtr.Zero;
+            SpinWait.SpinUntil(() =>
+            {
+                result = memLocHeapAllocResult.GetValue();
+                return result.ToInt64() != -1;
+            });
+            if (result == IntPtr.Zero)
+                throw new Exception("Heap memory allocation failed!");
+
+            KernelMethods.FreeProcessMemory(this.gameHandle, memLocHeapAllocResult.Location, 8);
+            if (initMemToZero)
+                KernelMethods.WriteMemory(this.gameHandle, result, Enumerable.Repeat<byte>(0, size).ToArray());
 
             return result;
         }
