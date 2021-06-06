@@ -1,4 +1,5 @@
 ﻿using FiveDChessDataInterface;
+using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Util;
 using System;
@@ -33,6 +34,21 @@ namespace DataInterfaceConsoleTest.Examples
             di.MemLocChessBoardSizeWidth.SetValue(width);
 
             Console.WriteLine($"Set new height to {height} and width to {width}.");
+        }
+
+        [CallableExMethod(true, InvokeKind.MatchStart)]
+        public static void LoadCustomVariant(DataInterface di)
+        {
+            var height = 3;
+            var width = 3;
+            var gb = new GameBuilderOdd(height, width);
+            gb["-1L"].AddBoardFromFen("kkk/3/3");
+            gb["0L"].AddBoardFromFen("ppp/3/PPP");
+            gb["1L"].AddBoardFromFen("3/3/KKK");
+
+
+            var boards = gb.Build();
+            di.SetChessBoardArray(boards.ToArray());
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]
@@ -123,10 +139,9 @@ namespace DataInterfaceConsoleTest.Examples
 
             di.SetChessBoardArray(newBoards.ToArray());
             di.MemLocCosmeticTurnOffset.SetValue(-1);
-            di.RecalculateBitboards();
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void AddNewTimelines(DataInterface di)
         {
             Thread.Sleep(100);
@@ -184,7 +199,6 @@ namespace DataInterfaceConsoleTest.Examples
             var boards = sortedBoards.OrderBy(x => x.boardId).Select(x => new ChessBoard(x, baseBoards[0].width, baseBoards[0].height)).ToArray();
 
             di.SetChessBoardArray(boards.ToArray());
-            di.RecalculateBitboards();
         }
 
         [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]

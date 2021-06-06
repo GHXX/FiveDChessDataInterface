@@ -291,12 +291,13 @@ namespace FiveDChessDataInterface
         public void ExecuteWhileGameSuspendedLocked(Action a) => this.suspendGameprocessLock.Lock(a);
 
         /// <summary>
-        /// Sets the current match's chessboards to those. Does not perform ANY sanity checks. If you are unsure, consider using <see cref="SetChessBoardArray"/> instead.
+        /// Sets the current match's chessboards to those and recalcualtes bitboards. Does not perform ANY sanity checks. 
+        /// If you are unsure, consider using <see cref="SetChessBoardArray"/> instead.
         /// </summary>
         /// <param name="newBoards">A <see cref="ChessBoard[]"/> representing the new Chessboards to write into the memory.</param>
         public void SetChessBoardArrayUnchecked(ChessBoard[] newBoards) => SetChessBoardArrayInternal(newBoards);
         /// <summary>
-        /// Sets the current match's chessboards, but performs sanity checks before doing so. 
+        /// Sets the current match's chessboards and recalculates bitboards, but performs sanity checks before doing so. 
         /// To override those sanity checks, to produce possibly unstable behaviour, use <see cref="SetChessBoardArrayUnchecked(ChessBoard[])"/> instead.
         /// </summary>
         /// <param name="newBoards"></param>
@@ -314,6 +315,9 @@ namespace FiveDChessDataInterface
 
             var idCount = newBoards.DistinctBy(x => x.cbm.boardId).Count();
             AssertTrue(idCount == newBoards.Count(), "all boardIds have to be unique");
+
+            AssertTrue(newBoards.Skip(1).All(x => x.height == newBoards[0].height && x.width == newBoards[0].width), "all boards have to be of the same size");
+
 
             IEnumerable<int> RangeFromToInclusive(int start, int end)
             {
@@ -334,6 +338,8 @@ namespace FiveDChessDataInterface
                 }
             }
 
+            this.MemLocChessBoardSizeHeight.SetValue(newBoards[0].height);
+            this.MemLocChessBoardSizeWidth.SetValue(newBoards[0].width);
             SetChessBoardArrayInternal(newBoards);
         }
 
@@ -408,6 +414,9 @@ namespace FiveDChessDataInterface
                 //Thread.Sleep(5000);
                 this.MemLocChessArrayElementCount.SetValue(newBoards.Length);
             });
+
+            Thread.Sleep(10);
+            RecalculateBitboards();
         }
 
         public int GetChessBoardAmount() => this.MemLocChessArrayElementCount.GetValue();

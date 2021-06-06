@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
 namespace FiveDChessDataInterface.Util
 {
@@ -16,6 +16,48 @@ namespace FiveDChessDataInterface.Util
                     yield return element;
                 }
             }
+        }
+
+        public static TSource MaxElement<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selectorFunc)
+        {
+            if (!source.Any())
+                throw new InvalidOperationException("Sequence was empty!");
+
+            TSource result = source.First();
+            int maxValue = selectorFunc.Invoke(result);
+
+            foreach (var item in source.Skip(1))
+            {
+                var currVal = selectorFunc.Invoke(item);
+                if (currVal > maxValue)
+                {
+                    result = item;
+                    maxValue = currVal;
+                }
+            }
+
+            return result;
+        }
+
+        public static TSource MinElement<TSource>(this IEnumerable<TSource> source, Func<TSource, int> selectorFunc)
+        {
+            if (!source.Any())
+                throw new InvalidOperationException("Sequence was empty!");
+
+            TSource result = source.First();
+            int minValue = selectorFunc.Invoke(result);
+
+            foreach (var item in source.Skip(1))
+            {
+                var currVal = selectorFunc.Invoke(item);
+                if (currVal < minValue)
+                {
+                    result = item;
+                    minValue = currVal;
+                }
+            }
+
+            return result;
         }
     }
 }
