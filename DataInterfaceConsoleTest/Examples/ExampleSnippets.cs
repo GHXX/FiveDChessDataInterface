@@ -42,9 +42,9 @@ namespace DataInterfaceConsoleTest.Examples
             var height = 3;
             var width = 3;
             var gb = new GameBuilderOdd(height, width);
-            gb["-1L"].AddBoardFromFen("kkk/3/3");
-            gb["0L"].AddBoardFromFen("ppp/3/PPP");
-            gb["1L"].AddBoardFromFen("3/3/KKK");
+            gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("kkk/3/3").AddBoardFromFen("kkk/3/3");
+            gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
+            gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("3/3/KKK").AddBoardFromFen("3/3/KKK");
 
 
             var boards = gb.Build();

@@ -54,6 +54,7 @@ namespace FiveDChessDataInterface.Builders
             private readonly int boardWidth;
             public List<ChessBoardData> Boards { get; }
             public readonly TimelineIndex timelineIndex;
+            private int subturnOffset = 0; // TODO set the cosmetic turn offset somehow
 
             public Timeline(int boardHeight, int boardWidth, TimelineIndex timelineIndex)
             {
@@ -63,9 +64,22 @@ namespace FiveDChessDataInterface.Builders
                 this.Boards = new List<ChessBoardData>();
             }
 
+            public Timeline SetTurnOffset(int firstBoardTurn, bool isBlackSubturn)
+            {
+                if (this.Boards.Any())
+                    throw new InvalidOperationException("The turn offset cannot be set if any boards were added to this timeline. Set it before adding any boards.");
+
+                if (firstBoardTurn < 0)
+                    throw new NotImplementedException($"Currently {nameof(firstBoardTurn)} cannot be negative. Use the cosmetic turn offset instead!");
+
+                this.subturnOffset = firstBoardTurn * 2 + (isBlackSubturn ? 1 : 0);
+                return this;
+            }
+
             public Timeline AddBoardFromFen(string fen)
             {
-                var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : 0; // last subturn + 1, or 0 if there are no boards
+                // last subturn + 1, or the offset if there are no boards
+                var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
 
                 var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, fen);
                 this.Boards.Add(b);
@@ -256,7 +270,7 @@ namespace FiveDChessDataInterface.Builders
                     cbm.moveDestY = -1;
                     cbm.moveDestX = -1;
 
-                    cbm.creatingMoveNumber = -1; //?
+                    cbm.creatingMoveNumber = lastBoardId;
                     cbm.nextInTimelineBoardId = -1;
 
                     if (lastBoardId != -1) // set the nextintimelineboardid of the last board to the current id
@@ -264,6 +278,7 @@ namespace FiveDChessDataInterface.Builders
                         var lastCbm = timelineCbms.Last();
                         timelineCbms.RemoveAt(timelineCbms.Count - 1);
                         lastCbm.nextInTimelineBoardId = cbm.boardId;
+                        lastCbm.moveType = 5;
                         timelineCbms.Add(lastCbm);
                     }
 

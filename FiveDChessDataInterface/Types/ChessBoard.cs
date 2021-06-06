@@ -231,6 +231,7 @@ namespace FiveDChessDataInterface
         // 2 means that a branching jump was made on this board
         // 3 means that a non-branching jump was made on this board
         // 4 means that a piece jump from another board onto this board
+        // 5 is a null-move (for turn zero)
         public byte moveType;
         public byte bval1;
         public byte bval2;
