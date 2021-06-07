@@ -68,7 +68,7 @@ namespace DataInterfaceConsoleTest.Examples
 
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
-        public static void LoadCustomVariantToBeSelectedAtGameStart(DataInterface di)
+        public static void LoadPredefinedVariant(DataInterface di)
         {
             Console.WriteLine("Select Variant From The Following");
             Variant[] variants = Variant.Variants;
