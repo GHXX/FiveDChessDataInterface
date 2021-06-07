@@ -1,4 +1,5 @@
-﻿using FiveDChessDataInterface.Exceptions;
+﻿using FiveDChessDataInterface.Builders;
+using FiveDChessDataInterface.Exceptions;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Types;
 using FiveDChessDataInterface.Util;
@@ -30,6 +31,7 @@ namespace FiveDChessDataInterface
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
         public MemoryLocation<int> MemLocCosmeticTurnOffset { get; private set; }
 
+        private MemoryLocation<int> MemLocTimelineValueOffset { get; set; }
         private MemoryLocation<uint> MemLocWhiteTimelineCountInternal { get; set; }
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }
         private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
@@ -170,7 +172,8 @@ namespace FiveDChessDataInterface
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
 
-
+            // set to -1 for even starting timeline cnt, and to 0 for odd starting timeline cnt
+            this.MemLocTimelineValueOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x34);
             this.MemLocWhiteTimelineCountInternal = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30);
             this.MemLocBlackTimelineCountInternalInverted = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30 + 4);
             this.MemLocSomeTurnCountOrSomething = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x30 + 0x38);
@@ -341,6 +344,18 @@ namespace FiveDChessDataInterface
             this.MemLocChessBoardSizeHeight.SetValue(newBoards[0].height);
             this.MemLocChessBoardSizeWidth.SetValue(newBoards[0].width);
             SetChessBoardArrayInternal(newBoards);
+        }
+
+        /// <summary>
+        /// Same behaviour as <see cref="SetChessBoardArray(ChessBoard[])"/>, but sets additional values.
+        /// </summary>
+        /// <param name="b"></param>
+        public void SetChessBoardArrayFromBuilder(BaseGameBuilder b)
+        {
+            this.MemLocTimelineValueOffset.SetValue(b.EvenNumberOfStartingTimelines ? -1 : 0);
+            // TODO maybe set the turn offset?
+            //this.MemLocCosmeticTurnOffset = 
+            SetChessBoardArray(b.Build());
         }
 
         private void SetChessBoardArrayInternal(ChessBoard[] newBoards)

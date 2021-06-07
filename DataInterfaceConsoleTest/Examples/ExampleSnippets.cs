@@ -41,14 +41,28 @@ namespace DataInterfaceConsoleTest.Examples
         {
             var height = 3;
             var width = 3;
-            var gb = new GameBuilderOdd(height, width);
-            gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("kkk/3/3").AddBoardFromFen("kkk/3/3");
-            gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
-            gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("3/3/KKK").AddBoardFromFen("3/3/KKK");
+            // example for odd timelines (commented out)
+            //var gb = new GameBuilderOdd(height, width);
 
+            //gb["-4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
+            //gb["-3L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1");
+            //gb["-2L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1");
+            //gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1");
+            //gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
+            //gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC");
+            //gb["2L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC");
+            //gb["3L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC");
+            //gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
 
-            var boards = gb.Build();
-            di.SetChessBoardArray(boards.ToArray());
+            // example for even timelines
+            var gb = new GameBuilderEven(height, width);
+
+            gb["-1L"].SetTurnOffset(0, true).AddBoardFromFen("ckc/3/PCP").CopyPrevious();
+            gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious();
+            gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious();
+            gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious();
+
+            di.SetChessBoardArrayFromBuilder(gb);
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]

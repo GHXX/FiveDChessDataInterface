@@ -86,6 +86,18 @@ namespace FiveDChessDataInterface.Builders
                 return this;
             }
 
+            public Timeline CopyPrevious()
+            {
+                if (!this.Boards.Any())
+                    throw new InvalidOperationException("There is no board in this timeline. Therefore no board can be copied!");
+
+                // last subturn + 1, or the offset if there are no boards
+                var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
+
+                var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, this.Boards.Last().pieces);
+                this.Boards.Add(b);
+                return this;
+            }
 
             public readonly struct TimelineIndex
             {
@@ -165,6 +177,13 @@ namespace FiveDChessDataInterface.Builders
                     LoadFEN(fenCode);
                 }
 
+                public ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard, ChessBoard.ChessPiece[,] pieceData)
+                    : this(boardHeight, boardWidth, turn, isBlackBoard)
+                {
+                    this.pieces = pieceData;
+                }
+
+
                 private void LoadFEN(string fen)
                 {
                     var lines = fen.Split('/');
@@ -231,14 +250,10 @@ namespace FiveDChessDataInterface.Builders
                 var timelineCbms = new List<ChessBoardMemory>();
                 foreach (var board in tl.Boards)
                 {
-                    // TODO make it work for even starting tl count
-                    if (this.EvenNumberOfStartingTimelines)
-                        throw new NotImplementedException();
-
                     var cbm = new ChessBoardMemory();
 
                     cbm.boardId = nextFreeId++;
-                    cbm.timeline = tl.timelineIndex.isNegative ? -tl.timelineIndex.timeline : tl.timelineIndex.timeline;
+                    cbm.timeline = tl.timelineIndex.isNegative ? -(tl.timelineIndex.timeline + (this.EvenNumberOfStartingTimelines ? 1 : 0)) : tl.timelineIndex.timeline;
                     cbm.turn = board.turn;
                     cbm.isBlacksMove = board.isBlackBoard ? 1 : 0;
 
