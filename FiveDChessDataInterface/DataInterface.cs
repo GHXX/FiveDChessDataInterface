@@ -341,9 +341,12 @@ namespace FiveDChessDataInterface
                 }
             }
 
-            this.MemLocChessBoardSizeHeight.SetValue(newBoards[0].height);
-            this.MemLocChessBoardSizeWidth.SetValue(newBoards[0].width);
-            SetChessBoardArrayInternal(newBoards);
+            ExecuteWhileGameSuspendedLocked(() =>
+            {
+                this.MemLocChessBoardSizeHeight.SetValue(newBoards[0].height);
+                this.MemLocChessBoardSizeWidth.SetValue(newBoards[0].width);
+                SetChessBoardArrayInternal(newBoards);
+            });
         }
 
         /// <summary>
@@ -352,10 +355,13 @@ namespace FiveDChessDataInterface
         /// <param name="b"></param>
         public void SetChessBoardArrayFromBuilder(BaseGameBuilder b)
         {
-            this.MemLocTimelineValueOffset.SetValue(b.EvenNumberOfStartingTimelines ? -1 : 0);
-            // TODO maybe set the turn offset?
-            //this.MemLocCosmeticTurnOffset = 
-            SetChessBoardArray(b.Build());
+            ExecuteWhileGameSuspendedLocked(() =>
+            {
+                this.MemLocTimelineValueOffset.SetValue(b.EvenNumberOfStartingTimelines ? -1 : 0);
+                // TODO maybe set the turn offset?
+                //this.MemLocCosmeticTurnOffset = 
+                SetChessBoardArray(b.Build());
+            });
         }
 
         private void SetChessBoardArrayInternal(ChessBoard[] newBoards)
