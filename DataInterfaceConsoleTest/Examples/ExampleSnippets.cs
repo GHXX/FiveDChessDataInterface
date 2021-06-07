@@ -1,4 +1,5 @@
-﻿using FiveDChessDataInterface;
+﻿using DataInterfaceConsoleTest.Variants;
+using FiveDChessDataInterface;
 using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Util;
@@ -63,6 +64,48 @@ namespace DataInterfaceConsoleTest.Examples
             gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
 
             di.SetChessBoardArrayFromBuilder(gb);
+        }
+
+
+        [CallableExMethod(false, InvokeKind.MatchStart)]
+        public static void LoadCustomVariantToBeSelectedAtGameStart(DataInterface di)
+        {
+            Console.WriteLine("Select Variant From The Following");
+            Variant[] variants = Variant.Variants;
+            for (int i = 0; i < variants.Length; i++)
+            {
+                Console.WriteLine("\t" + (i + 1) + ". " + variants[i].name);
+            }
+
+            int input = Convert.ToInt32(Console.ReadLine());
+            input -= 1;
+            if (input >= 0 && input < variants.Length)
+            {
+                int size = variants[input].size;
+                string[] fenStrings = variants[input].timelines;
+
+                BaseGameBuilder gb;
+                if (fenStrings.Length % 2 == 0)
+                {
+                    gb = new GameBuilderEven(size, size);
+                }
+                else
+                {
+                    gb = new GameBuilderOdd(size, size);
+                }
+
+                for (int i = 0; i < fenStrings.Length; i++)
+                {
+                    string[] vals = fenStrings[i].Split(":");
+                    Console.WriteLine(vals[0]);
+                    Console.WriteLine(vals[1]);
+                    Console.WriteLine(vals[2]);
+                    Console.WriteLine(vals[3]);
+                    gb[vals[1]].SetTurnOffset(Convert.ToInt32(vals[2]), vals[3] == "1").AddBoardFromFen(vals[0]);
+                }
+
+                di.SetChessBoardArrayFromBuilder(gb);
+            }
         }
 
         [CallableExMethod(false, InvokeKind.TurnChange)]
