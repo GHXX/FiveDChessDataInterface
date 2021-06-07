@@ -37,7 +37,7 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine($"Set new height to {height} and width to {width}.");
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void LoadCustomVariant(DataInterface di)
         {
             var height = 3;
@@ -67,7 +67,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
 
-        [CallableExMethod(false, InvokeKind.MatchStart)]
+        [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void LoadPredefinedVariant(DataInterface di)
         {
             Console.WriteLine("Select Variant From The Following");
