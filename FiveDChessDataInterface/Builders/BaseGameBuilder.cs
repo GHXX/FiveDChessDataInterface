@@ -86,16 +86,20 @@ namespace FiveDChessDataInterface.Builders
                 return this;
             }
 
-            public Timeline CopyPrevious()
+            public Timeline CopyPrevious(int repetitionCount = 1)
             {
                 if (!this.Boards.Any())
                     throw new InvalidOperationException("There is no board in this timeline. Therefore no board can be copied!");
 
-                // last subturn + 1, or the offset if there are no boards
-                var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
+                for (int i = 0; i < repetitionCount; i++)
+                {
+                    // last subturn + 1, or the offset if there are no boards
+                    var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
 
-                var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, this.Boards.Last().pieces);
-                this.Boards.Add(b);
+                    var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, this.Boards.Last().pieces);
+                    this.Boards.Add(b);
+                }
+
                 return this;
             }
 
