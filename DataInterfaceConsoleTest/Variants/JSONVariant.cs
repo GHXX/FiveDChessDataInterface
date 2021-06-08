@@ -32,10 +32,7 @@ namespace DataInterfaceConsoleTest.Variants
         public BaseGameBuilder GetGameBuilder()
         {
             var isEven = this.Timelines.Count % 2 == 0;
-            var anyBoard = this.Timelines.SelectMany(x => x.Value).First(board => board != null);
-            var width = anyBoard.Split("/")[0].Length;
-            var height = anyBoard.Split("/").Length;
-            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(width, height) : (BaseGameBuilder)new GameBuilderOdd(width, height);
+            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(Width, Height) : (BaseGameBuilder)new GameBuilderOdd(Width, Height);
 
             foreach (var (timelineIndex, boards) in this.Timelines)
             {
