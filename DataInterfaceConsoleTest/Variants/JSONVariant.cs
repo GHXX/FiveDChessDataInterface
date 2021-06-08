@@ -6,16 +6,17 @@ using System.Linq;
 
 namespace DataInterfaceConsoleTest.Variants
 {
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Include)]
     class JSONVariant
     {
         [JsonProperty("Name")]
-        public string Name { get; private set; }
+        public string Name { get; set; }
 
         [JsonProperty("Author")]
-        public string Author { get; private set; }
+        public string Author { get; set; } = "Unknown";
 
         [JsonProperty("Timelines")]
-        public Dictionary<string, string[]> Timelines { get; private set; }
+        public Dictionary<string, string[]> Timelines { get; set; }
 
         private string GetAnyExpandedBoardFen() => FenUtil.ExpandFen(this.Timelines.SelectMany(x => x.Value).First(x => x != null));
 
