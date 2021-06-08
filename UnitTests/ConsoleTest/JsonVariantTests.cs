@@ -36,6 +36,8 @@ namespace UnitTests.ConsoleTest
                     }
 
                 }
+
+                var built = variant.GetGameBuilder().Build();
             }
         }
     }
