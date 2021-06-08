@@ -13,16 +13,16 @@ namespace UnitTests.ConsoleTest
         public void EnsureJsonIsParsable()
         {
             var variants = GithubVariantGetter.GetAllVariants(true, true);
-            Assert.IsTrue(variants.Any());
+            Assert.IsTrue(variants.Any(), "No variants exist!");
 
             foreach (var variant in variants)
             {
                 Console.WriteLine($"Checking variant '{variant.Name}'...");
 
-                Assert.IsTrue(!string.IsNullOrWhiteSpace(variant.Name)); // ensure variant name is there
-                Assert.IsTrue(!string.IsNullOrWhiteSpace(variant.Author)); // ensure authro name is there
-                Assert.IsTrue(variant.Timelines.Any()); // ensure a timeline exists
-                Assert.IsTrue(variant.Timelines.All(x => x.Value.Any(b => b != null))); // ensure every timeline has a non-null board
+                Assert.IsTrue(!string.IsNullOrWhiteSpace(variant.Name), "Variant name was empty!"); // ensure variant name is there
+                Assert.IsTrue(!string.IsNullOrWhiteSpace(variant.Author), "Author name was empty!"); // ensure authro name is there
+                Assert.IsTrue(variant.Timelines.Any(), "There are no timelines!"); // ensure a timeline exists
+                Assert.IsTrue(variant.Timelines.All(x => x.Value.Any(b => b != null)), "One or more timelines do not have any non-null boards!"); // ensure every timeline has a non-null board
 
                 foreach (var (tIndexString, boards) in variant.Timelines)
                 {
