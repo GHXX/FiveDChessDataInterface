@@ -1,41 +1,38 @@
 ﻿using FiveDChessDataInterface.Builders;
 using Newtonsoft.Json;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace DataInterfaceConsoleTest.Variants
 {
     class JSONVariant
     {
         [JsonProperty("Name")]
-        string Name;
-        
+        public string Name { get; private set; }
+
         [JsonProperty("Author")]
-        string Author;
+        public string Author { get; private set; }
 
         [JsonProperty("Timelines")]
-        Dictionary<string, string[]> Timelines;
+        public Dictionary<string, string[]> Timelines { get; private set; }
 
         public BaseGameBuilder GetGameBuilder()
         {
-            var isEven = Timelines.Count % 2 == 0;
-            var firstBoard = Timelines.First().Value.First(board => board != null);
-            var width = firstBoard.Split("/")[0].Length; 
-            var height = firstBoard.Split("/").Length;
-            BaseGameBuilder gameBuilder = isEven ? 
-                (BaseGameBuilder) new GameBuilderEven(width, height) : 
-                (BaseGameBuilder) new GameBuilderOdd(width, height) ;
-            foreach (var key in Timelines.Keys)
+            var isEven = this.Timelines.Count % 2 == 0;
+            var anyBoard = this.Timelines.SelectMany(x => x.Value).First(board => board != null);
+            var width = anyBoard.Split("/")[0].Length;
+            var height = anyBoard.Split("/").Length;
+            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(width, height) : (BaseGameBuilder)new GameBuilderOdd(width, height);
+
+            foreach (var (timelineIndex, boards) in this.Timelines)
             {
-                var nullBoards = Timelines[key].TakeWhile(board => board == null).Count();
-                var isBlack = nullBoards % 2 == 1;
+                var nullBoards = boards.TakeWhile(board => board == null).Count(); // get the number of leading null-boards
+                var isBlack = nullBoards % 2 == 1; // check if the first existent board will be black
                 var turnOffset = nullBoards / 2;
-                gameBuilder[key].SetTurnOffset(turnOffset, isBlack);
-                foreach(var value in Timelines[key])
+                gameBuilder[timelineIndex].SetTurnOffset(turnOffset, isBlack);
+                foreach (var board in boards)
                 {
-                    gameBuilder[key].AddBoardFromFen(value);
+                    gameBuilder[timelineIndex].AddBoardFromFen(board);
                 }
             }
             return gameBuilder;
