@@ -1,6 +1,98 @@
 ﻿[
-
-
-
-
+  {
+    "Name": "Standard",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Royalty War",
+    "Author": "Unknown",
+    "Timelines": {
+      "-0L": [
+        "rnbycbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ],
+      "+0L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBYCBNR"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Defended King's Pawn",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "rbnqknbr/pppppppp/8/8/8/8/PPPPPPPP/RBNQKNBR"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Horde Chess",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "rnbqkbnr/pppppppp/8/1PP2PP1/PPPPPPPP/PPPPPPPP/PPPPPPPP/PPPPPPPP"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Brawn Horde",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "rnbqkbnr/wwwwwwww/8/1WW2WW1/WWWWWWWW/WWWWWWWW/WWWWWWWW/WWWWWWWW"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Peasant Revolt",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "1nn1k1n1/4p3/8/8/8/8/PPPPPPPP/4K3"
+      ]
+    }
+  },
+  {
+    "Name": "Custom - Mournful Vertigo",
+    "Author": "Unknown",
+    "Timelines": {
+      "-0L": [
+        "2B2R1/4CN1/7/7/3p3/2nbpw1/Wbdrukn"
+      ],
+      "+0L": [
+        "wBDRUKN/2NBPW1/3P3/7/7/4cn1/2b2r1"
+      ]
+    }
+  },
+  {
+    "Name": "Excessive - Two Regents",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "rusyksdr/rnbcqbnr/wwwwwwww/pppppppp/PPPPPPPP/WWWWWWWW/RNBCQBNR/RUSYKSDR"
+      ]
+    }
+  },
+  {
+    "Name": "Excessive - Slanted",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "kqbnwp2/qbnwp3/bnwp3P/nwp3PW/wp3PWN/p3PWNB/3PWNBQ/2PWNBQK"
+      ]
+    }
+  },
+  {
+    "Name": "Excessive - Quadrants",
+    "Author": "Unknown",
+    "Timelines": {
+      "0L": [
+        "snbwWBNS/nycwWCYN/bcrwWRCB/wwwwWWWW/WWWWwwww/BQRWwrqb/NKQWwqkn/SNBWwbns"
+      ]
+    }
+  }
 ]
