@@ -188,8 +188,10 @@ namespace FiveDChessDataInterface.Builders
                 }
 
 
-                private void LoadFEN(string fen)
+                private void LoadFEN(string compressedFen)
                 {
+                    var fen = FenUtil.ExpandFen(compressedFen);
+
                     var lines = fen.Split('/');
                     if (lines.Length != this.boardHeight)
                         throw new ArgumentException($"The number of line-segments in the provided board is {lines.Length}, which does not match the board height of {this.boardHeight}!");
