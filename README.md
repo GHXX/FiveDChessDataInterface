@@ -8,10 +8,9 @@ While it should be stable for the most part, this library may still cause crashe
 
 
 ## Important notes
-Currently only reading data is supported. 
+While reading data is always possible without errors, writing data may cause stability issues. 
 
-While the library could be adapted to writing to the game's memory, it greatly increases the risk of crashing or desyncing; especially in online games, thus at this point no data is written to the game's memory. 
-Future versions of the library may include such features. 
+The modification of multiplayer game data is possible, if **both** players make the same changes at roughly the same time, otherwise a desync is likely.
 
 As a side note, cheating will never be possible, because of how the game is structured: 
 All moves are checked clientside and invalid moves are simply discarded, meaning if you moved a rook diagonally, it would not move at all on the other player's screen.
