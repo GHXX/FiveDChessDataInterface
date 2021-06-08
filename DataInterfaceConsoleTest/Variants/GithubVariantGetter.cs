@@ -1,24 +1,34 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.IO;
 using System.Net;
+using System.Reflection;
 
 namespace DataInterfaceConsoleTest.Variants
 {
-    static class GithubVariantGetter
+    public static class GithubVariantGetter
     {
         private static JSONVariant[] cache = null;
-        public static readonly Uri variantsFile = new Uri("https://raw.githubusercontent.com/GHXX/FiveDChessDataInterface/master/DataInterfaceConsoleTest/Resources/JsonVariants.json");
+        public static readonly string baseUri = "https://raw.githubusercontent.com/GHXX/FiveDChessDataInterface/master/DataInterfaceConsoleTest";
+        public static readonly string variantsFile = "Resources/JsonVariants.json";
 
-        public static JSONVariant[] GetAllVariants(bool bypassCache = false)
+        public static JSONVariant[] GetAllVariants(bool useLocal = false, bool bypassCache = false)
         {
             if (bypassCache || cache == null) // if we bypass the cache, or if the cache is nonexistent, request the file
             {
-                var wr = WebRequest.CreateHttp(variantsFile);
-                var resp = wr.GetResponse();
-                using (var sr = new StreamReader(resp.GetResponseStream()))
+                if (useLocal)
                 {
-                    cache = JsonConvert.DeserializeObject<JSONVariant[]>(sr.ReadToEnd());
+                    var filePath = Path.Combine(new FileInfo(Assembly.GetExecutingAssembly().Location).Directory.FullName, variantsFile);
+                    var text = File.ReadAllText(filePath);
+                    cache = JsonConvert.DeserializeObject<JSONVariant[]>(text);
+                }
+                else
+                {
+                    var wr = WebRequest.CreateHttp(string.Join("/", new[] { baseUri, variantsFile }));
+                    var resp = wr.GetResponse();
+                    using (var sr = new StreamReader(resp.GetResponseStream()))
+                    {
+                        cache = JsonConvert.DeserializeObject<JSONVariant[]>(sr.ReadToEnd());
+                    }
                 }
             }
 
