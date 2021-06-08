@@ -9,7 +9,7 @@ on:
     - master
 
 jobs:
-  Build and Test:
+  dotnet:
 
     runs-on: ubuntu-latest
 
