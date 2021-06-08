@@ -1,5 +1,5 @@
 # 5D Chess With Multiverse Time Travel Data Interface
-![](https://github.com/GHXX/FiveDChessDataInterface/actions/workflows/dotnet.yml/badge.svg)
+![](https://github.com/GHXX/FiveDChessDataInterface/actions/workflows/dotnet.yml/badge.svg?branch=master)
 
 An **unofficial** C# (.Net Standard 2.0) library providing runtime memory-access to [5D Chess With Multiverse Time Travel](https://store.steampowered.com/app/1349230/5D_Chess_With_Multiverse_Time_Travel/).
 
