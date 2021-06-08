@@ -36,11 +36,11 @@ namespace DataInterfaceConsoleTest.Variants
 
             foreach (var (timelineIndex, boards) in this.Timelines)
             {
-                var nullBoards = boards.TakeWhile(board => board == null).Count(); // get the number of leading null-boards
-                var isBlack = nullBoards % 2 == 1; // check if the first existent board will be black
-                var turnOffset = nullBoards / 2;
+                var nullBoardCount = boards.TakeWhile(board => board == null).Count(); // get the number of leading null-boards
+                var isBlack = nullBoardCount % 2 == 1; // check if the first existent board will be black
+                var turnOffset = nullBoardCount / 2;
                 gameBuilder[timelineIndex].SetTurnOffset(turnOffset, isBlack);
-                foreach (var board in boards)
+                foreach (var board in boards.Skip(nullBoardCount))
                 {
                     gameBuilder[timelineIndex].AddBoardFromFen(board);
                 }

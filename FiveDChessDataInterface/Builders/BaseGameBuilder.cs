@@ -190,6 +190,11 @@ namespace FiveDChessDataInterface.Builders
 
                 private void LoadFEN(string compressedFen)
                 {
+                    if (compressedFen is null)
+                    {
+                        throw new ArgumentNullException(nameof(compressedFen));
+                    }
+
                     var fen = FenUtil.ExpandFen(compressedFen);
 
                     var lines = fen.Split('/');
