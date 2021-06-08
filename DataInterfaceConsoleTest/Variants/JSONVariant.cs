@@ -7,7 +7,7 @@ using System.Linq;
 namespace DataInterfaceConsoleTest.Variants
 {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Include)]
-    class JSONVariant
+    public class JSONVariant
     {
         [JsonProperty("Name")]
         public string Name { get; set; }
@@ -32,7 +32,7 @@ namespace DataInterfaceConsoleTest.Variants
         public BaseGameBuilder GetGameBuilder()
         {
             var isEven = this.Timelines.Count % 2 == 0;
-            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(Width, Height) : (BaseGameBuilder)new GameBuilderOdd(Width, Height);
+            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(this.Width, this.Height) : (BaseGameBuilder)new GameBuilderOdd(this.Width, this.Height);
 
             foreach (var (timelineIndex, boards) in this.Timelines)
             {
