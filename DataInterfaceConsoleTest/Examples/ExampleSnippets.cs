@@ -3,6 +3,7 @@ using FiveDChessDataInterface;
 using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Util;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -76,8 +77,8 @@ namespace DataInterfaceConsoleTest.Examples
             {
                 Console.WriteLine($"\t{i + 1,2}. {variants[i].Name} by {variants[i].Author}");
             }
-
-            if(int.TryParse(Console.ReadLine(), out int input))
+            
+            if (int.TryParse(Console.ReadLine(), out int input) && input > 0 && input <= variants.Length)
             {
                 var chosenVariant = variants[input - 1];
                 var gb = chosenVariant.GetGameBuilder();
