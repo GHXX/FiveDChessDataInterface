@@ -1,4 +1,5 @@
 ﻿using FiveDChessDataInterface.Builders;
+using FiveDChessDataInterface.Util;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +16,17 @@ namespace DataInterfaceConsoleTest.Variants
 
         [JsonProperty("Timelines")]
         public Dictionary<string, string[]> Timelines { get; private set; }
+
+        private string GetAnyExpandedBoardFen() => FenUtil.ExpandFen(this.Timelines.SelectMany(x => x.Value).First(x => x != null));
+
+
+        // Need to expand the fen first, because the digit 8 for example would represent a width of 8, but is only one wide
+        [JsonIgnore()]
+        public int Height => GetAnyExpandedBoardFen().Count(x => x == '/') + 1; // count number of newline delimeters. 
+
+        [JsonIgnore()]
+        public int Width => GetAnyExpandedBoardFen().TakeWhile(x => x != '/').Count(); // count number of pieces in the first line
+
 
         public BaseGameBuilder GetGameBuilder()
         {
