@@ -2,7 +2,7 @@ name: .NET UnitTests
 
 on:
   push:
-    branches: **
+    branches: '**'
 
 jobs:
   dotnet:
