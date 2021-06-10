@@ -103,5 +103,20 @@
         "rnbqkbnr/pppppppp/pppppppp/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
     }
+  },
+  {
+    "Name": "Disconnected - Far off Reunion",
+    "Author": "Chess",
+    "Timelines": {
+      "-1L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ], 
+      "0L": [
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "8/8/8/8/8/8/8/8"
+      ], 
+      "1L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ], 
+    }
   }
 ]
