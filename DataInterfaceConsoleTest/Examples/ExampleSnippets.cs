@@ -3,9 +3,7 @@ using FiveDChessDataInterface;
 using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Util;
-using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -77,7 +75,7 @@ namespace DataInterfaceConsoleTest.Examples
             {
                 Console.WriteLine($"\t{i + 1,2}. {variants[i].Name} by {variants[i].Author}");
             }
-            
+
             if (int.TryParse(Console.ReadLine(), out int input) && input > 0 && input <= variants.Length)
             {
                 var chosenVariant = variants[input - 1];
@@ -262,11 +260,6 @@ namespace DataInterfaceConsoleTest.Examples
                         return newCbm;
                     })
                     .OrderBy(x => x.GetSubturnIndex()).ToList();
-
-                IEnumerable<int> RangeFromToInclusive(int start, int end)
-                {
-                    return Enumerable.Range(start, end - start + 1);
-                }
 
                 // combine new boards 
                 var boardsToInsert = newMinTLBoards.Concat(newMaxTLBoards).ToList();
