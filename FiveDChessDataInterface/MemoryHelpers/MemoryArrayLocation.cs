@@ -19,7 +19,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         public ElementType[] GetValues()
         {
-            
+            return null;
         }
     }
 }
