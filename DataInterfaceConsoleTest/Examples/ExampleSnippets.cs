@@ -162,7 +162,7 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         private static string savedGame = null;
-        [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
         public static void LoadSaveTest(DataInterface di)
         {
             var sh = new SaveHandler(di);
