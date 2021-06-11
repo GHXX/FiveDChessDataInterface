@@ -1,6 +1,7 @@
 ﻿using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.Exceptions;
 using FiveDChessDataInterface.MemoryHelpers;
+using FiveDChessDataInterface.Saving;
 using FiveDChessDataInterface.Types;
 using FiveDChessDataInterface.Util;
 using System;
@@ -19,18 +20,40 @@ namespace FiveDChessDataInterface
         public MemoryLocation<IntPtr> MemLocChessArrayPointer { get; private set; } // points to the chessboard array.
         public MemoryLocation<int> MemLocChessArrayElementCount { get; private set; } // located right before the chessboard array capactiy
         public MemoryLocation<int> MemLocChessArrayCapacity { get; private set; } // located right before the chessboard array pointer
+
+        [RequiredForSave("BoardWidth")]
         public MemoryLocation<int> MemLocChessBoardSizeWidth { get; private set; }
+
+        [RequiredForSave("BoardHeight")]
         public MemoryLocation<int> MemLocChessBoardSizeHeight { get; private set; }
+
+        [RequiredForSave("CurrentPlayersTurn")]
         public MemoryLocation<int> MemLocCurrentPlayersTurn { get; private set; }
         //public MemoryLocation<int> MemLocInGameEndedScreen { get; private set; } // if 1 then the "you lost" / "you won" screen is shown
+
+        [RequiredForSave("GameEndedWinner")]
         public MemoryLocation<int> MemLocGameEndedWinner { get; private set; } // if 0xFFFF FFFF then the game is still running, 0 is a win for white, or unstarted, 1 a win for black or a draw
+
+        [RequiredForSave("GameState")]
         public MemoryLocation<int> MemLocGameState { get; private set; } // if 0 then the game is running or unstarted, 1 means someone won, 2 is a draw
+
+        [RequiredForSave("WhiteTime")]
         public MemoryLocation<int> MemLocWhiteTime { get; private set; }
+
+        [RequiredForSave("BlackTime")]
         public MemoryLocation<int> MemLocBlackTime { get; private set; }
+
+        [RequiredForSave("WhiteTimeIncrement")]
         public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
+
+        [RequiredForSave("BlackTimeIncrement")]
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+
+        [RequiredForSave("CosmeticTurnOffset")]
         public MemoryLocation<int> MemLocCosmeticTurnOffset { get; private set; }
 
+
+        [RequiredForSave("TimelineValueOffset")]
         private MemoryLocation<int> MemLocTimelineValueOffset { get; set; }
         private MemoryLocation<uint> MemLocWhiteTimelineCountInternal { get; set; }
         private MemoryLocation<int> MemLocSomeTurnCountOrSomething { get; set; }

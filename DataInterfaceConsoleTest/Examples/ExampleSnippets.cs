@@ -2,6 +2,7 @@
 using FiveDChessDataInterface;
 using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
+using FiveDChessDataInterface.Saving;
 using FiveDChessDataInterface.Util;
 using System;
 using System.Linq;
@@ -65,7 +66,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArrayFromBuilder(gb);
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void LoadPredefinedOnlineVariant(DataInterface di)
         {
             var variants = GithubVariantGetter.GetAllVariants();
@@ -160,6 +161,27 @@ namespace DataInterfaceConsoleTest.Examples
             });
         }
 
+        private static string savedGame = null;
+        [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
+        public static void LoadSaveTest(DataInterface di)
+        {
+            var sh = new SaveHandler(di);
+            var maxTurn = di.GetChessBoards().Max(x => x.cbm.turn);
+            if (maxTurn == 0 && savedGame != null)
+            {
+                Console.WriteLine("Loading...");
+                sh.LoadFromJson(savedGame);
+                savedGame = null;
+                Console.WriteLine("Loaded!");
+            }
+            else if (maxTurn == 2 && savedGame == null)
+            {
+                Console.WriteLine("Saving...");
+                savedGame = sh.SaveToJson();
+                Console.WriteLine("Saved!");
+            }
+
+        }
 
         [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void PrependTurnZero(DataInterface di)
