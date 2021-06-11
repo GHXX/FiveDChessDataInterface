@@ -66,7 +66,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArrayFromBuilder(gb);
         }
 
-        [CallableExMethod(false, InvokeKind.MatchStart)]
+        [CallableExMethod(true, InvokeKind.MatchStart)]
         public static void LoadPredefinedOnlineVariant(DataInterface di)
         {
             var variants = GithubVariantGetter.GetAllVariants();
@@ -145,15 +145,15 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.MatchStart)]
-        public static void UpgradePawnsToQueensAfterTurn3(DataInterface di) // turns pawns to queens after turn 3
+        public static void UpgradePawnsToQueensAfterSomeTurn(DataInterface di) // turns pawns to queens after turn 3
         {
             di.ModifyChessBoards(cb =>
             {
                 if (cb.cbm.moveType == 0 && // no move has been made on this board yet
-                        cb.cbm.turn >= 3) // if its turn 4 or later
+                        cb.cbm.turn >= 15) // if its turn 4 or later
                 {
                     cb.Pieces = cb.Pieces
-                    .Select(x => new ChessBoard.ChessPiece((x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
+                    .Select(x => new ChessBoard.ChessPiece((x.Kind == ChessBoard.ChessPiece.PieceKind.Pawn || x.Kind == ChessBoard.ChessPiece.PieceKind.Brawn && ((cb.cbm.isBlacksMove == 1) != x.IsBlack)) ? ChessBoard.ChessPiece.PieceKind.Queen : x.Kind, x.IsBlack))
                     .ToArray();
                 }
 
