@@ -33,5 +33,5 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: Console_win10_x64_${{github.sha}}
-        path: "~/publish/_win10_x64*"
+        path: "~/publish/_win10_x64/*"
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
