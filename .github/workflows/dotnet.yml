@@ -23,7 +23,7 @@ jobs:
       run: dotnet build --no-restore -c Release
 
     - name: Run Tests
-      run: dotnet test --no-build --verbosity normal
+      run: dotnet test --no-build -c Release --verbosity normal
       
     - name: Upload ConsoleBuild
       uses: actions/upload-artifact@v2
