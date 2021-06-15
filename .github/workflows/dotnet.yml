@@ -37,7 +37,6 @@ jobs:
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
       
     - name: Upload ConsoleBuildWinx64Release
-    - name: Upload ConsoleBuild
       uses: actions/upload-artifact@v2 
       with:
         name: console-${{github.sha}}
