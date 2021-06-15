@@ -20,7 +20,14 @@ jobs:
       run: dotnet restore
       
     - name: Build
-      run: dotnet build --no-restore
+      run: dotnet build --no-restore -c Release
 
     - name: Run Tests
       run: dotnet test --no-build --verbosity normal
+      
+    - name: Upload ConsoleBuild
+      uses: actions/upload-artifact@v2
+      with:
+        name: console-${{github.sha}}
+        path: "DataInterfaceConsoleTest/bin/Release/netcoreapp3.1/*"
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
