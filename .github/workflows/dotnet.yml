@@ -24,21 +24,21 @@ jobs:
 
     - name: Run Tests
       run: dotnet test --no-build -c Release --verbosity normal
+            
+    - name: Upload ConsoleBuildWinx64Release
+      uses: actions/upload-artifact@v2 
+      with:
+        name: Console_win10_x64_${{github.sha}}
+        path: "DataInterfaceConsoleTest/bin/Release/netcoreapp3.1/*"
+      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
       
     - name: Publish ConsoleBuildWinx64
       run: dotnet publish DataInterfaceConsoleTest -c Release --runtime win10-x64 -o ~/publish/win10_x64
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
+      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
       
     - name: Upload ConsoleBuildWinx64Published
       uses: actions/upload-artifact@v2
       with:
-        name: Console_win10_x64_${{github.sha}}
+        name: Console_win10_x64_standalone_${{github.sha}}
         path: "~/publish/win10_x64/*"
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
-      
-    - name: Upload ConsoleBuildWinx64Release
-      uses: actions/upload-artifact@v2 
-      with:
-        name: console-${{github.sha}}
-        path: "DataInterfaceConsoleTest/bin/Release/netcoreapp3.1/*"
-      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
+      if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
