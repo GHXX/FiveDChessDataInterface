@@ -1,10 +1,12 @@
-dotnet --list-runtimes | findstr /C:"Microsoft.NETCore.App 3.1"
+$ErrorActionPreference = 'SilentlyContinue'
+dotnet2 --list-runtimes | findstr /C:"Microsoft.NETCore.App 3.1"
+$ErrorActionPreference = 'Continue'
 
 If ($lastExitCode -eq "0") {
     Write-Host ".NETCore 3.1 is already installed."
 }
-
-If ($lastExitCode -eq "1") {
+else
+{
     $confirmation = Read-Host ".NETCore 3.1 appears to be not installed yet. Install it now? [y/n]"
 	if ($confirmation -eq 'y') {
 		Write-Host "Running installer..."
