@@ -1,5 +1,5 @@
 $ErrorActionPreference = 'SilentlyContinue'
-dotnet2 --list-runtimes | findstr /C:"Microsoft.NETCore.App 3.1"
+dotnet --list-runtimes | findstr /C:"Microsoft.NETCore.App 3.1"
 $ErrorActionPreference = 'Continue'
 
 If ($lastExitCode -eq "0") {
