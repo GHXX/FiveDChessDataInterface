@@ -34,10 +34,4 @@
     </ContentWithTargetPath>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Resources\JsonVariants.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

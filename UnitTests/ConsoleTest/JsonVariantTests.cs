@@ -1,5 +1,5 @@
-using DataInterfaceConsoleTest.Variants;
 using FiveDChessDataInterface.Builders;
+using FiveDChessDataInterface.Variants;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
