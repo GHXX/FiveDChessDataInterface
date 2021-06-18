@@ -78,6 +78,12 @@ namespace FiveDChessDataInterface
         public AssemblyHelper asmHelper;
         private readonly SuspendGameProcessLock suspendGameprocessLock;
 
+        /// <summary>
+        /// Returns whether this <see cref="DataInterface"/> instance is still valid. Possible reasons for this becoming invalid are:
+        /// *) Game process exiting
+        /// </summary>
+        public bool IsValid() => !GameProcess.HasExited; 
+
         public static bool TryCreateAutomatically(out DataInterface di)
         {
             var filteredProcesses = Process.GetProcessesByName(executableName);
