@@ -15,6 +15,7 @@ namespace DataInterfaceConsole
             {
                 if (ConsoleNonBlocking.TryDequeue(out string res))
                     return res;
+                Thread.Sleep(150);
             }
 
             return null;

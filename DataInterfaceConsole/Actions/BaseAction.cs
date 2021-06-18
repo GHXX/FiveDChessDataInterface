@@ -2,6 +2,7 @@
 using FiveDChessDataInterface;
 using System;
 using System.Linq;
+using System.Threading;
 
 namespace DataInterfaceConsole.Actions
 {
@@ -11,7 +12,7 @@ namespace DataInterfaceConsole.Actions
         protected DataInterface di;
 
         public static BaseAction[] GetAndInstantiateAllActions() => typeof(BaseAction).Assembly.GetTypes()
-            .Where(x=>typeof(BaseAction).IsAssignableFrom(x) && typeof(BaseAction) != x)
+            .Where(x => typeof(BaseAction).IsAssignableFrom(x) && typeof(BaseAction) != x)
             .Select(t => (BaseAction)Activator.CreateInstance(t))
             .ToArray();
 
@@ -33,5 +34,26 @@ namespace DataInterfaceConsole.Actions
         }
 
         protected string ConsoleReadLineWhileDiValid() => Util.ConsoleReadLineWhileDiValid(this.di);
+
+        protected void WaitForIngame()
+        {
+            bool shown = false;
+            while (!this.di.IsGameRunning())
+            {
+                if (!shown)
+                {
+                    Console.WriteLine("Waiting for a match to be started.");
+                    shown = true;
+                }
+                AbortIfDiInvalid();
+                Thread.Sleep(150);
+            }
+            Console.WriteLine("A match has started. Continuing...");
+        }
+
+        protected void WriteLineIndented(string s, int level = 1)
+        {
+            Console.WriteLine($"{new string(' ', level * 2)}{s}");
+        }
     }
 }

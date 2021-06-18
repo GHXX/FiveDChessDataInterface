@@ -35,9 +35,12 @@ namespace DataInterfaceConsole
             var actions = BaseAction.GetAndInstantiateAllActions().Select((x, i) => (i, x)).ToDictionary(a => a.i + 1, a => a.x);
             var idWidth = (int)Math.Log10(actions.Count) + 1;
 
+            Thread.Sleep(200);
             while (true)
             {
-                Console.WriteLine("Please launch the game...");
+                if (this.di?.IsValid() != true)
+                    Console.WriteLine("Please launch the game...");
+
                 SpinWait.SpinUntil(() => this.di?.IsValid() == true); // wait till the datainterface instance is valid
                 Console.WriteLine($"Select an action from the following (by typing the number to the left and pressing enter):\n" +
                     $"{string.Join("\n", actions.Select(a => $"[{a.Key.ToString().PadLeft(idWidth)}] {a.Value.Name}"))}");
@@ -49,12 +52,13 @@ namespace DataInterfaceConsole
                         if (int.TryParse(choice, out int res) && res > 0 && res <= actions.Count)
                         {
                             var a = actions[res];
-                            Console.WriteLine($"Chosen action: {a.Name}");
+                            var header = $"====== Executing action: {a.Name} ======";
+                            Console.WriteLine(header);
                             try
                             {
                                 a.Run(this.di);
 
-                                Console.WriteLine("Action executed. Returning to menu...");
+                                Console.WriteLine($"Action executed. Returning to menu...\n{new string('=', header.Length)}");
                                 Thread.Sleep(1000);
                             }
                             catch (DataInterfaceClosedException ex)
@@ -92,6 +96,10 @@ namespace DataInterfaceConsole
                         {
                             tooManyProcesses = true;
                         }
+                    }
+                    else
+                    {
+                        this.di.Initialize();
                     }
                 }
 
