@@ -82,7 +82,7 @@ namespace FiveDChessDataInterface
         /// Returns whether this <see cref="DataInterface"/> instance is still valid. Possible reasons for this becoming invalid are:
         /// *) Game process exiting
         /// </summary>
-        public bool IsValid() => !GameProcess.HasExited; 
+        public bool IsValid() => !this.GameProcess.HasExited;
 
         public static bool TryCreateAutomatically(out DataInterface di)
         {
@@ -102,11 +102,15 @@ namespace FiveDChessDataInterface
             var filteredProcesses = Process.GetProcessesByName(executableName);
             numberOfProcesses = filteredProcesses.Length;
 
-            if (filteredProcesses.Length == 1)
+            try
             {
-                di = new DataInterface(filteredProcesses[0]);
-                return true;
+                if (filteredProcesses.Length == 1 && !filteredProcesses[0].HasExited)
+                {
+                    di = new DataInterface(filteredProcesses[0]);
+                    return true;
+                }
             }
+            catch (InvalidOperationException) { } // in case the process is currently exiting
 
             di = null;
             return false;
