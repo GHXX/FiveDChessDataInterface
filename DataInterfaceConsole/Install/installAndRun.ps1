@@ -21,7 +21,7 @@ else
 	}
 }
 
-Start-Process "DataInterfaceConsoleTest.exe"
+Start-Process "DataInterfaceConsole.exe"
 
 
 Write-Host "Exiting in 5 seconds..."

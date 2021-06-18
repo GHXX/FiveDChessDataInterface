@@ -6,7 +6,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Install\**" />
+    <EmbeddedResource Remove="Install\**" />
+    <None Remove="Install\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\FiveDChessDataInterface\FiveDChessDataInterface.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+      <ContentWithTargetPath Include="Install\installAndRun.ps1">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>installAndRun.ps1</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
 
 </Project>
