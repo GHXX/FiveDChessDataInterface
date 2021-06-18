@@ -4,6 +4,7 @@ using FiveDChessDataInterface.Builders;
 using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Saving;
 using FiveDChessDataInterface.Util;
+using FiveDChessDataInterface.Variants;
 using System;
 using System.Linq;
 using System.Reflection;

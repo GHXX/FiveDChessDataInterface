@@ -4,7 +4,8 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DataInterfaceConsoleTest.Variants
+
+namespace FiveDChessDataInterface.Variants
 {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Include)]
     public class JSONVariant
@@ -34,8 +35,12 @@ namespace DataInterfaceConsoleTest.Variants
             var isEven = this.Timelines.Count % 2 == 0;
             BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(this.Width, this.Height) : (BaseGameBuilder)new GameBuilderOdd(this.Width, this.Height);
 
-            foreach (var (timelineIndex, boards) in this.Timelines)
+            foreach (var tl in this.Timelines)
             {
+                var timelineIndex = tl.Key;
+                var boards = tl.Value;
+
+
                 var nullBoardCount = boards.TakeWhile(board => board == null).Count(); // get the number of leading null-boards
                 var isBlack = nullBoardCount % 2 == 1; // check if the first existent board will be black
                 var turnOffset = nullBoardCount / 2;
