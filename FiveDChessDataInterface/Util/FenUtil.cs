@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace FiveDChessDataInterface.Util
 {
@@ -24,7 +25,11 @@ namespace FiveDChessDataInterface.Util
                 {
                     // replace 2*x by xx and 4*y by yyyy
 
-                    var coefficient = int.Parse(processedLine.Substring(asteriskIndex - 1, 1));
+                    bool ok = int.TryParse(processedLine.Substring(asteriskIndex - 1, 1), out int coefficient);
+                    if (!ok)
+                        throw new FormatException($"Unable to expand asterisk expression at line {processedLine}, " +
+                            $"at position index {asteriskIndex}, because there is no number at position index {asteriskIndex - 1}");
+
                     var toCopy = processedLine[asteriskIndex + 1];
                     processedLine = processedLine.Replace($"{ coefficient}*{toCopy}", new string(toCopy, coefficient));
                 }
