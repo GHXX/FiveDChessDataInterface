@@ -1,4 +1,4 @@
-[
+﻿[
   {
     "Name": "Standard",
     "Author": "Chess",
@@ -61,10 +61,10 @@
     "Author": "Void Voyage",
     "Timelines": {
       "-0L": [
-        null, "wBDRUKN/2NBPW1/3P3/7/7/3r*cn1/2b2r1", "wBDRUKN/2NBPW1/3P3/7/7/3r*cn1/2b2r1"
+        null, "2B2R1/4CN1/7/7/3p3/2nbpw1/Wbdrukn", "2B2R1/4CN1/7/7/3p3/2nbpw1/Wbdrukn"
       ],
       "+0L": [
-        null, "2B2R1/3R*CN1/7/7/3p3/2nbpw1/Wbdrukn", "2B2R1/3R*CN1/7/7/3p3/2nbpw1/Wbdrukn"
+        null, "wBDRUKN/2NBPW1/3P3/7/7/4cn1/2b2r1", "wBDRUKN/2NBPW1/3P3/7/7/4cn1/2b2r1"
       ]
     }
   },
