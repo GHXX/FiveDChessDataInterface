@@ -36,13 +36,20 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine("Trap placed!");
 
             SpinWait.SpinUntil(() => di.MemLocChessArrayPointer.GetValue().ToInt64() != 0);
+            Thread.Sleep(1000);
             // other trap addresses:
             // 0x91843 -- inside main update loop
             // 0x289f0 -- load_variant
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
-            var timelineCnt = 19;
-            var turnCnt = 18;
+            var gb2 = new GameBuilderOdd(1, 1);
+            gb2["0L"].AddEmptyBoard().CopyPrevious(16).AddBoardFromFen("Q");
+            di.SetChessBoardArrayFromBuilder(gb2);
+
+            // demo code
+            /*
+            var timelineCnt = 9;
+            var turnCnt = 8;
             var boardHeight = 8;
             var boardWidth = 8;
             bool useWhite = true;
@@ -69,8 +76,9 @@ namespace DataInterfaceConsoleTest.Examples
                     gb2[tl].CopyPrevious();
                 }
             }
-            di.SetChessBoardArrayFromBuilder(gb2);
+            di.SetChessBoardArrayFromBuilder(gb2);*/
 
+            #region oldcode
             //var height = 3;
             //var width = 3;
             //// example for odd timelines
@@ -96,6 +104,7 @@ namespace DataInterfaceConsoleTest.Examples
             //Console.WriteLine("Old Array ptr:" + di.MemLocChessArrayPointer.ToString());
             //di.SetChessBoardArrayFromBuilder(gb);
             //Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
+            #endregion
 
             at.ReleaseTrap();
             Console.WriteLine("Trap released!");
