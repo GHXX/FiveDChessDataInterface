@@ -515,38 +515,73 @@ namespace FiveDChessDataInterface
             {
                 return GameState.NotStarted;
             }
-            else
+            var whoWon = this.MemLocGameEndedWinner.GetValue();
+            var gs = this.MemLocGameState.GetValue();
+            if (gs == 0)
             {
-                var whoWon = this.MemLocGameEndedWinner.GetValue();
-
-                if (whoWon == -1)
+                if(whoWon!=-1){
+                    // Unexpected Data - gs is 0(running) but winning player '{whoWon}' is not -1
+                    throw new UnexpectedChessDataException();
+                }
+                return GameState.Running;
+            }
+            else if (gs==1)
+            {
+                if(whoWon==0)
                 {
-                    return GameState.Running;
+                    return GameState.EndedWhiteWon;
+                }
+                else if(whoWon==1)
+                {
+                    return GameState.EndedWhiteWon;
                 }
                 else
                 {
-                    if (whoWon == 0)
-                    {
-                        return GameState.EndedWhiteWon;
-                    }
-                    else
-                    {
-                        var gs = this.MemLocGameState.GetValue();
-
-                        if (gs == 2)
-                        {
-                            return GameState.EndedDraw;
-                        }
-                        else if (gs == 1) // someone won, which can only be black
-                        {
-                            return GameState.EndedBlackWon;
-                        }
-                        else
-                        {
-                            throw new UnexpectedChessDataException();
-                        }
-                    }
+                    // Unexpected Data - gs is 1(ended with winner) but winning player '{whoWon}' is not 0 or 1
+                    throw new UnexpectedChessDataException();
                 }
+            }
+            else if (gs==2)
+            {
+                return GameState.EndedDraw;
+            }
+            else if(gs==3)
+            {
+                //Forfeit
+                if(whoWon==0)
+                {
+                    return GameState.EndedWhiteWon;
+                }
+                else if(whoWon==1)
+                {
+                    return GameState.EndedWhiteWon;
+                }
+                else
+                {
+                    // Unexpected Data - gs is 3(forfeit) but winning player '{whoWon}' is not 0 or 1
+                    throw new UnexpectedChessDataException();
+                }
+            }
+            else if(gs==5){
+                //Time
+                if(whoWon==0)
+                {
+                    return GameState.EndedWhiteWon;
+                }
+                else if(whoWon==1)
+                {
+                    return GameState.EndedWhiteWon;
+                }
+                else
+                {
+                    // Unexpected Data - gs is 5(timeout) but winning player '{whoWon}' is not 0 or 1
+                    throw new UnexpectedChessDataException();
+                }
+            }
+            else
+            {
+                // Unexpected Data - gs is not 0,1,2,3 or 5
+                throw new UnexpectedChessDataException();
             }
         }
     }
