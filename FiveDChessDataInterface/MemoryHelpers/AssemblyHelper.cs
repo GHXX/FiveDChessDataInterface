@@ -8,8 +8,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
 {
     public class AssemblyHelper
     {
-        private readonly IntPtr gameHandle;
-        private readonly DataInterface di;
+        internal readonly IntPtr gameHandle;
+        internal readonly DataInterface di;
 
         public AssemblyHelper(DataInterface di)
         {
@@ -76,9 +76,12 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 // otherwise allocate a new array
                 var newArrayPtr = GameMalloc(newArraySize, true);
 
+                var oldStr = existingArrayPointerLocation.ToString();
                 // copy contents
                 existingArrayPointerLocation.SetValue(newArrayPtr);
                 KernelMethods.WriteMemory(this.gameHandle, newArrayPtr, oldContents);
+
+                Console.WriteLine($"Moved array! Old ptr: {oldStr}; New ptr: {existingArrayPointerLocation}");
 
                 memLocCapacity.SetValue(newCapacity);
             });
@@ -297,5 +300,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
             return result;
         }
+
+        public AssemblyTrap PlaceAssemblyTrap(IntPtr location) => AssemblyTrap.TrapLocation(location, this);
     }
 }
