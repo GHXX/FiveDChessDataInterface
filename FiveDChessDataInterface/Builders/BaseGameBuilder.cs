@@ -86,6 +86,8 @@ namespace FiveDChessDataInterface.Builders
                 return this;
             }
 
+            public Timeline AddEmptyBoard() => AddBoardFromFen(string.Join("/", Enumerable.Repeat(this.boardWidth, this.boardHeight)));
+
             public Timeline CopyPrevious(int repetitionCount = 1)
             {
                 if (!this.Boards.Any())
