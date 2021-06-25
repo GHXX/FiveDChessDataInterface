@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
@@ -14,7 +15,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             this.ah = ah;
         }
 
-        public void PlaceTrap()
+        private void PlaceTrap(bool throwOnExistingLock)
         {
             this.ah.di.ExecuteWhileGameSuspendedLocked(() =>
             {
@@ -25,7 +26,15 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 };
 
                 this.originalCode = KernelMethods.ReadMemory(this.ah.gameHandle, this.originalLocation, (uint)trapBytes.Length); // backup old code
-                KernelMethods.WriteMemory(this.ah.gameHandle, this.originalLocation, trapBytes); // write hook
+
+                if (!this.originalCode.SequenceEqual(trapBytes)) // if the lock doesnt exist
+                {
+                    KernelMethods.WriteMemory(this.ah.gameHandle, this.originalLocation, trapBytes); // write hook
+                }
+                else if (throwOnExistingLock) // if it does exist, check if we want to throw
+                {
+                    throw new InvalidOperationException($"A lock already exists on the location {this.originalLocation}!");
+                }
             });
         }
 
@@ -36,10 +45,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 ); // restore original code
         }
 
-        public static AssemblyTrap TrapLocation(IntPtr ptr, AssemblyHelper ah)
+        public static AssemblyTrap TrapLocation(IntPtr ptr, AssemblyHelper ah, bool throwOnExistingLock = false)
         {
             var at = new AssemblyTrap(ptr, ah);
-            at.PlaceTrap();
+            at.PlaceTrap(throwOnExistingLock);
             return at;
         }
     }
