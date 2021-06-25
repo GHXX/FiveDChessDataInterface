@@ -41,21 +41,50 @@ namespace DataInterfaceConsoleTest.Examples
             // 0x289f0 -- load_variant
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
+            var timelineCnt = 19;
+            var turnCnt = 18;
+            var boardHeight = 8;
+            var boardWidth = 8;
+            bool useWhite = true;
+            var piece = "q";
 
-            var height = 3;
-            var width = 3;
-            // example for odd timelines
-            var gb = new GameBuilderOdd(height, width);
+           piece = useWhite ? piece.ToUpperInvariant() : piece.ToLowerInvariant();
 
-            gb["-4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
-            gb["-3L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            gb["-2L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
-            gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            gb["2L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            gb["3L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+            int subturnOffset = useWhite ? 1 : 0;
+
+            var gb2 = new GameBuilderOdd(boardHeight, boardWidth);
+            var timelineMatrix = Enumerable.Range(-timelineCnt / 2, timelineCnt).Select(x => $"{x}L");
+            foreach (var tl in timelineMatrix)
+            {
+                gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight))).CopyPrevious(turnCnt * 2 - 1 - 1 + subturnOffset);
+
+                if (tl == "0L")
+                {
+                    var leftspace = boardWidth / 2;
+                    var rightspace = boardWidth - 1 - leftspace;
+                    gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight - 1)) + $"/{leftspace}{piece}{rightspace}");
+                }
+                else
+                {
+                    gb2[tl].CopyPrevious();
+                }
+            }
+            di.SetChessBoardArrayFromBuilder(gb2);
+
+            //var height = 3;
+            //var width = 3;
+            //// example for odd timelines
+            //var gb = new GameBuilderOdd(height, width);
+
+            //gb["-4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+            //gb["-3L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["-2L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+            //gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["2L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["3L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
 
             //// example for even timelines
             //var gb = new GameBuilderEven(height, width);
@@ -64,9 +93,9 @@ namespace DataInterfaceConsoleTest.Examples
             //gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
             //gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
             //gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
-            Console.WriteLine("Old Array ptr:" + di.MemLocChessArrayPointer.ToString());
-            di.SetChessBoardArrayFromBuilder(gb);
-            Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
+            //Console.WriteLine("Old Array ptr:" + di.MemLocChessArrayPointer.ToString());
+            //di.SetChessBoardArrayFromBuilder(gb);
+            //Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
 
             at.ReleaseTrap();
             Console.WriteLine("Trap released!");
@@ -342,7 +371,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArray(boards.ToArray());
         }
 
-        [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
+        [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
         public static void DumpBoardsAndGeneralInfo(DataInterface di)
         {
             var cbs = di.GetChessBoards();
