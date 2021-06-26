@@ -22,7 +22,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 // the code which traps the thread
                 var trapBytes = new byte[]
                 {
-                    0xE9, 0xFB, 0xFF, 0xFF, 0xFF  // jmp -5
+                    //0xE9, 0xFB, 0xFF, 0xFF, 0xFF  // jmp -5
+                    0xEB, 0xFE  // jmp -1
                 };
 
                 this.originalCode = KernelMethods.ReadMemory(this.ah.gameHandle, this.originalLocation, (uint)trapBytes.Length); // backup old code
