@@ -41,9 +41,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         public void ReleaseTrap()
         {
-            this.ah.di.ExecuteWhileGameSuspendedLocked(() =>
-                    KernelMethods.WriteMemory(this.ah.gameHandle, this.originalLocation, this.originalCode)
-                ); // restore original code
+            if (this.ah.di.IsValid())
+                this.ah.di.ExecuteWhileGameSuspendedLocked(() =>
+                        KernelMethods.WriteMemory(this.ah.gameHandle, this.originalLocation, this.originalCode)
+                    ); // restore original code
         }
 
         public static AssemblyTrap TrapLocation(IntPtr ptr, AssemblyHelper ah, bool throwOnExistingLock = false)

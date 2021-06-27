@@ -39,7 +39,7 @@ namespace DataInterfaceConsole.Actions
         protected void WaitForIngame()
         {
             bool shown = false;
-            while (!this.di.IsGameRunning())
+            while (!this.di.IsMatchRunning())
             {
                 if (!shown)
                 {

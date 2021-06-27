@@ -460,7 +460,7 @@ namespace FiveDChessDataInterface
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x60), szGlobalBitboards, newBoards.Length); // 90*
 
                     // one hanging ref ["5dchesswithmultiversetimetravel.exe"+0014BC10]+0x990
-                       this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
+                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x80), szGlobalBitboards, newBoards.Length); // b0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x90), szGlobalBitboards, newBoards.Length); // c0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length); // d0*
@@ -497,11 +497,21 @@ namespace FiveDChessDataInterface
         /// <returns>Returns 0 if it's WHITE's turn, and 1 if it's BLACK's turn.</returns>
         public int GetCurrentPlayersTurn() => this.MemLocCurrentPlayersTurn.GetValue();
 
-        public bool IsGameRunning() => this.MemLocChessArrayPointer.GetValue() != IntPtr.Zero;
+        public bool IsMatchRunning()
+        {
+            try
+            {
+                return this.MemLocChessArrayPointer.GetValue() != IntPtr.Zero;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
 
         public GameState GetCurrentGameState()
         {
-            if (!IsGameRunning())
+            if (!IsMatchRunning())
             {
                 return GameState.NotStarted;
             }

@@ -15,7 +15,7 @@ namespace DataInterfaceConsole.Actions
             int safeBoardLimit = -1;
             try
             {
-                if (!this.di.IsGameRunning()) // if the match isnt running, then use the trap mode to inject it
+                if (!this.di.IsMatchRunning()) // if the match isnt running, then use the trap mode to inject it
                 {
                     at = this.di.asmHelper.PlaceAssemblyTrap(IntPtr.Add(this.di.GameProcess.MainModule.BaseAddress, 0x289C2));
                     Console.WriteLine("Main thread trapped. Please start a game, and then check back here.");
