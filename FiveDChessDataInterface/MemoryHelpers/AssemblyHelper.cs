@@ -81,7 +81,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 existingArrayPointerLocation.SetValue(newArrayPtr);
                 KernelMethods.WriteMemory(this.gameHandle, newArrayPtr, oldContents);
 
-                Console.WriteLine($"Moved array! Old ptr: {oldStr}; New ptr: {existingArrayPointerLocation}");
+                //Console.WriteLine($"Moved array! Old ptr: {oldStr}; New ptr: {existingArrayPointerLocation}");
 
                 memLocCapacity.SetValue(newCapacity);
             });
