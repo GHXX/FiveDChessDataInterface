@@ -182,13 +182,61 @@
       ], 
     }
   },
-   {
-     "Name": "Custom - Mini Shogi",
-     "Author": "CrazyPenguin",
-     "Timelines": {
+    {
+      "Name": "Custom - Mini Shogi",
+      "Author": "CrazyPenguin",
+      "Timelines": {
+        "0L": [
+          "rnckcnr/1r3b1/ppppppp/7/PPPPPPP/1B3R1/RNCKCNR"
+        ]
+     }
+  },
+  {
+    "Name": "Standard with Brawns (T0)",
+    "Author": "Thatotherdavidguy",
+    "Timelines": {
       "0L": [
-        "rnckcnr/1r3b1/ppppppp/7/PPPPPPP/1B3R1/RNCKCNR"
+        null, "rnbqkbnr/wwwwwwww/8/8/8/8/WWWWWWWW/RNBQKBNR", "rnbqkbnr/wwwwwwww/8/8/8/8/WWWWWWWW/RNBQKBNR"
       ]
+    }
+  },
+  {
+    "Name": "Disconnected - Late Arrival v2",
+    "Author": "thatotherdavidguy",
+    "Timelines": {
+      "-1L": [
+        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
+      ], 
+      "0L": [
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "kwww4/www5/ww6/w7/7W/6WW/5WWW/4WWWK"
+      ], 
+      "1L": [
+        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
+      ], 
+    }
+  },
+  {
+    "Name": "Alice Chess Knockoff (might be inbalanced)",
+    "Author": "sanoy1997",
+    "Timelines": {
+      "+0L": [
+        "8/8/8/8/8/8/8/8"  
+      ], 
+      "-0L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ], 
+    }
+  },
+  {
+    "Name": "Alice Chess Knockoff (T0) (might be inbalanced)",
+    "Author": "sanoy1997",
+    "Timelines": {
+      "+0L": [
+        null, "8/8/8/8/8/8/8/8", "8/8/8/8/8/8/8/8"  
+      ], 
+      "-0L": [
+        null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ], 
     }
   },
 ]
