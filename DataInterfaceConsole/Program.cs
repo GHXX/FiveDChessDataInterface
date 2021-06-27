@@ -15,7 +15,7 @@ namespace DataInterfaceConsole
         internal static Program instance = new Program();
         private Thread backgroundThread;
         public DataInterface di;
-        public  SettingsHandler sh;
+        public SettingsHandler sh;
 
         static void Main()
         {
@@ -27,7 +27,7 @@ namespace DataInterfaceConsole
         private void Run()
         {
             Console.WriteLine("Some output will occasionally be provided via the console title.");
-            sh = SettingsHandler.LoadOrCreateNew();
+            this.sh = SettingsHandler.LoadOrCreateNew();
 
             this.backgroundThread = new Thread(BackgroundThreadRun)
             {
@@ -123,7 +123,7 @@ namespace DataInterfaceConsole
                     SetConsoleTitleWithPrefix($"GameProcess: {gameStatus}");
                 }
 
-                sh.Tick();
+                this.sh.Tick();
 
                 Thread.Sleep(500);
             }
