@@ -58,7 +58,7 @@ namespace DataInterfaceConsole.Actions.Settings
         public void Tick()
         {
             var di = Program.instance.di;
-            if (!di.IsValid())
+            if (di == null || !di.IsValid())
                 return;
 
             try
