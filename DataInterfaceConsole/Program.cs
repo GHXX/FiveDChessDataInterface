@@ -1,4 +1,5 @@
 ﻿using DataInterfaceConsole.Actions;
+using DataInterfaceConsole.Actions.Settings;
 using DataInterfaceConsole.Types;
 using DataInterfaceConsole.Types.Exceptions;
 using FiveDChessDataInterface;
@@ -13,7 +14,8 @@ namespace DataInterfaceConsole
     {
         internal static Program instance = new Program();
         private Thread backgroundThread;
-        private DataInterface di;
+        public DataInterface di;
+        public SettingsHandler sh;
 
         static void Main()
         {
@@ -25,6 +27,7 @@ namespace DataInterfaceConsole
         private void Run()
         {
             Console.WriteLine("Some output will occasionally be provided via the console title.");
+            this.sh = SettingsHandler.LoadOrCreateNew();
 
             this.backgroundThread = new Thread(BackgroundThreadRun)
             {
@@ -119,6 +122,8 @@ namespace DataInterfaceConsole
 
                     SetConsoleTitleWithPrefix($"GameProcess: {gameStatus}");
                 }
+
+                this.sh.Tick();
 
                 Thread.Sleep(500);
             }

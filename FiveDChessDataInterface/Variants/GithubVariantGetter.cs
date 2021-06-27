@@ -10,6 +10,7 @@ namespace FiveDChessDataInterface.Variants
         private static JSONVariant[] cache = null;
         public static readonly string baseUri = "https://raw.githubusercontent.com/GHXX/FiveDChessDataInterface/master/FiveDChessDataInterface";
         public static readonly string variantsFile = "Resources/JsonVariants.json";
+        public static bool IsCached => cache != null;
 
         public static JSONVariant[] GetAllVariants(bool useLocal = false, bool bypassCache = false)
         {
