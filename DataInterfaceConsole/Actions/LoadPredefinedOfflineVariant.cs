@@ -3,17 +3,14 @@ using System;
 
 namespace DataInterfaceConsole.Actions
 {
-    class LoadPredefinedVariant : BaseAction
+    class LoadPredefinedOfflineVariant : BaseAction
     {
-        public override string Name => "Load Predefined Variant [ONLINE]";
+        public override string Name => "Load Predefined Variant [OFFLINE]";
 
         protected override void Run()
         {
             WaitForIngame();
-
-            if (!GithubVariantGetter.IsCached)
-                WriteLineIndented("Getting variants from github...");
-            var variants = GithubVariantGetter.GetAllVariants();
+            var variants = GithubVariantGetter.GetAllVariants(true, true);
 
             WriteLineIndented("Select a variant from the following:");
             for (int i = 0; i < variants.Length; i++)
