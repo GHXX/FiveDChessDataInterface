@@ -69,7 +69,7 @@ namespace DataInterfaceConsole.Actions.Settings
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error while ticking settings handler:\n{ex}");
+                Console.WriteLine($"Error while ticking settings handler:\n{ex.ToSanitizedString()}");
             }
         }
     }

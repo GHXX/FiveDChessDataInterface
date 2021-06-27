@@ -66,7 +66,7 @@ namespace DataInterfaceConsole
                             }
                             catch (DataInterfaceClosedException ex)
                             {
-                                Util.WriteColored($"Execution of the current action '{a.Name}' was aborted because the game closed or crashed: \n{ex}", ConsoleColor.Red);
+                                Util.WriteColored($"Execution of the current action '{a.Name}' was aborted because the game closed or crashed: \n{ex.ToSanitizedString()}", ConsoleColor.Red);
                                 ConsoleNonBlocking.ClearInputLines();
                             }
                             break;
@@ -79,7 +79,7 @@ namespace DataInterfaceConsole
                 }
                 catch (DataInterfaceClosedException ex)
                 {
-                    Util.WriteColored($"Execution of the current action selection was aborted because the game closed or crashed: \n{ex}", ConsoleColor.Red);
+                    Util.WriteColored($"Execution of the current action selection was aborted because the game closed or crashed: \n{ex.ToSanitizedString()}", ConsoleColor.Red);
                     ConsoleNonBlocking.ClearInputLines();
                 }
             }
