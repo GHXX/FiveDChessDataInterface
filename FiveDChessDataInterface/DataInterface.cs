@@ -43,11 +43,13 @@ namespace FiveDChessDataInterface
         [RequiredForSave("BlackTime")]
         public MemoryLocation<int> MemLocBlackTime { get; private set; }
 
+
         [RequiredForSave("WhiteTimeIncrement")]
         public MemoryLocation<int> MemLocWhiteIncrement { get; private set; }
 
         [RequiredForSave("BlackTimeIncrement")]
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
+        public MemoryLocation<int> MemLocTimeTravelAnimationEnabled { get; private set; }
 
         [RequiredForSave("CosmeticTurnOffset")]
         public MemoryLocation<int> MemLocCosmeticTurnOffset { get; private set; }
@@ -204,6 +206,7 @@ namespace FiveDChessDataInterface
             this.MemLocBlackTime = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1AC);
             this.MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             this.MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
+            this.MemLocTimeTravelAnimationEnabled = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x3E8);
 
             // set to -1 for even starting timeline cnt, and to 0 for odd starting timeline cnt
             this.MemLocTimelineValueOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x34);
