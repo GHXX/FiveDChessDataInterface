@@ -27,6 +27,89 @@ namespace DataInterfaceConsoleTest.Examples
             Console.WriteLine("Shouldnt run");
         }
 
+        [CallableExMethod(true, InvokeKind.Startup)]
+        public static void TrapLocationOnMatchStart(DataInterface di)
+        {
+            // TODO autoresolve
+            // 5dchesswithmultiversetimetravel.exe+91843 
+            var at = di.asmHelper.PlaceAssemblyTrap(IntPtr.Add(di.GameProcess.MainModule.BaseAddress, 0x289C2));
+            Console.WriteLine("Trap placed!");
+
+            SpinWait.SpinUntil(() => di.MemLocChessArrayPointer.GetValue().ToInt64() != 0);
+            Thread.Sleep(1000);
+            // other trap addresses:
+            // 0x91843 -- inside main update loop
+            // 0x289f0 -- load_variant
+            // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
+
+            var gb2 = new GameBuilderOdd(1, 1);
+            gb2["0L"].AddEmptyBoard().CopyPrevious(16).AddBoardFromFen("Q");
+            di.SetChessBoardArrayFromBuilder(gb2);
+
+            // demo code
+            /*
+            var timelineCnt = 9;
+            var turnCnt = 8;
+            var boardHeight = 8;
+            var boardWidth = 8;
+            bool useWhite = true;
+            var piece = "q";
+
+           piece = useWhite ? piece.ToUpperInvariant() : piece.ToLowerInvariant();
+
+            int subturnOffset = useWhite ? 1 : 0;
+
+            var gb2 = new GameBuilderOdd(boardHeight, boardWidth);
+            var timelineMatrix = Enumerable.Range(-timelineCnt / 2, timelineCnt).Select(x => $"{x}L");
+            foreach (var tl in timelineMatrix)
+            {
+                gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight))).CopyPrevious(turnCnt * 2 - 1 - 1 + subturnOffset);
+
+                if (tl == "0L")
+                {
+                    var leftspace = boardWidth / 2;
+                    var rightspace = boardWidth - 1 - leftspace;
+                    gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight - 1)) + $"/{leftspace}{piece}{rightspace}");
+                }
+                else
+                {
+                    gb2[tl].CopyPrevious();
+                }
+            }
+            di.SetChessBoardArrayFromBuilder(gb2);*/
+
+            #region oldcode
+            //var height = 3;
+            //var width = 3;
+            //// example for odd timelines
+            //var gb = new GameBuilderOdd(height, width);
+
+            //gb["-4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+            //gb["-3L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["-2L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
+            //gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+            //gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["2L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["3L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
+            //gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
+
+            //// example for even timelines
+            //var gb = new GameBuilderEven(height, width);
+
+            //gb["-1L"].SetTurnOffset(0, true).AddBoardFromFen("ckc/3/PCP").CopyPrevious(1);
+            //gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
+            //gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
+            //gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
+            //Console.WriteLine("Old Array ptr:" + di.MemLocChessArrayPointer.ToString());
+            //di.SetChessBoardArrayFromBuilder(gb);
+            //Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
+            #endregion
+
+            at.ReleaseTrap();
+            Console.WriteLine("Trap released!");
+        }
+
         [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void ChangeBoardSize(DataInterface di) // changes board size for all boards
         {
@@ -67,7 +150,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArrayFromBuilder(gb);
         }
 
-        [CallableExMethod(true, InvokeKind.MatchStart)]
+        [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void LoadPredefinedOnlineVariant(DataInterface di)
         {
             var variants = GithubVariantGetter.GetAllVariants();
@@ -297,7 +380,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArray(boards.ToArray());
         }
 
-        [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
+        [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
         public static void DumpBoardsAndGeneralInfo(DataInterface di)
         {
             var cbs = di.GetChessBoards();

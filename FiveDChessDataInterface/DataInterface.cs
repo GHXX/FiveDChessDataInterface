@@ -445,15 +445,22 @@ namespace FiveDChessDataInterface
                 if (newBoards.Length > maxCapacity)
                 {
                     this.asmHelper.EnsureArrayCapacity<ChessBoardMemory>(this.MemLocChessArrayPointer, newBoards.Length); // 30*
+                    // one hanging reference ["5dchesswithmultiversetimetravel.exe"+0014BC20]+0x5F0
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x10), 4, newBoards.Length); // 40* MemLocSomeTurnCountOrSomething+0x8 // element size is <= 170 bytes (decimal)
                     var sz50_60 = 1;
+                    // one hanging reference ["5dchesswithmultiversetimetravel.exe"+0014BAF8]+0x680
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x20), sz50_60, newBoards.Length); // 50*
+                    // two hanging refs ["5dchesswithmultiversetimetravel.exe"+0014BEC0]+0xC90;["5dchesswithmultiversetimetravel.exe"+0014BC30]+F50
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x30), sz50_60, newBoards.Length); // 60*
                     var szGlobalBitboards = 8;
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x40), szGlobalBitboards, newBoards.Length); // 70*
+                    // one hanging ref ["5dchesswithmultiversetimetravel.exe"+0014BAD8] + 0xBF0
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x50), szGlobalBitboards, newBoards.Length); // 80*
+                    // two hanging refs, but pretty deep in
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x60), szGlobalBitboards, newBoards.Length); // 90*
-                    this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
+
+                    // one hanging ref ["5dchesswithmultiversetimetravel.exe"+0014BC10]+0x990
+                       this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x70), szGlobalBitboards, newBoards.Length); // a0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x80), szGlobalBitboards, newBoards.Length); // b0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0x90), szGlobalBitboards, newBoards.Length); // c0*
                     this.asmHelper.EnsureArrayCapacity(this.MemLocChessArrayPointer.WithOffset(0xa0), szGlobalBitboards, newBoards.Length); // d0*

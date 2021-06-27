@@ -13,7 +13,7 @@ namespace DataInterfaceConsole.Actions
         protected DataInterface di;
 
         public static BaseAction[] GetAndInstantiateAllActions() => typeof(BaseAction).Assembly.GetTypes()
-            .Where(x => typeof(BaseAction).IsAssignableFrom(x) && typeof(BaseAction) != x)
+            .Where(x => typeof(BaseAction).IsAssignableFrom(x) && typeof(BaseAction) != x && !x.IsAbstract)
             .Select(t => (BaseAction)Activator.CreateInstance(t))
             .ToArray();
 
