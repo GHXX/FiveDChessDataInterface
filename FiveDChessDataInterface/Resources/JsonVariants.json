@@ -40,7 +40,7 @@
   },
   {
     "Name": "Custom - Brawn Horde",
-    "Author": "Crazy Penguin",
+    "Author": "CrazyPenguin",
     "Timelines": {
       "0L": [
         "rnbqkbnr/wwwwwwww/8/1WW2WW1/WWWWWWWW/WWWWWWWW/WWWWWWWW/WWWWWWWW"
@@ -88,7 +88,7 @@
   },
   {
     "Name": "Excessive - Quadrants",
-    "Author": "Crazy Penguin",
+    "Author": "CrazyPenguin",
     "Timelines": {
       "0L": [
         "snbwWBNS/nycwWCYN/bcrwWRCB/wwwwWWWW/WWWWwwww/BQRWwrqb/NKQWwqkn/SNBWwbns"
@@ -181,5 +181,14 @@
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ], 
     }
-  }
+  },
+   {
+     "Name": "Custom - Mini Shogi",
+     "Author": "CrazyPenguin",
+     "Timelines": {
+      "0L": [
+        "rnckcnr/1r3b1/ppppppp/7/PPPPPPP/1B3R1/RNCKCNR"
+      ]
+    }
+  },
 ]
