@@ -1,6 +1,7 @@
 ﻿using DataInterfaceConsole.Types.Exceptions;
 using FiveDChessDataInterface;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
@@ -54,6 +55,10 @@ namespace DataInterfaceConsole.Actions
         protected void WriteLineIndented(string s, int level = 1)
         {
             Console.WriteLine($"{new string(' ', level * 2)}{s}");
+        }
+        protected void WriteLineIndented(IEnumerable<string> arr, int level = 1)
+        {
+            Console.WriteLine(string.Join("\n", arr.Select(s => $"{new string(' ', level * 2)}{s}")));
         }
     }
 }
