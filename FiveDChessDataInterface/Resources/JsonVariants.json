@@ -311,6 +311,21 @@
     }
   },
   {
+    "Name": "Disconnected - Late Arrival v3",
+    "Author": "thatotherdavidguy",
+    "Timelines": {
+      "-1L": [
+        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
+      ], 
+      "0L": [
+        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "kwww3U/www5/ww6/w7/W7/WW6/WWW5/KWWW3u"
+      ], 
+      "1L": [
+        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
+      ], 
+    }
+  },
+  {
     "Name": "Alice Chess Knockoff (might be inbalanced)",
     "Author": "sanoy1997",
     "Timelines": {
@@ -333,5 +348,5 @@
         null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ], 
     }
-  },
+  }
 ]
