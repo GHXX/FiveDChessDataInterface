@@ -351,13 +351,25 @@
       ], 
     }
   },
-   {
+  {
     "Name": "Custom - Mongolian Raid",
     "Author": "Narik",
     "Timelines": {
       "0L": [
         "5bbk/6ww/nnnnnn2/1pppp3/8/8/PPPPPPPP/RNBQKBNR"
       ],
+    }
+  },
+  {
+    "Name": "Fairy Hippodrome",
+    "Author": "Los Bros SPQR",
+    "Timelines": {
+      "+0L": [
+        "uncknu/wwwwww/6/6/PPPPPP/UNCKNU"
+      ],
+      "-0L": [
+        "uncknu/pppppp/6/6/WWWWWW/UNCKNU"
+      ]
     }
   }
 ]
