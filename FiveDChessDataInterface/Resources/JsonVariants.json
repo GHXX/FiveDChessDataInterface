@@ -351,13 +351,21 @@
       ], 
     }
   },
-   {
+  {
     "Name": "Custom - Mongolian Raid",
     "Author": "Narik",
     "Timelines": {
       "0L": [
         "5bbk/6ww/nnnnnn2/1pppp3/8/8/PPPPPPPP/RNBQKBNR"
       ],
+    }
+  },
+  {
+    "Name": "Placeholder",
+    "Author": "Los Bros SPQR",
+    "Timelines": {
+      "+0L": ["unck*nu/w*w*w*w*w*w*/6/6/P*P*P*P*P*P*/UNCK*NU"],
+      "-0L": ["unck*nu/p*p*p*p*p*p*/6/6/W*W*W*W*W*W*/UNCK*NU"]
     }
   }
 ]
