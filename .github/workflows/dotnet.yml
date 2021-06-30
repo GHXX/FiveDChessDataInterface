@@ -1,8 +1,8 @@
 name: .NET UnitTests
 
 on:
-  push:
-    branches: '**'
+  [push, pull_request]
+
 
 jobs:
   dotnet:
