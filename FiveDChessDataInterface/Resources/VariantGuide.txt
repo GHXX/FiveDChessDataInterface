@@ -1,0 +1,19 @@
+Colors:
+Uppercase - White
+Lowercase - Black
+
+Standard pieces:
+P - Pawn
+N - Knight
+B - Bishop
+R - Rook
+Q - Queen
+K - King
+
+Fairy pieces:
+U - Unicorn
+D - Dragon
+S - Princess
+W - Brawn
+C - Common King
+Y - Royal Queen

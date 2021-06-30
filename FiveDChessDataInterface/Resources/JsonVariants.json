@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Name": "Standard",
     "Author": "Chess",
@@ -6,6 +6,33 @@
       "0L": [
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
+    }
+  },
+  {
+    "Name": "Simple Set (6x6) - Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR", "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR"  
+      ],
+    }
+  },
+  {
+    "Name": "Small Set (5x5) - Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "kqbnr/ppppp/5/PPPPP/KQBNR", "kqbnr/ppppp/5/PPPPP/KQBNR"  
+      ],
+    }
+  },
+  {
+    "Name": "Very Small Set (4x4) - Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "nbrk/pppp/PPPP/NBRK", "nbrk/pppp/PPPP/NBRK"  
+      ],
     }
   },
   {
