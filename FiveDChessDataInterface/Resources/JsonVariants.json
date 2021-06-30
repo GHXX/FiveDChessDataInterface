@@ -1,4 +1,4 @@
-﻿[
+[
   {
     "Name": "Standard",
     "Author": "Chess",
@@ -6,6 +6,33 @@
       "0L": [
         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
+    }
+  },
+  {
+    "Name": "Simple Set (6x6)- Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR", "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR"  
+      ],
+    }
+  },
+  {
+    "Name": "Small Set (5x5) - Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "kqbnr/ppppp/5/PPPPP/KQBNR", "kqbnr/ppppp/5/PPPPP/KQBNR"  
+      ],
+    }
+  },
+  {
+    "Name": "Very Small Set (4x4) - Turn Zero",
+    "Author": "Doczek",
+    "Timelines": {
+      "0L": [
+        null, "nbrk/pppp/PPPP/NBRK", "nbrk/pppp/PPPP/NBRK"  
+      ],
     }
   },
   {
@@ -186,20 +213,18 @@
     "Name": "Tutorial Pawn",
     "Author": "sanoy1997",
     "Timelines": {
-      "-1L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
-      "-0L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
-      "+0L": ["3/3/3", "3/3/3", "3/3/1p1", "3/3/3", "3/3/3", "3/3/3", "3/3/1p1", "3/3/3", "3/3/3"],
-       "1L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/p1p/1P1"],
+      "-1L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
+       "0L": ["3/3/1p1", "3/3/3", "3/3/3", "3/3/3", "3/3/1p1"],
+       "1L": ["3/3/3", "3/3/3", "3/p1p/1P1"]
     }
   },
   {
     "Name": "Tutorial Brawn",
     "Author": "sanoy1997",
     "Timelines": {
-      "-1L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
-      "-0L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
-      "+0L": ["3/3/3", "3/3/3", "3/3/1p1", "3/3/3", "3/1p1/p1p", "3/3/3", "3/3/1p1", "3/3/3", "3/3/3"],
-       "1L": ["3/3/3", "3/3/3", "3/1p1/3", "3/3/3", "3/p1p/1P1"]
+      "-1L": ["3/3/3", "3/3/3", "3/3/3", "3/3/3", "3/3/3"],
+       "0L": ["3/3/1p1", "3/3/3", "3/1p1/p1p", "3/3/3", "3/3/1p1"],
+       "1L": ["3/1p1/3", "3/3/3", "3/p1p/1P1"]
     }
   },
   {
@@ -219,7 +244,7 @@
     "Timelines": {
       "-2L": ["5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/2p2/5/5"],
       "-1L": ["5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5"],
-       "0L": ["5/5/2p2/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "2p2/5/p1R1p/5/2p2"],
+       "0L": ["5/5/2p2/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "2p2/5/p1N1p/5/2p2"],
        "1L": ["5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5"],
        "2L": ["5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/5/5/5", "5/5/2p2/5/5"]
     }
@@ -313,21 +338,6 @@
     }
   },
   {
-    "Name": "Disconnected - Late Arrival v3",
-    "Author": "thatotherdavidguy",
-    "Timelines": {
-      "-1L": [
-        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
-      ], 
-      "0L": [
-        null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "kwww3u/www5/ww6/w7/W7/WW6/WWW5/KWWW3U"
-      ], 
-      "1L": [
-        "rnbqcbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQCBNR"
-      ], 
-    }
-  },
-  {
     "Name": "Alice Chess Knockoff (might be inbalanced)",
     "Author": "sanoy1997",
     "Timelines": {
@@ -351,25 +361,4 @@
       ], 
     }
   },
-  {
-    "Name": "Custom - Mongolian Raid",
-    "Author": "Narik",
-    "Timelines": {
-      "0L": [
-        "5bbk/6ww/nnnnnn2/1pppp3/8/8/PPPPPPPP/RNBQKBNR"
-      ],
-    }
-  },
-  {
-    "Name": "Fairy Hippodrome",
-    "Author": "Los Bros SPQR",
-    "Timelines": {
-      "+0L": [
-        "uncknu/wwwwww/6/6/PPPPPP/UNCKNU"
-      ],
-      "-0L": [
-        "uncknu/pppppp/6/6/WWWWWW/UNCKNU"
-      ]
-    }
-  }
 ]
