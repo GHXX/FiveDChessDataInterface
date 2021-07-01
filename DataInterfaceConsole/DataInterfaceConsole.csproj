@@ -16,10 +16,14 @@
   </ItemGroup>
 
   <ItemGroup>
-      <ContentWithTargetPath Include="Install\installAndRun.ps1">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <TargetPath>installAndRun.ps1</TargetPath>
-    </ContentWithTargetPath>
+      <ContentWithTargetPath Include="Install\installAndRun.bat">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>installAndRun.bat</TargetPath>
+      </ContentWithTargetPath>
+      <ContentWithTargetPath Include="Install\installer.ps1">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <TargetPath>installer.ps1</TargetPath>
+      </ContentWithTargetPath>
   </ItemGroup>
 
 </Project>
