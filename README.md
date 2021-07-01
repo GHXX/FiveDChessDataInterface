@@ -30,3 +30,5 @@ Once you have acquired a `DataInterface` object, you can call its non-static met
 * (Not implemented yet) A list of all chessboard of the current game: `DataInterface.GetChessBoards()`
 * The size of all chessboard: `DataInterface.GetChessBoardSize()`
 * The current player's turn: `DataInterface.GetCurrentPlayersTurn()`
+
+test
