@@ -53,6 +53,9 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
             switch (Type.GetTypeCode(t))
             {
+                case TypeCode.Byte:
+                    return (dynamic)bytes[0];
+
                 case TypeCode.Int16:
                     return (dynamic)BitConverter.ToInt16(bytes, 0);
                 case TypeCode.Int32:

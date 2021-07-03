@@ -81,5 +81,40 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         [DllImport("ntdll.dll", PreserveSig = false, SetLastError = true)]
         internal static extern void NtResumeProcess(IntPtr processHandle);
+
+        [DllImport("kernel32.dll", PreserveSig = false, SetLastError = true)]
+        private static extern int VirtualProtectEx(IntPtr hProcess, IntPtr lpAddress, int dwSize, int flNewProtect, ref int lpFlOldProtect);
+
+        /// <summary>
+        /// Changes the page protection to the specified value and returns the old one
+        /// </summary>
+        /// <param name="handle">the game handle to use</param>
+        /// <param name="baseAddress">the base address of the range to change the proection of</param>
+        /// <param name="size">the size of the range to change the proection of</param>
+        /// <param name="newProtectionValue">a value indicating the new proection status</param>
+        /// <returns>the old protection status</returns>
+        public static FlPageProtect ChangePageProtection(IntPtr handle, IntPtr baseAddress, int size, FlPageProtect newProtectionValue)
+        {
+            int oldProtect = 0;
+            VirtualProtectEx(handle, baseAddress, size, (int)newProtectionValue, ref oldProtect); // return value is always zero???
+            var error_code = Marshal.GetLastWin32Error();
+            if (error_code != 0)
+                throw new InvalidOperationException($"ChangePageProtection failed with result code: {error_code}");
+
+            return (FlPageProtect)oldProtect;
+        }
+
+        [Flags]
+        public enum FlPageProtect : int
+        {
+            PAGE_NOACCESS = 0x1,
+            PAGE_READONLY = 0x2,
+            PAGE_READWRITE = 0x4,
+            PAGE_WRITECOPY = 0x8,
+            PAGE_EXECUTE = 0x10,
+            PAGE_EXECUTE_READ = 0x20,
+            PAGE_EXECUTE_READWRITE = 0x40,
+            PAGE_EXECUTE_WRITECOPY = 0x80,
+        }
     }
 }

@@ -302,5 +302,6 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
         public AssemblyTrap PlaceAssemblyTrap(IntPtr location) => AssemblyTrap.TrapLocation(location, this);
+        public AssemblyTrapAdvanced PlaceAssemblyTrapAdvanced(IntPtr location) => AssemblyTrapAdvanced.TrapLocation(location, this);
     }
 }

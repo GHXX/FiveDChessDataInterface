@@ -32,18 +32,16 @@ namespace DataInterfaceConsoleTest.Examples
         {
             // TODO autoresolve
             // 5dchesswithmultiversetimetravel.exe+91843 
-            var at = di.asmHelper.PlaceAssemblyTrap(IntPtr.Add(di.GameProcess.MainModule.BaseAddress, 0x289C2));
+            var at = di.asmHelper.PlaceAssemblyTrapAdvanced(IntPtr.Add(di.GameProcess.MainModule.BaseAddress, 0x289C2));
             Console.WriteLine("Trap placed!");
-
-            SpinWait.SpinUntil(() => di.MemLocChessArrayPointer.GetValue().ToInt64() != 0);
-            Thread.Sleep(1000);
+            at.WaitTillHit();
             // other trap addresses:
             // 0x91843 -- inside main update loop
             // 0x289f0 -- load_variant
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
-            var gb2 = new GameBuilderOdd(1, 1);
-            gb2["0L"].AddEmptyBoard().CopyPrevious(16).AddBoardFromFen("Q");
+            var gb2 = new GameBuilderOdd(7, 7);
+            gb2["0L"].AddBoardFromFen("Q6/7/7/7/7/7/q6");
             di.SetChessBoardArrayFromBuilder(gb2);
 
             // demo code
@@ -380,7 +378,7 @@ namespace DataInterfaceConsoleTest.Examples
             di.SetChessBoardArray(boards.ToArray());
         }
 
-        [CallableExMethod(false, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
+        [CallableExMethod(true, InvokeKind.BoardCountChanged | InvokeKind.Startup | InvokeKind.MatchStart | InvokeKind.MatchExited)]
         public static void DumpBoardsAndGeneralInfo(DataInterface di)
         {
             var cbs = di.GetChessBoards();
