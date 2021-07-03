@@ -1,7 +1,6 @@
 ﻿using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Variants;
 using System;
-using System.Threading;
 
 namespace DataInterfaceConsole.Actions
 {
@@ -11,25 +10,23 @@ namespace DataInterfaceConsole.Actions
 
         protected override void Run()
         {
-            AssemblyTrap at = null;
+            AssemblyTrapAdvanced at = null;
             int safeBoardLimit = -1;
             try
             {
                 if (!this.di.IsMatchRunning()) // if the match isnt running, then use the trap mode to inject it
                 {
-                    at = this.di.asmHelper.PlaceAssemblyTrap(IntPtr.Add(this.di.GameProcess.MainModule.BaseAddress, 0x289C2));
+                    at = this.di.asmHelper.PlaceAssemblyTrapAdvanced(IntPtr.Add(this.di.GameProcess.MainModule.BaseAddress, 0x289C2));
                     Console.WriteLine("Main thread trapped. Please start a game, and then check back here.");
+                    at.WaitTillHit();
                 }
                 else
                 {
                     safeBoardLimit = this.di.MemLocChessArrayCapacity.GetValue();
                     Console.WriteLine($"Be advised that injecting a variant with a size of more than {safeBoardLimit} boards during an ongoing match will possibly lead to a crash.\n" +
                         $"You should consider exiting out to the main menu and rerunning the command.");
+                    WaitForIngame();
                 }
-                WaitForIngame();
-
-                if (at != null)
-                    Thread.Sleep(1000);
 
                 if (this.UseOnlineVariants && !GithubVariantGetter.IsCached)
                     WriteLineIndented("Getting variants from github...");
