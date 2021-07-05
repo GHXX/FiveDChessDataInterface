@@ -6,6 +6,10 @@
         Running,
         EndedDraw,
         EndedWhiteWon,
-        EndedBlackWon
+        EndedBlackWon,
+        /// <summary>
+        /// Only returned if reading yielded an unexpected constellation of values
+        /// </summary>
+        Unknown
     }
 }

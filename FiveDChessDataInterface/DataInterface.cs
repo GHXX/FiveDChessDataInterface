@@ -509,79 +509,64 @@ namespace FiveDChessDataInterface
             }
         }
 
-        public GameState GetCurrentGameState()
+        public GameState GetCurrentGameState(bool throwOnInvalidState = true)
         {
+            GameState ThrowOrUnknown(string errormsg)
+            {
+                if (throwOnInvalidState)
+                    throw new UnexpectedChessDataException("An invalid gamestate was read: " + errormsg);
+
+                return GameState.Unknown;
+            }
+
             if (!IsMatchRunning())
             {
                 return GameState.NotStarted;
             }
             var whoWon = this.MemLocGameEndedWinner.GetValue();
             var gs = this.MemLocGameState.GetValue();
-            if (gs == 0)
+            if (gs == 0) // game is running
             {
-                if(whoWon!=-1){
-                    // Unexpected Data - gs is 0(running) but winning player '{whoWon}' is not -1
-                    throw new UnexpectedChessDataException();
-                }
+                if (whoWon != -1)
+                    return ThrowOrUnknown("Match is running, but winning player is not -1!"); // Unexpected Data - gs is 0(running) but winning player '{whoWon}' is not -1
+
                 return GameState.Running;
             }
-            else if (gs==1)
+            else if (gs == 1) // game ended with winner
             {
-                if(whoWon==0)
+                return whoWon switch
                 {
-                    return GameState.EndedWhiteWon;
-                }
-                else if(whoWon==1)
-                {
-                    return GameState.EndedWhiteWon;
-                }
-                else
-                {
-                    // Unexpected Data - gs is 1(ended with winner) but winning player '{whoWon}' is not 0 or 1
-                    throw new UnexpectedChessDataException();
-                }
+                    0 => GameState.EndedWhiteWon,
+                    1 => GameState.EndedBlackWon,
+                    _ => ThrowOrUnknown("gs is 1(ended with winner) but winning player 'whoWon' is not 0 or 1")
+                };
             }
-            else if (gs==2)
+            else if (gs == 2) // game ended with draw
             {
                 return GameState.EndedDraw;
             }
-            else if(gs==3)
+            else if (gs == 3) // game ended with forfeit or the opponent left
             {
-                //Forfeit
-                if(whoWon==0)
+                return whoWon switch
                 {
-                    return GameState.EndedWhiteWon;
-                }
-                else if(whoWon==1)
-                {
-                    return GameState.EndedWhiteWon;
-                }
-                else
-                {
-                    // Unexpected Data - gs is 3(forfeit) but winning player '{whoWon}' is not 0 or 1
-                    throw new UnexpectedChessDataException();
-                }
+                    0 => GameState.EndedWhiteWon,
+                    1 => GameState.EndedBlackWon,
+                    _ => ThrowOrUnknown("gs is 3(forfeit) but winning player '{whoWon}' is not 0 or 1")
+                };
             }
-            else if(gs==5){
-                //Time
-                if(whoWon==0)
+            else if (gs == 5) // game ended because the clock ran out
+            {
+                return whoWon switch
                 {
-                    return GameState.EndedWhiteWon;
-                }
-                else if(whoWon==1)
-                {
-                    return GameState.EndedWhiteWon;
-                }
-                else
-                {
-                    // Unexpected Data - gs is 5(timeout) but winning player '{whoWon}' is not 0 or 1
-                    throw new UnexpectedChessDataException();
-                }
+                    0 => GameState.EndedWhiteWon,
+                    1 => GameState.EndedBlackWon,
+                    _ => ThrowOrUnknown("gs is 5(clock ran out) but winning player '{whoWon}' is not 0 or 1")
+                };
             }
             else
             {
                 // Unexpected Data - gs is not 0,1,2,3 or 5
-                throw new UnexpectedChessDataException();
+                return ThrowOrUnknown("gs contains an unexpected value");
             }
         }
     }
