@@ -427,10 +427,10 @@
     "Author": "Tudor",
     "Timelines": {
       "+0L": [
-        null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
         ],
       "-0L": [
-        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+        null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
     }
   }
