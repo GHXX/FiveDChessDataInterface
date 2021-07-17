@@ -40,8 +40,8 @@ namespace DataInterfaceConsoleTest.Examples
             // 0x289f0 -- load_variant
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
-            var gb2 = new GameBuilderOdd(7, 7);
-            gb2["0L"].AddBoardFromFen("Q6/7/7/7/7/7/q6");
+            var gb2 = new GameBuilderOdd(8, 8);
+            gb2["0L"].AddBoardFromFen("r*nbqk*bnr*/p*p*p*p*p*p*p*p*/8/8/8/8/P*P*P*P*P*P*P*P*/R*NBQK*BNR*");
             di.SetChessBoardArrayFromBuilder(gb2);
 
             // demo code
