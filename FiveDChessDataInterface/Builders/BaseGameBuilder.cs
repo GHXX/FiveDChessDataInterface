@@ -189,6 +189,10 @@ namespace FiveDChessDataInterface.Builders
                     this.pieces = pieceData;
                 }
 
+                public ChessBoardData(ChessBoardData original) : this(original.boardHeight, original.boardWidth, original.turn,
+                    original.isBlackBoard, (ChessBoard.ChessPiece[,])original.pieces.Clone())
+                { }
+
 
                 private void LoadFEN(string compressedFen)
                 {
@@ -333,5 +337,149 @@ namespace FiveDChessDataInterface.Builders
 
         public ChessBoard[] Build() => BuildCbms().Select(x => new ChessBoard(x, this.boardWidth, this.boardHeight)).ToArray();
 
+        public BaseGameBuilder Add5DPGNMoves(string pgn)
+        {
+            if (string.IsNullOrWhiteSpace(pgn))
+                throw new ArgumentNullException("Argument " + nameof(pgn) + " was empty!");
+
+            var lines = pgn.Replace("\r\n", "\n").Replace("\r", "\n").Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
+
+            const string modeValue = "[Mode";
+            if (lines[0].StartsWith(modeValue))
+            {
+                var mode = string.Join(null, lines[0].Substring(modeValue.Length).SkipWhile(c => c != '"').Skip(1).TakeWhile(c => c != '"'));
+                if (mode.ToLowerInvariant() == "5d")
+                {
+                    lines.RemoveAt(0);
+                }
+                else
+                {
+                    throw new FormatException($"Invalid pgn supplied. Mode was expected to be 5D, but instead is '{mode}'!");
+                }
+            }
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                var line = lines[i];
+                var dotcnt = line.Count(x => x == '.');
+                if (dotcnt == 0)
+                    continue;
+                else if (dotcnt == 1)
+                {
+                    var splitted = line.Split('.');
+                    if (!int.TryParse(splitted[0], out _))
+                    {
+                        throw new FormatException($"Period on line {i + 1} was interpreted as a delimeter between turncount and moveset. BUt the left side of the period was not a number.");
+                    }
+
+                    lines[i] = splitted[1].Trim();
+                    continue;
+                }
+                else
+                {
+                    throw new FormatException($"Line {i + 1} contained {dotcnt} periods, even though at most one was expected.");
+                }
+            }
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                string line = lines[i];
+                var cnt = line.Count(x => x == '/');
+                if (cnt > 1)
+                    throw new FormatException($"More than one slash was encountered on line {i + 1}.");
+
+
+                var playerMoveSets = line.Split('/');
+                for (int pmsi = 0; pmsi < playerMoveSets.Length; pmsi++)
+                {
+                    string moveSet = playerMoveSets[pmsi];
+
+                    var moves = moveSet.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
+                    foreach (var move in moves)
+                    {
+                        var srcBoardName = string.Join(null, move.Skip(1).TakeWhile(x => x != ')'));
+                        var srcBoardSplit = srcBoardName.Split('T');
+                        var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcBoardSplit[0]}L");
+                        var turn = int.Parse(srcBoardSplit[1]);
+
+                        var srcBoard = srcTL.Boards.Single(x => x.turn == turn && x.isBlackBoard == (pmsi == 1));
+                        var lastboard = srcTL.Boards.Last();
+                        if (srcBoard.turn != lastboard.turn || srcBoard.isBlackBoard != lastboard.isBlackBoard)
+                            throw new Exception("Board that a simple move was made on is not the last board in the timeline.");
+
+                        var isTT = move.Contains(">>");
+                        if (isTT)
+                        {
+                            var splitted = move.Split(new[] { ">>" }, StringSplitOptions.None);
+                            var dstBoardName = string.Join(null, splitted[1].Skip(1).TakeWhile(x => x != ')'));
+                            var dstBoardSplit = dstBoardName.Split('T');
+                            var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstBoardSplit[0]}L");
+                            var dstturn = int.Parse(dstBoardSplit[1]);
+                            var dstindex = dstturn * 2 + pmsi;
+                            // if the destboard has already been played on
+                            var dstBoardAlreadyPlayed = dstindex < dstTL.Boards.Count - 1;
+                            var dstBoard = dstTL.Boards.Single(x => x.turn == dstturn && x.isBlackBoard == (pmsi == 1));
+
+                            var srcPos = string.Join(null, splitted[0].Reverse().Take(2).Reverse());
+                            var dstPos = string.Join(null, splitted[1].Reverse().Take(2).Reverse());
+
+                            // add new board after srcboard
+                            var newCbm1 = new Timeline.ChessBoardData(srcBoard);
+                            // incrememnt turn
+                            newCbm1.turn += newCbm1.isBlackBoard ? 1 : 0;
+                            newCbm1.isBlackBoard ^= true;
+                            // ---
+                            newCbm1.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+
+                            srcTL.Boards.Add(newCbm1);
+
+                            // add new destboard
+                            var newCbm2 = new Timeline.ChessBoardData(dstBoard);
+                            // incrememnt turn
+                            newCbm2.turn += newCbm2.isBlackBoard ? 1 : 0;
+                            newCbm2.isBlackBoard ^= true;
+                            // ---
+                            newCbm2.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] =
+                                srcBoard.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
+
+                            if (dstBoardAlreadyPlayed) // make a new TL
+                            {
+                                var orderedTls = this.Timelines.OrderBy(x => (x.timelineIndex.timeline + 0.5) * (x.timelineIndex.isNegative ? -1 : 1));
+                                var newTLIndex = srcBoard.isBlackBoard ?
+                                    // if black made the move
+                                    orderedTls.First().timelineIndex :
+                                    orderedTls.Last().timelineIndex;
+
+                                var tl = new Timeline(this.boardHeight, this.boardWidth, new Timeline.TimelineIndex(srcBoard.isBlackBoard, newTLIndex.timeline + 1)); // TODO set previous board properly
+                                this.Timelines.Add(tl);
+                                tl.Boards.Add(newCbm2);
+                            }
+                            else // append onto dest tl
+                            {
+                                dstTL.Boards.Add(newCbm2); // TODO set previous board properly
+                            }
+                        }
+                        else
+                        {
+                            var movechars = string.Join(null, move.Reverse().Take(4).Reverse());
+                            var srcPos = movechars.Substring(0, 2);
+                            var dstPos = movechars.Substring(2, 2);
+
+                            var newCbm = new Timeline.ChessBoardData(srcBoard);
+                            // incrememnt turn
+                            newCbm.turn += newCbm.isBlackBoard ? 1 : 0;
+                            newCbm.isBlackBoard ^= true;
+                            // ---
+                            newCbm.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] = newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
+                            newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+
+                            srcTL.Boards.Add(newCbm);
+                        }
+                    }
+                }
+            }
+
+            return this;
+        }
     }
 }

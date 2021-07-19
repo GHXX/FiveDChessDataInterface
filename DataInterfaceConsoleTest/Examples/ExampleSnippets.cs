@@ -41,7 +41,8 @@ namespace DataInterfaceConsoleTest.Examples
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
             var gb2 = new GameBuilderOdd(8, 8);
-            gb2["0L"].AddBoardFromFen("r*nbqk*bnr*/p*p*p*p*p*p*p*p*/8/8/8/8/P*P*P*P*P*P*P*P*/R*NBQK*BNR*");
+            gb2["0L"].SetTurnOffset(0, true).AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR").CopyPrevious(1);
+            gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)e2e3 / (0T1)Ng8f6 \n2.(0T2)Ng1f3 / (0T2)c7c5 \n3.(0T3)c2c4 / (0T3)Nb8c6 \n4.(0T4)Nb1c3 / (0T4)h7h6 \n5.(0T5)h2h3 / (0T5)a7a6 \n6.(0T6)a2a3 / (0T6)Ra8b8 \n7.(0T7)Bf1d3 / (0T7)g7g6 \n8.(0T8)Nc3d5 / (0T8)e7e6 \n9.(0T9)Qd1c2 / (0T9)Rh8g8 \n10.(0T10)g2g3 / (0T10)Nc6d4 \n11.(0T11)Qc2d1 / (0T11)b7b5 \n12.(0T12)Nf3e5 / (0T12)Nd4f5 \n13.(0T13)Qd1f3 / (0T13)Bf8e7 \n14.(0T14)Bd3f5 / (0T14)e6f5 \n15.(0T15)Nd5f6 / (0T15)Be7f6 \n16.(0T16)Qf3d5 / (0T16)Rg8f8 \n17.(0T17)Qd5>>(0T15)f7 / (0T17)Qd8>>(0T14)a5 \n18.(-1T15)Nd5f6 / (-1T15)Ke8>>(0T14)f8 \n19.(-2T15)Nd5f6");
             di.SetChessBoardArrayFromBuilder(gb2);
 
             // demo code
@@ -138,12 +139,14 @@ namespace DataInterfaceConsoleTest.Examples
             //gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP");
 
             // example for even timelines
-            var gb = new GameBuilderEven(height, width);
+            var gb = new GameBuilderOdd(8, 8);
+            gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR").CopyPrevious(1);
+            gb.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)e2e3 / (0T1)Ng8f6 \n2.(0T2)Ng1f3 / (0T2)c7c5 \n3.(0T3)c2c4 / (0T3)Nb8c6 \n4.(0T4)Nb1c3 / (0T4)h7h6 \n5.(0T5)h2h3 / (0T5)a7a6 \n6.(0T6)a2a3 / (0T6)Ra8b8 \n7.(0T7)Bf1d3 / (0T7)g7g6 \n8.(0T8)Nc3d5 / (0T8)e7e6 \n9.(0T9)Qd1c2 / (0T9)Rh8g8 \n10.(0T10)g2g3 / (0T10)Nc6d4 \n11.(0T11)Qc2d1 / (0T11)b7b5 \n12.(0T12)Nf3e5 / (0T12)Nd4f5 \n13.(0T13)Qd1f3 / (0T13)Bf8e7 \n14.(0T14)Bd3f5 / (0T14)e6f5 \n15.(0T15)Nd5f6 / (0T15)Be7f6 \n16.(0T16)Qf3d5 / (0T16)Rg8f8 \n17.(0T17)Qd5>>(0T15)f7 / (0T17)Qd8>>(0T14)a5 \n18.(-1T15)Nd5f6 / (-1T15)Ke8>>(0T14)f8 \n19.(-2T15)Nd5f6");
 
-            gb["-1L"].SetTurnOffset(0, true).AddBoardFromFen("ckc/3/PCP").CopyPrevious(1);
-            gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
-            gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
-            gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
+            //gb["-1L"].SetTurnOffset(0, true).AddBoardFromFen("ckc/3/PCP").CopyPrevious(1);
+            //gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
+            //gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
+            //gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
 
             di.SetChessBoardArrayFromBuilder(gb);
         }
