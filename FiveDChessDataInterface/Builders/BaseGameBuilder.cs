@@ -105,6 +105,8 @@ namespace FiveDChessDataInterface.Builders
                 return this;
             }
 
+            public override string ToString() => $"{this.timelineIndex} Boardcnt: {this.Boards.Count}";
+
             public readonly struct TimelineIndex
             {
                 public readonly bool isNegative;
@@ -142,6 +144,8 @@ namespace FiveDChessDataInterface.Builders
 
                 public static bool operator ==(TimelineIndex a, TimelineIndex b) => a.isNegative == b.isNegative && a.timeline == b.timeline;
                 public static bool operator !=(TimelineIndex a, TimelineIndex b) => !(a == b);
+
+                public override string ToString() => $"{(this.isNegative ? "-" : "+")}{this.timeline}L";
 
                 public override bool Equals(object obj)
                 {
@@ -395,9 +399,11 @@ namespace FiveDChessDataInterface.Builders
                     string moveSet = playerMoveSets[pmsi];
 
                     var moves = moveSet.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var move in moves)
+                    foreach (var moveold in moves)
                     {
-                        var srcBoardName = string.Join(null, move.Skip(1).TakeWhile(x => x != ')'));
+                        var branchExpected = moveold.Contains(">>");
+                        var moveFixed = moveold.Replace(">>", ">").Replace(">", ">>"); // treat >> and > the same
+                        var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
                         var srcBoardSplit = srcBoardName.Split('T');
                         var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcBoardSplit[0]}L");
                         var turn = int.Parse(srcBoardSplit[1]);
@@ -407,17 +413,18 @@ namespace FiveDChessDataInterface.Builders
                         if (srcBoard.turn != lastboard.turn || srcBoard.isBlackBoard != lastboard.isBlackBoard)
                             throw new Exception("Board that a simple move was made on is not the last board in the timeline.");
 
-                        var isTT = move.Contains(">>");
+
+                        var isTT = moveFixed.Contains(">>");
                         if (isTT)
                         {
-                            var splitted = move.Split(new[] { ">>" }, StringSplitOptions.None);
+                            var splitted = moveFixed.Split(new[] { ">>" }, StringSplitOptions.None);
                             var dstBoardName = string.Join(null, splitted[1].Skip(1).TakeWhile(x => x != ')'));
                             var dstBoardSplit = dstBoardName.Split('T');
                             var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstBoardSplit[0]}L");
                             var dstturn = int.Parse(dstBoardSplit[1]);
                             var dstindex = dstturn * 2 + pmsi;
                             // if the destboard has already been played on
-                            var dstBoardAlreadyPlayed = dstindex < dstTL.Boards.Count - 1;
+                            var dstBoardAlreadyPlayed = dstTL.Boards.Any(x => (x.turn * 2 + (x.isBlackBoard ? 1 : 0) > dstindex));
                             var dstBoard = dstTL.Boards.Single(x => x.turn == dstturn && x.isBlackBoard == (pmsi == 1));
 
                             var srcPos = string.Join(null, splitted[0].Reverse().Take(2).Reverse());
@@ -442,6 +449,9 @@ namespace FiveDChessDataInterface.Builders
                             newCbm2.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] =
                                 srcBoard.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
 
+                            if (branchExpected != dstBoardAlreadyPlayed)
+                                throw new FormatException($"Expected a different type of move (branching vs nonbranching timtetravel move). At move: {moveold}");
+
                             if (dstBoardAlreadyPlayed) // make a new TL
                             {
                                 var orderedTls = this.Timelines.OrderBy(x => (x.timelineIndex.timeline + 0.5) * (x.timelineIndex.isNegative ? -1 : 1));
@@ -461,7 +471,7 @@ namespace FiveDChessDataInterface.Builders
                         }
                         else
                         {
-                            var movechars = string.Join(null, move.Reverse().Take(4).Reverse());
+                            var movechars = string.Join(null, moveFixed.Reverse().Take(4).Reverse());
                             var srcPos = movechars.Substring(0, 2);
                             var dstPos = movechars.Substring(2, 2);
 
