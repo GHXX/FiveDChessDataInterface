@@ -52,6 +52,7 @@ namespace FiveDChessDataInterface.Builders
         {
             private readonly int boardHeight;
             private readonly int boardWidth;
+            public ChessBoardData previousBoardIfBranching = null;
             public List<ChessBoardData> Boards { get; }
             public readonly TimelineIndex timelineIndex;
             private int subturnOffset = 0; // TODO set the cosmetic turn offset somehow
@@ -338,6 +339,9 @@ namespace FiveDChessDataInterface.Builders
             return idsFixed;
         }
 
+        private List<ChessBoardMemory> CachedCbms = new List<ChessBoardMemory>();
+        public ChessBoardMemory[] BuildCbms2() => this.CachedCbms.ToArray();
+
 
         public ChessBoard[] Build() => BuildCbms().Select(x => new ChessBoard(x, this.boardWidth, this.boardHeight)).ToArray();
 
@@ -406,7 +410,7 @@ namespace FiveDChessDataInterface.Builders
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
                         var srcBoardSplit = srcBoardName.Split('T');
                         var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcBoardSplit[0]}L");
-                        var turn = int.Parse(srcBoardSplit[1]);
+                        var turn = int.Parse(srcBoardSplit[1]) - 1;
 
                         var srcBoard = srcTL.Boards.Single(x => x.turn == turn && x.isBlackBoard == (pmsi == 1));
                         var lastboard = srcTL.Boards.Last();
@@ -421,7 +425,7 @@ namespace FiveDChessDataInterface.Builders
                             var dstBoardName = string.Join(null, splitted[1].Skip(1).TakeWhile(x => x != ')'));
                             var dstBoardSplit = dstBoardName.Split('T');
                             var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstBoardSplit[0]}L");
-                            var dstturn = int.Parse(dstBoardSplit[1]);
+                            var dstturn = int.Parse(dstBoardSplit[1]) - 1;
                             var dstindex = dstturn * 2 + pmsi;
                             // if the destboard has already been played on
                             var dstBoardAlreadyPlayed = dstTL.Boards.Any(x => (x.turn * 2 + (x.isBlackBoard ? 1 : 0) > dstindex));
@@ -460,7 +464,10 @@ namespace FiveDChessDataInterface.Builders
                                     orderedTls.First().timelineIndex :
                                     orderedTls.Last().timelineIndex;
 
-                                var tl = new Timeline(this.boardHeight, this.boardWidth, new Timeline.TimelineIndex(srcBoard.isBlackBoard, newTLIndex.timeline + 1)); // TODO set previous board properly
+                                var tl = new Timeline(this.boardHeight, this.boardWidth, new Timeline.TimelineIndex(srcBoard.isBlackBoard, newTLIndex.timeline + 1)) // TODO set previous board properly
+                                {
+                                    previousBoardIfBranching = srcBoard
+                                };
                                 this.Timelines.Add(tl);
                                 tl.Boards.Add(newCbm2);
                             }
