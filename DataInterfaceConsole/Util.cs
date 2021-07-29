@@ -3,7 +3,6 @@ using DataInterfaceConsole.Types.Exceptions;
 using FiveDChessDataInterface;
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DataInterfaceConsole
 {

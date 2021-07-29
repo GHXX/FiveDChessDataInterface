@@ -1,9 +1,4 @@
-﻿using FiveDChessDataInterface.MemoryHelpers;
-using FiveDChessDataInterface.Variants;
-using System;
-using System.Threading;
-
-namespace DataInterfaceConsole.Actions
+﻿namespace DataInterfaceConsole.Actions
 {
     class LoadPredefinedOnlineVariant : BaseLoadPredefinedVariant
     {

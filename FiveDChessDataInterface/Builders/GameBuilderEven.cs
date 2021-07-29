@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace FiveDChessDataInterface.Builders
+﻿namespace FiveDChessDataInterface.Builders
 {
     public class GameBuilderEven : BaseGameBuilder
     {
@@ -13,8 +9,8 @@ namespace FiveDChessDataInterface.Builders
 
         protected override void SetupInitialTimelines()
         {
-            Timelines.Add(new Timeline(boardHeight, boardWidth, "+0L"));
-            Timelines.Add(new Timeline(boardHeight, boardWidth, "-0L"));
+            this.Timelines.Add(new Timeline(this.boardHeight, this.boardWidth, "+0L"));
+            this.Timelines.Add(new Timeline(this.boardHeight, this.boardWidth, "-0L"));
         }
     }
 }
