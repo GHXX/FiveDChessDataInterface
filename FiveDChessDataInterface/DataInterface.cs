@@ -37,6 +37,11 @@ namespace FiveDChessDataInterface
         [RequiredForSave("GameState")]
         public MemoryLocation<int> MemLocGameState { get; private set; } // if 0 then the game is running or unstarted, 1 means someone won, 2 is a draw
 
+        /// <summary>
+        /// The total time that this match has been running for.
+        /// </summary>
+        [RequiredForSave("TotalMatchTimeElapsed")]
+        public MemoryLocation<float> MemLocTotalMatchTimeElapsed { get; private set; }
         [RequiredForSave("WhiteTime")]
         public MemoryLocation<int> MemLocWhiteTime { get; private set; }
 
@@ -216,6 +221,8 @@ namespace FiveDChessDataInterface
             this.MemLocProbablyBoardCount = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x28);
             this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
             this.MemLocSusProbablyBoardCntAgain = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x24);
+
+            this.MemLocTotalMatchTimeElapsed = new MemoryLocation<float>(GetGameHandle(), chessboardPointerLocation, 0x27C);
 
 
         }

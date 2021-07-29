@@ -68,6 +68,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
                     return (dynamic)BitConverter.ToUInt32(bytes, 0);
                 case TypeCode.UInt64:
                     return (dynamic)BitConverter.ToUInt64(bytes, 0);
+                case TypeCode.Single:
+                    return (dynamic)BitConverter.ToSingle(bytes, 0);
+                case TypeCode.Double:
+                    return (dynamic)BitConverter.ToDouble(bytes, 0);
 
                 case TypeCode.Object:
                     switch (t.FullName)
@@ -95,6 +99,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
                 case TypeCode.UInt16:
                 case TypeCode.UInt32:
                 case TypeCode.UInt64:
+                case TypeCode.Single:
+                case TypeCode.Double:
                     bytesToWrite = BitConverter.GetBytes((dynamic)newValue); break;
 
                 case TypeCode.Object:
