@@ -9,6 +9,7 @@ namespace FiveDChessDataInterface.Builders
     {
         public readonly int boardHeight;
         public readonly int boardWidth;
+        public int CosmeticTurnOffset { get; set; }
 
         public List<Timeline> Timelines { get; }
         public bool EvenNumberOfStartingTimelines { get; }
@@ -389,6 +390,8 @@ namespace FiveDChessDataInterface.Builders
                 }
             }
 
+            int? cosmeticTurnOffset = null;
+
             for (int i = 0; i < lines.Count; i++)
             {
                 string line = lines[i];
@@ -410,12 +413,27 @@ namespace FiveDChessDataInterface.Builders
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
                         var srcBoardSplit = srcBoardName.Split('T');
                         var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcBoardSplit[0]}L");
-                        var turn = int.Parse(srcBoardSplit[1]) - 1;
+                        var pgnTurn = int.Parse(srcBoardSplit[1]);
+
+
+                        var lastboard = srcTL.Boards.Last();
+                        var expectedOffset = 0;// pgnTurn - lastboard.turn;
+                        if (cosmeticTurnOffset == null)
+                            cosmeticTurnOffset = expectedOffset;
+                        else if (cosmeticTurnOffset.Value != expectedOffset)
+                            throw new Exception("Inconsistent turn value.");
+
+                        var turn = pgnTurn - cosmeticTurnOffset;
+
 
                         var srcBoard = srcTL.Boards.Single(x => x.turn == turn && x.isBlackBoard == (pmsi == 1));
-                        var lastboard = srcTL.Boards.Last();
-                        if (srcBoard.turn != lastboard.turn || srcBoard.isBlackBoard != lastboard.isBlackBoard)
-                            throw new Exception("Board that a simple move was made on is not the last board in the timeline.");
+
+                        if (srcBoard.isBlackBoard != lastboard.isBlackBoard)
+                            throw new Exception("Tried to play a move on a board that belongs to the other player!");
+
+
+                        if (srcBoard.turn != lastboard.turn)
+                            throw new Exception("Board that a move was made on is not the last board in the timeline.");
 
 
                         var isTT = moveFixed.Contains(">>");
@@ -496,6 +514,7 @@ namespace FiveDChessDataInterface.Builders
                 }
             }
 
+            this.CosmeticTurnOffset = cosmeticTurnOffset ?? 0;
             return this;
         }
     }

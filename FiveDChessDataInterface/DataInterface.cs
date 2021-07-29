@@ -401,8 +401,7 @@ namespace FiveDChessDataInterface
             ExecuteWhileGameSuspendedLocked(() =>
             {
                 this.MemLocTimelineValueOffset.SetValue(b.EvenNumberOfStartingTimelines ? -1 : 0);
-                // TODO maybe set the turn offset?
-                //this.MemLocCosmeticTurnOffset = 
+                this.MemLocCosmeticTurnOffset.SetValue(b.CosmeticTurnOffset);
                 SetChessBoardArray(b.Build());
             });
         }
