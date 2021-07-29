@@ -222,7 +222,7 @@ namespace FiveDChessDataInterface
             this.MemLocCosmeticTurnOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x20);
             this.MemLocSusProbablyBoardCntAgain = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x24);
 
-            this.MemLocTotalMatchTimeElapsed = new MemoryLocation<float>(GetGameHandle(), chessboardPointerLocation, 0x27C);
+            this.MemLocTotalMatchTimeElapsed = new MemoryLocation<float>(GetGameHandle(), chessboardPointerLocation, 0x27C); // same value at +4 after this one
 
 
         }
