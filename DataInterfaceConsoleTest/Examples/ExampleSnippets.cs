@@ -41,9 +41,14 @@ namespace DataInterfaceConsoleTest.Examples
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
 
             var gb2 = new GameBuilderOdd(8, 8);
-            gb2["0L"].SetTurnOffset(0, true).AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR").CopyPrevious(1);
-            //gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)e2e3 / (0T1)Ng8f6 \n2.(0T2)Ng1f3 / (0T2)c7c5 \n3.(0T3)c2c4 / (0T3)Nb8c6 \n4.(0T4)Nb1c3 / (0T4)h7h6 \n5.(0T5)h2h3 / (0T5)a7a6 \n6.(0T6)a2a3 / (0T6)Ra8b8 \n7.(0T7)Bf1d3 / (0T7)g7g6 \n8.(0T8)Nc3d5 / (0T8)e7e6 \n9.(0T9)Qd1c2 / (0T9)Rh8g8 \n10.(0T10)g2g3 / (0T10)Nc6d4 \n11.(0T11)Qc2d1 / (0T11)b7b5 \n12.(0T12)Nf3e5 / (0T12)Nd4f5 \n13.(0T13)Qd1f3 / (0T13)Bf8e7 \n14.(0T14)Bd3f5 / (0T14)e6f5 \n15.(0T15)Nd5f6 / (0T15)Be7f6 \n16.(0T16)Qf3d5 / (0T16)Rg8f8 \n17.(0T17)Qd5>>(0T15)f7 / (0T17)Qd8>>(0T14)a5 \n18.(-1T15)Nd5f6 / (-1T15)Ke8>>(0T14)f8 \n19.(-2T15)Nd5f6");
-            gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)Nb1c3 / (0T1)e7e6 \n2.(0T2)Ng1f3 / (0T2)Qd8f6 \n3.(0T3)Nc3e4 / (0T3)Qf6f5 \n4.(0T4)Ne4g3 / (0T4)Qf5c5 \n5.(0T5)d2d4 / (0T5)Qc5>>(0T2)f2 \n6.(-1T3)Ke1f2 / (-1T3)Bf8c5 \n7.(-1T4)d2d4 / (-1T4)Bc5d4 \n8.(-1T5)Qd1d4 / (-1T5)c7c5 \n9.(-1T6)Qd4g7 (0T6)Bc1g5 / (-1T6)Qd8b6 (0T6)Bf8b4 \n10.(0T7)c2c3 (-1T7)Qg7f7 / (-1T7)Ke8f7 (0T7)Bb4c3 \n11.(-1T8)Nf3e5 (0T8)b2c3 / (-1T8)Kf7f8 (0T8)f7f6 \n12.(-1T9)Ne5>(0T9)e7 / (0T9)Ng8e7 (-1T9)c5c4 \n13.(-1T10)Bc1e3 (0T10)Bg5f4 / (-1T10)Qb6b4 (0T10)b7b6 \n14.(-1T11)Be3f4 (0T11)Bf4c7 / (-1T11)Qb4>(0T11)c3 \n15.(-1T12)Bf4>>(-1T9)c4 / (1T9)Qb6d6 \n16.(1T10)Ne5>>(0T10)e7 / (1T10)Qd6d4 (2T10)Ke8e7");
+            gb2["0L"].AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR");
+            gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)e2e3 / (0T1)Ng8f6 \n2.(0T2)Ng1f3 / (0T2)c7c5 \n3.(0T3)c2c4 / (0T3)Nb8c6 \n4.(0T4)Nb1c3 / (0T4)h7h6 \n5.(0T5)h2h3 / (0T5)a7a6 \n6.(0T6)a2a3 / (0T6)Ra8b8 \n7.(0T7)Bf1d3 / (0T7)g7g6 \n8.(0T8)Nc3d5 / (0T8)e7e6 \n9.(0T9)Qd1c2 / (0T9)Rh8g8 \n10.(0T10)g2g3 / (0T10)Nc6d4 \n11.(0T11)Qc2d1 / (0T11)b7b5 \n12.(0T12)Nf3e5 / (0T12)Nd4f5 \n13.(0T13)Qd1f3 / (0T13)Bf8e7 \n14.(0T14)Bd3f5 / (0T14)e6f5 \n15.(0T15)Nd5f6 / (0T15)Be7f6 \n16.(0T16)Qf3d5 / (0T16)Rg8f8 \n17.(0T17)Qd5>>(0T15)f7 / (0T17)Qd8>>(0T14)a5 \n18.(-1T15)Nd5f6 / (-1T15)Ke8>>(0T14)f8 \n19.(-2T15)Nd5f6");
+
+            //// turn zero with normal turn numbers
+            //gb2["0L"].SetTurnOffset(0, true).AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR").CopyPrevious(1);
+            //gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)Nb1c3 / (0T1)e7e6 \n2.(0T2)Ng1f3 / (0T2)Qd8f6 \n3.(0T3)Nc3e4 / (0T3)Qf6f5 \n4.(0T4)Ne4g3 / (0T4)Qf5c5 \n5.(0T5)d2d4 / (0T5)Qc5>>(0T2)f2 \n6.(-1T3)Ke1f2 / (-1T3)Bf8c5 \n7.(-1T4)d2d4 / (-1T4)Bc5d4 \n8.(-1T5)Qd1d4 / (-1T5)c7c5 \n9.(-1T6)Qd4g7 (0T6)Bc1g5 / (-1T6)Qd8b6 (0T6)Bf8b4 \n10.(0T7)c2c3 (-1T7)Qg7f7 / (-1T7)Ke8f7 (0T7)Bb4c3 \n11.(-1T8)Nf3e5 (0T8)b2c3 / (-1T8)Kf7f8 (0T8)f7f6 \n12.(-1T9)Ne5>(0T9)e7 / (0T9)Ng8e7 (-1T9)c5c4 \n13.(-1T10)Bc1e3 (0T10)Bg5f4 / (-1T10)Qb6b4 (0T10)b7b6 \n14.(-1T11)Be3f4 (0T11)Bf4c7 / (-1T11)Qb4>(0T11)c3 \n15.(-1T12)Bf4>>(-1T9)c4 / (1T9)Qb6d6 \n16.(1T10)Ne5>>(0T10)e7 / (1T10)Qd6d4 (2T10)Ke8e7");
+
+
             di.SetChessBoardArrayFromBuilder(gb2);
 
             // demo code
