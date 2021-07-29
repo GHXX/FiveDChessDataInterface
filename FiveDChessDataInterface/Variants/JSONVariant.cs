@@ -19,6 +19,9 @@ namespace FiveDChessDataInterface.Variants
         [JsonProperty("Timelines")]
         public Dictionary<string, string[]> Timelines { get; set; }
 
+        [JsonProperty("CosmeticTurnOffset")]
+        public int? CosmeticTurnOffset { get; set; } = null;
+
         private string GetAnyExpandedBoardFen() => FenUtil.ExpandFen(this.Timelines.SelectMany(x => x.Value).First(x => x != null));
 
 
@@ -50,6 +53,10 @@ namespace FiveDChessDataInterface.Variants
                     gameBuilder[timelineIndex].AddBoardFromFen(board);
                 }
             }
+
+            if (this.CosmeticTurnOffset.HasValue)
+                gameBuilder.CosmeticTurnOffset = this.CosmeticTurnOffset.Value;
+
             return gameBuilder;
         }
     }

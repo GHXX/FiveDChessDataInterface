@@ -14,8 +14,9 @@
     "Timelines": {
       "0L": [
         null, "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR", "rnbqkr/pppppp/6/6/PPPPPP/RKQBNR"  
-      ],
-    }
+      ]
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Small Set (5x5) - Turn Zero",
@@ -23,8 +24,9 @@
     "Timelines": {
       "0L": [
         null, "kqbnr/ppppp/5/PPPPP/KQBNR", "kqbnr/ppppp/5/PPPPP/KQBNR"  
-      ],
-    }
+      ]
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Very Small Set (4x4) - Turn Zero",
@@ -32,8 +34,9 @@
     "Timelines": {
       "0L": [
         null, "nbrk/pppp/PPPP/NBRK", "nbrk/pppp/PPPP/NBRK"  
-      ],
-    }
+      ]
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Custom - Royalty War",
@@ -84,7 +87,7 @@
     }
   },
   {
-    "Name": "Custom - Mournful Vertigo",
+    "Name": "Custom - Mournful Vertigo (T0)",
     "Author": "Void Voyage",
     "Timelines": {
       "-0L": [
@@ -93,7 +96,8 @@
       "+0L": [
         null, "2B2R1/3RCN1/7/7/3p3/2nbpw1/Wbdrukn", "2B2R1/3RCN1/7/7/3p3/2nbpw1/Wbdrukn"
       ]
-    }
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Excessive - Two Regents",
@@ -324,7 +328,8 @@
       "0L": [
         null, "rnbqkbnr/wwwwwwww/8/8/8/8/WWWWWWWW/RNBQKBNR", "rnbqkbnr/wwwwwwww/8/8/8/8/WWWWWWWW/RNBQKBNR"
       ]
-    }
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Disconnected - Late Arrival v2",
@@ -378,7 +383,8 @@
       "-0L": [
         null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ], 
-    }
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Custom - Mongolian Raid",
@@ -402,7 +408,7 @@
     }
   },
   {
-    "Name": "Distant Dimensions",
+    "Name": "Distant Dimensions (T0)",
     "Author": "Narik",
     "Timelines": {
       "+2L": [
@@ -420,7 +426,8 @@
      "-2L": [
         null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
-    }
+    },
+    "CosmeticTurnOffset": -1
   },
   {
     "Name": "Fair Two Timelines",
