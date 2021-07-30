@@ -440,5 +440,28 @@
         null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
       ]
     }
-  }
+  },
+  {
+    "Name": "Two Timelines Turn Zero",
+    "Author": "CrazyPenguin0111",
+    "Timelines": {
+      "+0L": [
+        null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+        ],
+      "-0L": [
+        null, "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ]
+    },
+     "CosmeticTurnOffset": -1
+  },
+  {
+    "Name": "Reversed Royalty Turn Zero"
+    "Author": "CrazyPenguin0111",
+    "Timelines": {
+      "0L": [
+        null, "rnbycbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBYCBNR", "rnbycbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBYCBNR"
+      ]
+    },
+     "CosmeticTurnOffset": -1
+  },
 ]
