@@ -332,7 +332,7 @@
     "CosmeticTurnOffset": -1
   },
   {
-    "Name": "Disconnected - Late Arrival v2",
+    "Name": "Disconnected - Late Arrival, Unopposed",
     "Author": "thatotherdavidguy",
     "Timelines": {
       "-1L": [
@@ -347,7 +347,7 @@
     }
   },
   {
-    "Name": "Disconnected - Late Arrival v3",
+    "Name": "Disconnected - Late Arrival, Symmetric",
     "Author": "thatotherdavidguy",
     "Timelines": {
       "-1L": [
