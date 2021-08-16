@@ -39,10 +39,17 @@ namespace DataInterfaceConsole.Actions
                     var originalConsoleColor = Console.ForegroundColor;
                     if (at == null) // if we are using direct injection, build the variant and check how many boards it has.
                     {
-                        var boardCount = variants[i].GetGameBuilder().Build().Length;
-                        if (boardCount > safeBoardLimit)
+                        try
                         {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
+                            var boardCount = variants[i].GetGameBuilder().Build().Length;
+                            if (boardCount > safeBoardLimit)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                            }
+                        }
+                        catch
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
                         }
                     }
 

@@ -80,11 +80,29 @@ namespace FiveDChessDataInterface.Builders
 
             public Timeline AddBoardFromFen(string fen)
             {
-                // last subturn + 1, or the offset if there are no boards
-                var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
 
-                var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, fen);
-                this.Boards.Add(b);
+                if (fen != null)
+                {
+                    // last subturn + 1, or the offset if there are no boards
+                    int nextSubturn;
+                    if (this.Boards.Any())
+                    {
+                        var lastValid = this.Boards.FindLastIndex(x => x != null);
+                        var nullBoardsAfter = this.Boards.Count() - lastValid - 1; // count nullboards
+                        var b2 = this.Boards[lastValid];
+                        nextSubturn = b2.turn * 2 + (b2.isBlackBoard ? 1 : 0) + 1 + nullBoardsAfter;
+                    }
+                    else
+                    {
+                        nextSubturn = this.subturnOffset;
+                    }
+                    var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, fen);
+                    this.Boards.Add(b);
+                }
+                else
+                {
+                    this.Boards.Add(null);
+                }
                 return this;
             }
 
@@ -271,7 +289,7 @@ namespace FiveDChessDataInterface.Builders
             {
                 int lastBoardId = -1;
                 var timelineCbms = new List<ChessBoardMemory>();
-                foreach (var board in tl.Boards)
+                foreach (var board in tl.Boards.Where(x => x != null))
                 {
                     var cbm = new ChessBoardMemory();
 
