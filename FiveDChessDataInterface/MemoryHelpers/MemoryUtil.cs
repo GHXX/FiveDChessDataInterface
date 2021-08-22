@@ -7,7 +7,11 @@ namespace FiveDChessDataInterface.MemoryHelpers
 {
     static class MemoryUtil
     {
-        private static Dictionary<IntPtr, byte[]> FindMemoryInternal(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind, bool allowNop90Wildcards)
+        [Obsolete("use the overload which accepts byte?[] as a paramter instead!")]
+        private static Dictionary<IntPtr, byte[]> FindMemoryInternal(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind, bool treatNop90AsWildcard)
+            => FindMemoryInternal(gameHandle, start, length, bytesToFind.Select(x => (treatNop90AsWildcard && x == 0x90) ? (byte?)null : x).ToArray());
+
+        private static Dictionary<IntPtr, byte[]> FindMemoryInternal(IntPtr gameHandle, IntPtr start, uint length, byte?[] bytesToFind)
         {
             var foundElements = new Dictionary<IntPtr, byte[]>();
 
@@ -17,7 +21,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             for (int i = 0; i < bytes.Length; i++)
             {
                 var currByte = bytes[i];
-                if (bytesToFind[index2] == currByte || (allowNop90Wildcards && bytesToFind[index2] == 0x90))
+                if (!bytesToFind[index2].HasValue || bytesToFind[index2].Value == currByte)
                 {
                     index2++;
                 }
@@ -39,11 +43,16 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return foundElements;
         }
 
+        [Obsolete]
         internal static List<IntPtr> FindMemory(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind)
             => FindMemoryInternal(gameHandle, start, length, bytesToFind, false).Keys.ToList();
 
+        [Obsolete]
         internal static Dictionary<IntPtr, byte[]> FindMemoryWithWildcards(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind)
             => FindMemoryInternal(gameHandle, start, length, bytesToFind, true);
+
+        internal static Dictionary<IntPtr, byte[]> FindMemoryWithWildcards(IntPtr gameHandle, IntPtr start, uint length, byte?[] bytesToFind)
+            => FindMemoryInternal(gameHandle, start, length, bytesToFind);
 
 
         internal static T ReadValue<T>(IntPtr gameHandle, IntPtr location)
