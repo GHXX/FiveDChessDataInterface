@@ -16,6 +16,7 @@ namespace FiveDChessDataInterface
     public class DataInterface
     {
         const string executableName = "5dchesswithmultiversetimetravel";
+
         public Process GameProcess { get; }
         public MemoryLocation<IntPtr> MemLocChessArrayPointer { get; private set; } // points to the chessboard array.
         public MemoryLocation<int> MemLocChessArrayElementCount { get; private set; } // located right before the chessboard array capactiy
@@ -67,6 +68,24 @@ namespace FiveDChessDataInterface
         private MemoryLocation<int> MemLocProbablyBoardCount { get; set; }
         private MemoryLocation<uint> MemLocBlackTimelineCountInternalInverted { get; set; }
         private MemoryLocation<int> MemLocSusProbablyBoardCntAgain { get; set; } // still a candidate, not sure if its actually needed or what it does, but it seems to equal to the boardcount
+
+        // --------- RWX Memlocs ---------
+
+        public MemoryLocationRestorable<int> MemLocClock1BaseTime { get; set; } // short timer
+        public MemoryLocationRestorable<int> MemLocClock1Increment { get; set; } // increment
+
+        public MemoryLocationRestorable<int> MemLocClock2BaseTime { get; set; } // medium timer
+        public MemoryLocationRestorable<int> MemLocClock2Increment { get; set; }
+
+        public MemoryLocationRestorable<int> MemLocClock3BaseTime { get; set; } // long timer
+        public MemoryLocationRestorable<int> MemLocClock3Increment { get; set; }
+
+
+
+
+        // -------------------------------
+
+
 
         // ONLY TESTED FOR ODD NUMBER OF STARTING BOARDS!!
         // TODO TEST ON EVEN NUMBER OF STARTING TIMELINES
@@ -172,7 +191,7 @@ namespace FiveDChessDataInterface
             this.recalcBitboardsMemLoc = this.asmHelper.AllocCodeInTargetProcessWithJump(recalcBitBoardsThreadSetupCode.ToArray(), recalc_bitboards_func);
         }
 
-        
+
         private Dictionary<IntPtr, byte[]> FindMemoryInGameCode(byte?[] bytesToFind) =>
             MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, bytesToFind);
 
@@ -223,6 +242,39 @@ namespace FiveDChessDataInterface
             this.MemLocSusProbablyBoardCntAgain = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x24);
 
             this.MemLocTotalMatchTimeElapsed = new MemoryLocation<float>(GetGameHandle(), chessboardPointerLocation, 0x27C); // same value at +4 after this one
+
+
+            var timerMemoryArea = new byte?[] { 0x31, 0xC9, 0x48, 0x83, 0xF8, 0x02 };
+
+            var timerResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryArea);
+
+
+            if (timerResults.Count != 1)
+            {
+                throw new AmbiguousMatchException($"{timerResults.Count} memory locations matched, which is not 1!");
+            }
+
+            // "fix" compiler optimizations
+            var moddedCode = new byte[] { 0x31, 0xDB, 0x90, 0xBA, 0x05, 0x00, 0x00, 0x00, 0x48, 0x0F, 0x44, 0xCA, 0xBA, 0x58, 0x02, 0x00, 0x00 };
+            KernelMethods.WriteMemory(GetGameHandle(), IntPtr.Add(timerResults.Single().Key, timerMemoryArea.Length), moddedCode);
+
+            var firstTimerBaseTime = IntPtr.Add(timerResults.Single().Key, timerMemoryArea.Length + 4); // start postion of the null area
+
+
+            // RWX memlocs:
+            this.MemLocClock1Increment = new MemoryLocationRestorable<int>(GetGameHandle(), firstTimerBaseTime);
+            this.MemLocClock1BaseTime = this.MemLocClock1Increment.WithOffset<int>(5 + 4);
+
+            this.MemLocClock2Increment = this.MemLocClock1BaseTime.WithOffset<int>(8 + 4);
+            this.MemLocClock2BaseTime = this.MemLocClock2Increment.WithOffset<int>(5 + 4);
+
+            this.MemLocClock3Increment = this.MemLocClock2BaseTime.WithOffset<int>(8 + 4);
+            this.MemLocClock3BaseTime = this.MemLocClock3Increment.WithOffset<int>(5 + 4);
+
+            KernelMethods.ChangePageProtection(GetGameHandle(),
+                                               this.MemLocClock1BaseTime.Location,
+                                               (int)(this.MemLocClock3Increment.Location.ToInt64() - this.MemLocClock1BaseTime.Location.ToInt64()),
+                                               KernelMethods.FlPageProtect.PAGE_EXECUTE_READWRITE);
 
 
         }

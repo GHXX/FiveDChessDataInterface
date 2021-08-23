@@ -36,6 +36,25 @@ namespace DataInterfaceConsole.Actions
                         return;
                     }
                 }
+                else if (chosenSetting is SettingsValuePrimitive<int?> sv2)
+                {
+                    WriteLineIndented($"Please enter an integer to be set as the new value, or enter 'reset' to reset the setting:");
+                    var str = ConsoleNonBlocking.ReadLineBlocking();
+                    if (int.TryParse(str, out int input2))
+                    {
+                        sv2.SetPrimitive(input2);
+                    }
+                    else if (str.Replace("\"", null).Replace("'", null).ToLowerInvariant() == "reset")
+                    {
+                        sv2.SetPrimitive(null);
+                    }
+                    else
+                    {
+                        WriteLineIndented("Invalid input format. Setting was left unchanged.", 2);
+                        return;
+                    }
+                }
+
                 else
                 {
                     throw new NotImplementedException("This setting type has not been implemented yet!");
