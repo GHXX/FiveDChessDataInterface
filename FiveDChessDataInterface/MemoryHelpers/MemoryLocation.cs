@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
@@ -26,7 +27,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         /// WRITING INVALID VALUES MAY RESULT IN AN INSTANT CRASH, OR CAUSE UNEXPECTED EVENTS.
         /// </summary>
         /// <param name="newValue"></param>
-        public void SetValue(T newValue)
+        public virtual void SetValue(T newValue)
         {
             MemoryUtil.WriteValue<T>(this.Handle, this.Location, newValue);
         }
@@ -55,5 +56,10 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             return new MemoryLocation<NewT>(this.Handle, IntPtr.Add(this.Location, offset));
         }
+
+        /// <summary>
+        /// Changes page protection that this location is in to RWX. USE SPARINGLY.
+        /// </summary>
+        public void UnprotectPage() => KernelMethods.ChangePageProtection(this.Handle, this.Location, Marshal.SizeOf<T>(), KernelMethods.FlPageProtect.PAGE_EXECUTE_READWRITE);
     }
 }
