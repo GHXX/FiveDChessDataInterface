@@ -57,7 +57,7 @@ namespace DataInterfaceConsole.Actions.Settings
 
         public void Save()
         {
-            var str = JsonConvert.SerializeObject(this.settingsStore.ToDictionary(x => x.Key, x => x.Value.GetValue()));
+            var str = JsonConvert.SerializeObject(this.settingsStore.ToDictionary(x => x.Key, x => x.Value.GetValue()), Formatting.Indented);
             File.WriteAllText(settingsFilePath, str);
             Console.WriteLine("Settings saved.");
         }
