@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 
 namespace FiveDChessDataInterface.MemoryHelpers
@@ -124,6 +125,12 @@ namespace FiveDChessDataInterface.MemoryHelpers
             }
 
             KernelMethods.WriteMemory(handle, location, bytesToWrite);
+        }
+
+        public static IntPtr LoadFunctionIntoMemory(string assembly, string functionName)
+        {
+            var handle = KernelMethods.LoadLibrary(assembly);
+            return KernelMethods.GetProcAddress(handle, functionName);
         }
     }
 }
