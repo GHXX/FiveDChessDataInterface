@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
-    static class MemoryUtil
+    public static class MemoryUtil
     {
         [Obsolete("use the overload which accepts byte?[] as a paramter instead!")]
         private static Dictionary<IntPtr, byte[]> FindMemoryInternal(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind, bool treatNop90AsWildcard)
@@ -17,26 +17,23 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
             var bytes = KernelMethods.ReadMemory(gameHandle, start, length);
 
-            int index2 = 0;
-            for (int i = 0; i < bytes.Length; i++)
+            for (int basePos = 0; basePos < bytes.Length - bytesToFind.Length; basePos++)
             {
-                var currByte = bytes[i];
-                if (!bytesToFind[index2].HasValue || bytesToFind[index2].Value == currByte)
+                bool found = true;
+                for (int i = 0; i < bytesToFind.Length; i++)
                 {
-                    index2++;
-                }
-                else
-                {
-                    index2 = 0;
-                    continue;
+                    var currByte = bytes[basePos + i];
+                    if (bytesToFind[i].HasValue && bytesToFind[i].Value != currByte)
+                    {
+                        found = false;
+                        break;
+                    }
+
                 }
 
-                if (index2 >= bytesToFind.Length)
+                if (found)
                 {
-                    var inArrOffset = i - index2 + 1;
-                    foundElements.Add(IntPtr.Add(start, inArrOffset), bytes.Skip(inArrOffset).Take(bytesToFind.Length).ToArray());
-
-                    index2 = 0;
+                    foundElements.Add(IntPtr.Add(start, basePos), bytes.Skip(basePos).Take(bytesToFind.Length).ToArray());
                 }
             }
 
@@ -51,11 +48,11 @@ namespace FiveDChessDataInterface.MemoryHelpers
         internal static Dictionary<IntPtr, byte[]> FindMemoryWithWildcards(IntPtr gameHandle, IntPtr start, uint length, byte[] bytesToFind)
             => FindMemoryInternal(gameHandle, start, length, bytesToFind, true);
 
-        internal static Dictionary<IntPtr, byte[]> FindMemoryWithWildcards(IntPtr gameHandle, IntPtr start, uint length, byte?[] bytesToFind)
+        public static Dictionary<IntPtr, byte[]> FindMemoryWithWildcards(IntPtr gameHandle, IntPtr start, uint length, byte?[] bytesToFind)
             => FindMemoryInternal(gameHandle, start, length, bytesToFind);
 
 
-        internal static T ReadValue<T>(IntPtr gameHandle, IntPtr location)
+        public static T ReadValue<T>(IntPtr gameHandle, IntPtr location)
         {
             var bytes = KernelMethods.ReadMemory(gameHandle, location, (uint)Marshal.SizeOf<T>());
             var t = typeof(T);
@@ -96,7 +93,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             }
         }
 
-        internal static void WriteValue<T>(IntPtr handle, IntPtr location, T newValue)
+        public static void WriteValue<T>(IntPtr handle, IntPtr location, T newValue)
         {
             var t = typeof(T);
             byte[] bytesToWrite = null;
