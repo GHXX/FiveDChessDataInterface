@@ -7,9 +7,9 @@ bool alreadyRan = false;
 
 int main(){}
 
-void Init()
+extern "C" __declspec(dllexport) void Init(void)
 {
-	if (alreadyRan)
+	if (!alreadyRan)
 	{
 		alreadyRan = true;
 		auto hGameWindow = GetActiveWindow();

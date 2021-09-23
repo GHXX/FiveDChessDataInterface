@@ -21,6 +21,10 @@
     <ProjectReference Include="..\FiveDChessDataInterface\FiveDChessDataInterface.csproj" />
   </ItemGroup>
 
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /Y /E /S &quot;$(SolutionDir)DataInterfaceBridge\$(ConfigurationName)&quot; &quot;$(OutDir)\DataInterfaceBridge\&quot;" />
+  </Target>
+
 
 
 </Project>

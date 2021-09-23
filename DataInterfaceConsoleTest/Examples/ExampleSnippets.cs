@@ -6,6 +6,7 @@ using FiveDChessDataInterface.Saving;
 using FiveDChessDataInterface.Util;
 using FiveDChessDataInterface.Variants;
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -39,6 +40,59 @@ namespace DataInterfaceConsoleTest.Examples
             };
             var res = MemoryUtil.FindMemoryWithWildcards(di.GetGameHandle(), di.GetEntryPoint(), (uint)di.GameProcess.MainModule.ModuleMemorySize, draw_loop_bytes);
             var sdlGlSwapWindowCall = res.Single(); // format: (0xE8) (4bytes address) aka CALL (4bytes address)
+
+            var detourCodeMem = KernelMethods.AllocProcessMemory(di.GetGameHandle(), 1024, true);
+
+            var bridgeDllPath = Path.Join(new FileInfo(typeof(DataInterface).Assembly.Location).Directory.FullName, "DataInterfaceBridge", "DataInterfaceBridge.dll");
+
+            int getLibFuncOffset(string path, string funcName)
+            {
+                var hLib = KernelMethods.LoadLibrary(path);
+                if (hLib == IntPtr.Zero)
+                    throw new ArgumentException("hLib ptr is zero!");
+
+                var address = KernelMethods.GetProcAddress(hLib, funcName);
+                if (address == IntPtr.Zero)
+                    throw new ArgumentException("func name was invalid as the function could not be found.");
+
+                var offset = address.ToInt64() - hLib.ToInt64();
+                return (int)offset;
+            }
+
+            int offset = getLibFuncOffset(bridgeDllPath, "Init");
+
+
+            var hBridge = KernelMethods.LoadLibraryRemote(di.GameProcess, bridgeDllPath);
+
+
+            var initFuncAddress = hBridge + offset; //KernelMethods.GetProcAddress(hBridge, "Init");
+
+            var replacementSnippet = new AssemblySnippetBuilder(sdlGlSwapWindowCall.Key).WithAbsoluteRAXJumpTo(detourCodeMem).GetByteArray();
+
+            if (replacementSnippet.Length != 12)
+                throw new Exception("length should be 12");
+
+            // write replacement to sdlGlSwapWindowCall.Key
+            var absoluteSdlCallAddress = (sdlGlSwapWindowCall.Key + 5) // instruction after the call
+                 + BitConverter.ToInt32(sdlGlSwapWindowCall.Value, 1);
+
+            var detourSnippet = new AssemblySnippetBuilder(detourCodeMem)
+                .WithPushRCX()
+                .WithPushRDX()
+                .WithCall64VIARAX(initFuncAddress) // TODO call dll drawfunc instead
+                .WithPopRDX()
+                .WithPopRCX()
+                // original code
+                .WithCall64VIARAX(absoluteSdlCallAddress)
+                .WithCustomBytes(sdlGlSwapWindowCall.Value.Skip(5).Take(7))
+                .WithAbsoluteRAXJumpTo(sdlGlSwapWindowCall.Key + 5 + 7) // 5 for the call instruction and 7 for the cmp dword ptr
+                .GetByteArray();
+
+            KernelMethods.WriteMemory(di.GetGameHandle(), detourCodeMem, detourSnippet); // write to allocated space
+            var at = di.asmHelper.PlaceAssemblyTrapAdvanced(sdlGlSwapWindowCall.Key +12);
+            at.WaitTillHit();
+            KernelMethods.WriteMemory(di.GetGameHandle(), sdlGlSwapWindowCall.Key, replacementSnippet); // replace the original call in the drawloop
+            at.ReleaseTrap();
 
             Console.WriteLine();
         }

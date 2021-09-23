@@ -1,5 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
 
 namespace FiveDChessDataInterface.MemoryHelpers
 {
@@ -54,8 +59,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
 
-        [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
-        internal static extern IntPtr GetProcAddress(IntPtr hModule, string functionName);
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, SetLastError = true)]
+        public static extern IntPtr GetProcAddress(IntPtr hModule, string functionName);
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr CreateRemoteThread(IntPtr hProcess, IntPtr lpThreadAttributes, int dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, int dwCreationFlags, IntPtr lpThreadId);
@@ -120,8 +125,62 @@ namespace FiveDChessDataInterface.MemoryHelpers
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern IntPtr LoadLibrary(string libname);
 
+        public static IntPtr LoadLibraryRemote(Process remoteProc, string libname)
+        {
+            var hModule = remoteProc.Handle;
+            var libPathBytes = Encoding.ASCII.GetBytes(libname).Append((byte)'\0').ToArray();
+
+            // write libpath to memory
+            var nameMem = AllocProcessMemory(hModule, libPathBytes.Length, false);
+            WriteMemory(hModule, nameMem, libPathBytes);
+
+            var k32 = GetModuleHandle("kernel32.dll");
+            var loadLibPtr = GetProcAddress(k32, "LoadLibraryA");
+            if (loadLibPtr == IntPtr.Zero)
+                throw new Exception($"Function failed to run as the loadlib ptr is zero! LastWin32Error: {Marshal.GetLastWin32Error()}");
+
+
+            var allocatedMem = AllocProcessMemory(remoteProc.Handle, 1024, true);
+            var snippet = new AssemblySnippetBuilder(IntPtr.Zero)
+                .WithCustomBytes(Enumerable.Repeat((byte)0, 8)) // returnvalue
+                .WithCustomBytes(new byte[] { 0x48, 0xBB }) // MOV RBX, 
+                    .WithCustomBytes(BitConverter.GetBytes(allocatedMem.ToInt64()))
+
+                .WithPushRCX()
+                .WithPushRCX()
+                .WithPushRCX()
+                .WithCall64VIARAX(loadLibPtr)
+                .WithPopRCX()
+                .WithPopRCX()
+                .WithPopRCX()
+                .WithCustomBytes(new byte[] { 0x48, 0x89, 0x03 }) // mov [rbx], rax
+                .WithRet()
+                .GetByteArray();
+            WriteMemory(remoteProc.Handle, allocatedMem, snippet);
+
+            var hThread = CreateRemoteThread(hModule, IntPtr.Zero, 0, allocatedMem + 8, nameMem, 0, IntPtr.Zero);
+
+            IntPtr hLib = IntPtr.Zero;
+            var expectedName = libname.Split(Path.DirectorySeparatorChar).Last();
+            if (!SpinWait.SpinUntil(() =>
+            {
+                hLib = MemoryUtil.ReadValue<IntPtr>(remoteProc.Handle, allocatedMem);
+                return hLib != IntPtr.Zero;
+            },
+                TimeSpan.FromSeconds(10))
+            )
+            {
+                throw new Exception($"Libloading for dll with expected name '{expectedName}' timed out!");
+            }
+
+            return hLib;
+        }
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         public static extern bool FreeLibrary(IntPtr hModule);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
+        public static extern IntPtr GetModuleHandle(string lpModuleName);
 
     }
 }
