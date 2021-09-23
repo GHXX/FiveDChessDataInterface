@@ -18,7 +18,11 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="xcopy /Y /E /S &quot;$(SolutionDir)DataInterfaceBridge\$(ConfigurationName)&quot; &quot;$(OutDir)\DataInterfaceBridge\&quot;" />
+    <!--<Exec Command="xcopy /Y /E /S &quot;$(SolutionDir)DataInterfaceBridge\$(ConfigurationName)&quot; &quot;\&quot;" />-->
+    <ItemGroup>
+      <SFILES Include="$(SolutionDir)DataInterfaceBridge\$(ConfigurationName)\**\*.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SFILES)" DestinationFolder="$(OutDir)\DataInterfaceBridge" />    
   </Target>
 
 </Project>
