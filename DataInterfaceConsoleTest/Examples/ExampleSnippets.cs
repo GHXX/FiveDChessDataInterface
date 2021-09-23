@@ -28,6 +28,22 @@ namespace DataInterfaceConsoleTest.Examples
         }
 
         [CallableExMethod(true, InvokeKind.Startup)]
+        public static void DrawHookTest(DataInterface di)
+        {
+            byte?[] draw_loop_bytes = new byte?[]
+            {
+                0xe8, null, null, null, null,
+                0x83, 0xbd, 0x44,
+                0x18, 0x00, 0x00, 0x00,
+                0x75, 0x10
+            };
+            var res = MemoryUtil.FindMemoryWithWildcards(di.GetGameHandle(), di.GetEntryPoint(), (uint)di.GameProcess.MainModule.ModuleMemorySize, draw_loop_bytes);
+            var sdlGlSwapWindowCall = res.Single(); // format: (0xE8) (4bytes address) aka CALL (4bytes address)
+
+            Console.WriteLine();
+        }
+
+        [CallableExMethod(true, InvokeKind.Startup)]
         public static void TrapLocationOnMatchStart(DataInterface di)
         {
             // TODO autoresolve
