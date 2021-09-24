@@ -9,6 +9,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using static DataInterfaceConsoleTest.Examples.CallableExMethodAttribute;
 
@@ -43,13 +44,15 @@ namespace DataInterfaceConsoleTest.Examples
 
             var detourCodeMem = KernelMethods.AllocProcessMemory(di.GetGameHandle(), 1024, true);
 
-            var bridgeDllPath = Path.Join(new FileInfo(typeof(DataInterface).Assembly.Location).Directory.FullName, "DataInterfaceBridge", "DataInterfaceBridge.dll");
+            var bridgeFolder = Path.Join(new FileInfo(typeof(DataInterface).Assembly.Location).Directory.FullName, "DataInterfaceBridge");
+            var bridgeDllPath = Path.Join(bridgeFolder, "DataInterfaceBridge.dll");
 
+            KernelMethods.LoadLibrary(Path.Join(bridgeFolder, "SDL2.dll")); // need to load this dependency so the c++ dll loads properly
             int getLibFuncOffset(string path, string funcName)
             {
                 var hLib = KernelMethods.LoadLibrary(path);
                 if (hLib == IntPtr.Zero)
-                    throw new ArgumentException("hLib ptr is zero!");
+                    throw new ArgumentException($"hLib ptr is zero! Error: {Marshal.GetLastWin32Error()}");
 
                 var address = KernelMethods.GetProcAddress(hLib, funcName);
                 if (address == IntPtr.Zero)
@@ -59,7 +62,7 @@ namespace DataInterfaceConsoleTest.Examples
                 return (int)offset;
             }
 
-            int offset = getLibFuncOffset(bridgeDllPath, "Init");
+            int offset = getLibFuncOffset(bridgeDllPath, "DATAINTERFACE_OnDrawLastHook");
 
 
             var hBridge = KernelMethods.LoadLibraryRemote(di.GameProcess, bridgeDllPath);
@@ -89,12 +92,11 @@ namespace DataInterfaceConsoleTest.Examples
                 .GetByteArray();
 
             KernelMethods.WriteMemory(di.GetGameHandle(), detourCodeMem, detourSnippet); // write to allocated space
-            var at = di.asmHelper.PlaceAssemblyTrapAdvanced(sdlGlSwapWindowCall.Key +12);
+            var at = di.asmHelper.PlaceAssemblyTrapAdvanced(sdlGlSwapWindowCall.Key + 12);
             at.WaitTillHit();
             KernelMethods.WriteMemory(di.GetGameHandle(), sdlGlSwapWindowCall.Key, replacementSnippet); // replace the original call in the drawloop
             at.ReleaseTrap();
-
-            Console.WriteLine();
+            Console.WriteLine($"Drawcall was detoured to: 0x{detourCodeMem.ToInt64().ToString("X")}");
         }
 
         [CallableExMethod(true, InvokeKind.Startup)]
