@@ -466,8 +466,8 @@
      "CosmeticTurnOffset": -1
   },
   {
-    "Name": "Opposing Triangles"
-    "Author": "Mage"
+    "Name": "Opposing Triangles",
+    "Author": "Mage",
     "Timelines": {
       "0L": [
         "rkbbrw2/wnqnw3/1www4/2w5/5W2/4WWW1/3WNQNW/2WRBBKR"
@@ -475,8 +475,8 @@
     }
   },
   {
-    "Name": "Caged Queen"
-    "Author": "Mage"
+    "Name": "Caged Queen",
+    "Author": "Mage",
     "Timelines": {
       "0L": [
         "rbnnbrk1/1w*ww1w1q/4wWw1/w5Ww/Ww5W/1WwW4/Q1W1WWW1/1KRBNNBR"
@@ -484,8 +484,8 @@
      }
    },
    {
-     "Name": "Banana Split"
-     "Author": "The_GrimmCreeper"
+     "Name": "Banana Split",
+     "Author": "The_GrimmCreeper",
      "Timelines": {
       "+1L": [
         null, "pppppppp/8/8/8/8/8/PPPPPPPP/NNNQKNNN", "pppppppp/8/8/8/8/8/PPPPPPPP/NNNQKNNN"
