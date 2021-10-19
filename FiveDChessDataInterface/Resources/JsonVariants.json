@@ -498,5 +498,15 @@
       ]
     },
       "CosmeticTurnOffset": -1
+  },
+  {
+    "Name": "Matriarchy",
+    "Author": "Mage",
+    "Timelines": {
+      "0L": [
+        null, "sncqycns/wwwwwwww/8/8/8/8/WWWWWWWW/SNCQYCNS", "sncqycns/wwwwwwww/8/8/8/8/WWWWWWWW/SNCQYCNS"
+      ]
+    },
+      "CosmeticTurnOffset": -1
   }
 ]
