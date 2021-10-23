@@ -508,5 +508,21 @@
       ]
     },
       "CosmeticTurnOffset": -1
-  }
+  },
+  {
+    "Name": "Custom - Scourging Assessment",
+    "Author": "Void Voyage",
+    "Timelines": {
+      "-1L": [
+       null, "C4R2/1Np1p1w1/3pBp2/2dP1u2/3w4/2bs1p2/3npc1r/W1nrkb2", "C4R2/1Np1p1w1/3pBp2/2dP1u2/3w4/2bs1p2/3npc1r/W1nrkb2"
+      ], 
+      "0L": [
+       null, "2R5/8/5N2/1pBW1P2/2p1wbP1/2n5/8/5r2", "2R5/8/5N2/1pBW1P2/2p1wbP1/2n5/8/5r2"
+      ], 
+      "1L": [
+       null, "2BKRN1w/R1CPN3/2P1SB2/4W3/2U1pD2/2PbP3/1W1P1Pn1/2r4c", "2BKRN1w/R1CPN3/2P1SB2/4W3/2U1pD2/2PbP3/1W1P1Pn1/2r4c"
+      ]
+    }
+  },
+
 ]
