@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-
 namespace DataInterfaceConsole.Actions.Settings
 {
     class SettingsHandler
@@ -116,6 +116,7 @@ namespace DataInterfaceConsole.Actions.Settings
             catch (Exception ex)
             {
                 Console.WriteLine($"Error while ticking settings handler:\n{ex.ToSanitizedString()}");
+                
             }
         }
     }
