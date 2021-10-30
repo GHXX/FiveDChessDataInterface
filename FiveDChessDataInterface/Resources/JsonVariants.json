@@ -524,5 +524,20 @@
       ]
     }
   },
-
+  {
+    "Name": "Excessive - Stacked",
+    "Author": "CrazyPenguin",
+    "Timelines": {
+      "-1L": [
+        null, "kqbnwp2/qbnwp3/bnwp3P/nwp3PW/wp3PWN/p3PWNB/3PWNBQ/2PWNBQK", "kqbnwp2/qbnwp3/bnwp3P/nwp3PW/wp3PWN/p3PWNB/3PWNBQ/2PWNBQK"
+      ],
+      "0L": [
+        null, "rusyksdr/rnbcqbnr/wwwwwwww/pppppppp/PPPPPPPP/WWWWWWWW/RNBCQBNR/RUSYKSDR", "rusyksdr/rnbcqbnr/wwwwwwww/pppppppp/PPPPPPPP/WWWWWWWW/RNBCQBNR/RUSYKSDR"
+      ],
+      "+1L": [
+        null, "snbwWBNS/nycwWCYN/bcrwWRCB/wwwwWWWW/WWWWwwww/BQRWwrqb/NKQWwqkn/SNBWwbns", "snbwWBNS/nycwWCYN/bcrwWRCB/wwwwWWWW/WWWWwwww/BQRWwrqb/NKQWwqkn/SNBWwbns"
+      ]
+    },
+      "CosmeticTurnOffset": -1
+  }
 ]
