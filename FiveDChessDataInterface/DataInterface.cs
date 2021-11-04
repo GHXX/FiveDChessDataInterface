@@ -259,9 +259,9 @@ namespace FiveDChessDataInterface
             //var timerMemoryArea_original = BitConverter.GetBytes((int)600).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 9)).Concat(BitConverter.GetBytes((int)1200).Cast<byte?>()).ToArray();
             //var timerResults_original = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryArea_original);
             //var timerResultsInvertedMask_original = Enumerable.Range(0, timerMemoryArea_original.Length).Select(x => timerMemoryArea_original[x] == null ? timerResults_original.Single().Value.ToArray()[x] : (byte?)null).ToArray();
-            //var timerResultsInvertedMask_str = "new byte?[]{" + string.Join(",", invertedMask_original.Select(x => x == null ? "null" : $"0x{x:X2}")) + "}";
+            //var timerResultsInvertedMask_str = "new byte?[]{" + string.Join(",", timerResultsInvertedMask_original.Select(x => x == null ? "null" : $"0x{x:X2}")) + "}";
 
-            var timerResultsMask = new byte?[] { null, null, null, null, 0x48, 0x0F, 0x45, 0xC8, 0x48, 0x89, 0x95, 0xA8, 0x00, 0x00, 0x00, 0x48, 0x83, 0xFA, null, 0xBA, null, null, null, null }; // = "timerResultsInvertedMask_str"
+            var timerResultsMask = new byte?[] { null, null, null, null, 0x41, 0x0F, 0x45, 0xD0, 0x48, 0x83, 0xF9, 0x03, 0xBB, null, null, null, null }; // = "timerResultsInvertedMask_str"
 
             var timerResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerResultsMask);
 
