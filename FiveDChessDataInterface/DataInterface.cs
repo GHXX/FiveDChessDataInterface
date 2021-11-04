@@ -198,13 +198,10 @@ namespace FiveDChessDataInterface
 
         private void CalculatePointers()
         {
-            var bytesToFind = new byte?[] { 0x4c, 0x8b, 0x35,
-                null, null, null, null,// = 0x55, 0xfa, 0x0c, 0x00 WILDCARDS
-                0x4c, 0x69, 0xf8,
-                null, null, null, null,
-                0x4c, 0x89, 0xf0,
-                0x4c, 0x01, 0xf8
-            };
+            // standard 8x8, nonturnzero variant, 5 boards played
+            //CE - groupscan 4:0 4:0 4:0 4:0 w: 212 4:1 4:0 4:0 4:1 w: 212 4:2 4:0 4:1 4:0 w: 212 4:3 4:0 4:1 4:1
+            var bytesToFind = new byte?[] { 0x48, 0x8b, 0x0d, null, null, null, null, 0x49, 0x69 };
+
 
             var results = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, bytesToFind);
 
@@ -244,7 +241,16 @@ namespace FiveDChessDataInterface
             this.MemLocTotalMatchTimeElapsed = new MemoryLocation<float>(GetGameHandle(), chessboardPointerLocation, 0x27C); // same value at +4 after this one
 
 
-            var timerMemoryArea = new byte?[] { 0x31, 0xC9, 0x48, 0x83, 0xF8, 0x02 };
+
+
+            var timerMemoryAreaIncrementsArea = BitConverter.GetBytes((int)5).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 14)).Concat(new byte?[] { 4, null}).Concat(BitConverter.GetBytes((int)8).Cast<byte?>()).ToArray();
+            var timerMemoryAreaIncrementsResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryAreaIncrementsArea);
+
+            if (timerMemoryAreaIncrementsResults.Count != 1)
+                           throw new AmbiguousMatchException($"{timerMemoryAreaIncrementsResults.Count} memory locations matched, which is not 1!");
+            
+            // old byte array { 0x31, 0xC9, 0x48, 0x83, 0xF8, 0x02 };
+            var timerMemoryArea = BitConverter.GetBytes((int)600).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 9)).Concat(BitConverter.GetBytes((int)1200).Cast<byte?>()).ToArray();
 
             var timerResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryArea);
 
@@ -254,26 +260,34 @@ namespace FiveDChessDataInterface
                 throw new AmbiguousMatchException($"{timerResults.Count} memory locations matched, which is not 1!");
             }
 
-            // "fix" compiler optimizations
-            var moddedCode = new byte[] { 0x31, 0xDB, 0x90, 0xBA, 0x05, 0x00, 0x00, 0x00, 0x48, 0x0F, 0x44, 0xCA, 0xBA, 0x58, 0x02, 0x00, 0x00 };
-            KernelMethods.WriteMemory(GetGameHandle(), IntPtr.Add(timerResults.Single().Key, timerMemoryArea.Length), moddedCode);
+            // "fix" compiler optimizations (OLD CODE WHERE INCREMENTS AND BASE TIMES WERE IN THE SAME FUNC)
+            //var moddedCode = new byte[] { 0x31, 0xDB, 0x90, 0xBA, 0x05, 0x00, 0x00, 0x00, 0x48, 0x0F, 0x44, 0xCA, 0xBA, 0x58, 0x02, 0x00, 0x00 };
+
+            var moddedCode = new byte[] { 0x83, 0xFA, 0x02, 0x48, 0x31, 0xC9, 0xB8 }.Concat(BitConverter.GetBytes((int)3))
+                .Concat(new byte[] { 0x0F, 0x45, 0xC8, 0x83, 0xFA, 0x03 }).ToArray();
+
+            KernelMethods.WriteMemory(GetGameHandle(), timerMemoryAreaIncrementsResults.Single().Key-18, moddedCode);
 
             var firstTimerBaseTime = IntPtr.Add(timerResults.Single().Key, timerMemoryArea.Length + 4); // start postion of the null area
 
 
             // RWX memlocs:
-            this.MemLocClock1Increment = new MemoryLocationRestorable<int>(GetGameHandle(), firstTimerBaseTime);
-            this.MemLocClock1BaseTime = this.MemLocClock1Increment.WithOffset<int>(5 + 4);
+            this.MemLocClock1BaseTime = new MemoryLocationRestorable<int>(GetGameHandle(), firstTimerBaseTime-21);
 
-            this.MemLocClock2Increment = this.MemLocClock1BaseTime.WithOffset<int>(8 + 4);
-            this.MemLocClock2BaseTime = this.MemLocClock2Increment.WithOffset<int>(5 + 4);
+            this.MemLocClock2Increment = new MemoryLocationRestorable<int>(GetGameHandle(), timerMemoryAreaIncrementsResults.Single().Key);
+            this.MemLocClock1Increment = MemLocClock2Increment.WithOffset<int>(-11);
 
-            this.MemLocClock3Increment = this.MemLocClock2BaseTime.WithOffset<int>(8 + 4);
-            this.MemLocClock3BaseTime = this.MemLocClock3Increment.WithOffset<int>(5 + 4);
+            this.MemLocClock2BaseTime = this.MemLocClock1BaseTime.WithOffset<int>(13);
+
+            this.MemLocClock3Increment = this.MemLocClock2Increment.WithOffset<int>(20);
+            this.MemLocClock3BaseTime = this.MemLocClock2BaseTime.WithOffset<int>(12);
+
+            var clocklocAddresses = new[] { MemLocClock1BaseTime, MemLocClock2BaseTime, MemLocClock3BaseTime, MemLocClock1Increment, MemLocClock2Increment, MemLocClock3Increment }
+                .Select(x => x.Location.ToInt64()).ToArray();
 
             KernelMethods.ChangePageProtection(GetGameHandle(),
-                                               this.MemLocClock1BaseTime.Location,
-                                               (int)(this.MemLocClock3Increment.Location.ToInt64() - this.MemLocClock1BaseTime.Location.ToInt64()),
+                                               new IntPtr(clocklocAddresses.Min()),
+                                               (int)(clocklocAddresses.Max()- clocklocAddresses.Min()),
                                                KernelMethods.FlPageProtect.PAGE_EXECUTE_READWRITE);
 
 

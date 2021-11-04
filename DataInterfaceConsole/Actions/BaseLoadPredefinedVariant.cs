@@ -1,6 +1,7 @@
 ﻿using FiveDChessDataInterface.MemoryHelpers;
 using FiveDChessDataInterface.Variants;
 using System;
+using System.Linq;
 
 namespace DataInterfaceConsole.Actions
 {
@@ -16,7 +17,12 @@ namespace DataInterfaceConsole.Actions
             {
                 if (!this.di.IsMatchRunning()) // if the match isnt running, then use the trap mode to inject it
                 {
-                    at = this.di.asmHelper.PlaceAssemblyTrapAdvanced(IntPtr.Add(this.di.GameProcess.MainModule.BaseAddress, 0x289C2));
+                    // MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, new byte?[]{0x5b,0x5f,0x5e,0x41,0x5e,0x5d,0xe9})
+                    var trapAddress = MemoryUtil.FindMemoryWithWildcards(this.di.GetGameHandle(), this.di.GetEntryPoint(), (uint)this.di.GameProcess.MainModule.ModuleMemorySize,
+                        new byte?[] { 0xe8, null, null, null, null, 0x48, 0x89, 0xf1, 0x48, 0x83, 0xc4, 0x20, 0x5b, 0x5f, 0x5e, 0x41, 0x5e, 0x5d, 0xe9 });
+
+                    var trapLocation = trapAddress.Single().Key - 17;
+                    at = this.di.asmHelper.PlaceAssemblyTrapAdvanced(trapLocation);
                     Console.WriteLine("Main thread trapped. Please start a game, and then check back here.");
                     at.WaitTillHit();
                 }
@@ -64,7 +70,8 @@ namespace DataInterfaceConsole.Actions
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     WriteLineIndented(($"It appears that one or more variants cannot be loaded. Attempting to do so will lead to a crash. These are marked in red.\n" +
-                                           "If you have not made these variants yourself, consider getting the latest release from github (https://5dr.ghxx.dev).").Split('\n'));                }
+                                           "If you have not made these variants yourself, consider getting the latest release from github (https://5dr.ghxx.dev).").Split('\n'));
+                }
                 Console.ForegroundColor = originalConsoleColor;
 
                 if (int.TryParse(Util.ConsoleReadLineWhile(() => this.di.IsValid()), out int input) && input > 0 && input <= variants.Length)
