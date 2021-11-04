@@ -243,16 +243,27 @@ namespace FiveDChessDataInterface
 
 
 
-            var timerMemoryAreaIncrementsArea = BitConverter.GetBytes((int)5).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 14)).Concat(new byte?[] { 4, null}).Concat(BitConverter.GetBytes((int)8).Cast<byte?>()).ToArray();
-            var timerMemoryAreaIncrementsResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryAreaIncrementsArea);
+            //var timerMemoryAreaIncrementsArea_original = BitConverter.GetBytes((int)5).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 14)).Concat(new byte?[] { 4, null }).Concat(BitConverter.GetBytes((int)8).Cast<byte?>()).ToArray();
+            //var timerMemoryAreaIncrementsResults_original = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryAreaIncrementsArea_original);
+            //var invertedMask_original = Enumerable.Range(0, timerMemoryAreaIncrementsArea_original.Length).Select(x => timerMemoryAreaIncrementsArea_original[x] == null ? timerMemoryAreaIncrementsResults_original.Single().Value.ToArray()[x] : (byte?)null).ToArray();
+            //var productionMask_str = "new byte?[]{" + string.Join(",", invertedMask_original.Select(x => x == null ? "null" : $"0x{x:X2}")) + "}";
+
+            var productionMask = new byte?[] { null, null, null, null, 0x48, 0x0F, 0x45, 0xC8, 0x48, 0x89, 0x95, 0xA8, 0x00, 0x00, 0x00, 0x48, 0x83, 0xFA, null, 0xBA, null, null, null, null }; // = "productionMask_str"
+
+            var timerMemoryAreaIncrementsResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, productionMask);
 
             if (timerMemoryAreaIncrementsResults.Count != 1)
-                           throw new AmbiguousMatchException($"{timerMemoryAreaIncrementsResults.Count} memory locations matched, which is not 1!");
-            
-            // old byte array { 0x31, 0xC9, 0x48, 0x83, 0xF8, 0x02 };
-            var timerMemoryArea = BitConverter.GetBytes((int)600).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 9)).Concat(BitConverter.GetBytes((int)1200).Cast<byte?>()).ToArray();
+                throw new AmbiguousMatchException($"{timerMemoryAreaIncrementsResults.Count} memory locations matched, which is not 1!");
 
-            var timerResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryArea);
+            // old byte array { 0x31, 0xC9, 0x48, 0x83, 0xF8, 0x02 };
+            //var timerMemoryArea_original = BitConverter.GetBytes((int)600).Cast<byte?>().Concat(Enumerable.Repeat((byte?)null, 9)).Concat(BitConverter.GetBytes((int)1200).Cast<byte?>()).ToArray();
+            //var timerResults_original = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerMemoryArea_original);
+            //var timerResultsInvertedMask_original = Enumerable.Range(0, timerMemoryArea_original.Length).Select(x => timerMemoryArea_original[x] == null ? timerResults_original.Single().Value.ToArray()[x] : (byte?)null).ToArray();
+            //var timerResultsInvertedMask_str = "new byte?[]{" + string.Join(",", invertedMask_original.Select(x => x == null ? "null" : $"0x{x:X2}")) + "}";
+
+            var timerResultsMask = new byte?[] { null, null, null, null, 0x48, 0x0F, 0x45, 0xC8, 0x48, 0x89, 0x95, 0xA8, 0x00, 0x00, 0x00, 0x48, 0x83, 0xFA, null, 0xBA, null, null, null, null }; // = "timerResultsInvertedMask_str"
+
+            var timerResults = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, timerResultsMask);
 
 
             if (timerResults.Count != 1)
@@ -266,28 +277,28 @@ namespace FiveDChessDataInterface
             var moddedCode = new byte[] { 0x83, 0xFA, 0x02, 0x48, 0x31, 0xC9, 0xB8 }.Concat(BitConverter.GetBytes((int)3))
                 .Concat(new byte[] { 0x0F, 0x45, 0xC8, 0x83, 0xFA, 0x03 }).ToArray();
 
-            KernelMethods.WriteMemory(GetGameHandle(), timerMemoryAreaIncrementsResults.Single().Key-18, moddedCode);
+            KernelMethods.WriteMemory(GetGameHandle(), timerMemoryAreaIncrementsResults.Single().Key - 18, moddedCode);
 
-            var firstTimerBaseTime = IntPtr.Add(timerResults.Single().Key, timerMemoryArea.Length + 4); // start postion of the null area
+            var firstTimerBaseTime = IntPtr.Add(timerResults.Single().Key, timerResultsMask.Length + 4); // start postion of the null area
 
 
             // RWX memlocs:
-            this.MemLocClock1BaseTime = new MemoryLocationRestorable<int>(GetGameHandle(), firstTimerBaseTime-21);
+            this.MemLocClock1BaseTime = new MemoryLocationRestorable<int>(GetGameHandle(), firstTimerBaseTime - 21);
 
             this.MemLocClock2Increment = new MemoryLocationRestorable<int>(GetGameHandle(), timerMemoryAreaIncrementsResults.Single().Key);
-            this.MemLocClock1Increment = MemLocClock2Increment.WithOffset<int>(-11);
+            this.MemLocClock1Increment = this.MemLocClock2Increment.WithOffset<int>(-11);
 
             this.MemLocClock2BaseTime = this.MemLocClock1BaseTime.WithOffset<int>(13);
 
             this.MemLocClock3Increment = this.MemLocClock2Increment.WithOffset<int>(20);
             this.MemLocClock3BaseTime = this.MemLocClock2BaseTime.WithOffset<int>(12);
 
-            var clocklocAddresses = new[] { MemLocClock1BaseTime, MemLocClock2BaseTime, MemLocClock3BaseTime, MemLocClock1Increment, MemLocClock2Increment, MemLocClock3Increment }
+            var clocklocAddresses = new[] { this.MemLocClock1BaseTime, this.MemLocClock2BaseTime, this.MemLocClock3BaseTime, this.MemLocClock1Increment, this.MemLocClock2Increment, this.MemLocClock3Increment }
                 .Select(x => x.Location.ToInt64()).ToArray();
 
             KernelMethods.ChangePageProtection(GetGameHandle(),
                                                new IntPtr(clocklocAddresses.Min()),
-                                               (int)(clocklocAddresses.Max()- clocklocAddresses.Min()),
+                                               (int)(clocklocAddresses.Max() - clocklocAddresses.Min()),
                                                KernelMethods.FlPageProtect.PAGE_EXECUTE_READWRITE);
 
 
