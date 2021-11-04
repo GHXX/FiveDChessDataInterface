@@ -198,20 +198,23 @@ namespace FiveDChessDataInterface.MemoryHelpers
         {
             ProcessModule gameModule = this.di.GameProcess.MainModule;
             //var modules = this.di.GameProcess.Modules;
+            //ProcessModule msvcrtModule = null;
             //for (int i = 0; i < modules.Count; i++)
             //{
             //    var m = modules[i];
-            //    if (m.ModuleName == "5dchesswithmultiversetimetravel.exe")
+            //    if (m.ModuleName == "msvcrt.dll")
             //    {
-            //        gameModule = m;
+            //        msvcrtModule = m;
             //        break;
             //    }
             //}
 
             if (gameModule == null)
-                throw new DllNotFoundException("Could not resolve KERNEL32.DLL in the game process!");
+                throw new DllNotFoundException("Could not resolve game module in the game process!");
 
-            var mallocPtr = gameModule.BaseAddress + 0xF1BF0;
+            var mallocPtr = MemoryUtil.FindMemoryWithWildcards(di.GetGameHandle(), di.GetEntryPoint(), (uint)di.GameProcess.MainModule.ModuleMemorySize,
+                new byte?[] { 0x40, 0x53, 0x48, 0x83, 0xec, 0x20, 0x48, 0x8b, 0xd9, 0x48, 0x83, 0xf9 }).Keys.Single(); // TODO move to shared file
+
 
             /*
             0:  48 bb a0 a9 f9 e8 f8    movabs rbx,0x7ff8e8f9a9a0
