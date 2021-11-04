@@ -129,8 +129,8 @@ namespace DataInterfaceConsoleTest.Examples
         [CallableExMethod(false, InvokeKind.MatchStart)]
         public static void LoadCustomVariant(DataInterface di)
         {
-            var height = 3;
-            var width = 3;
+            //var height = 3;
+            //var width = 3;
             // example for odd timelines (commented out)
             //var gb = new GameBuilderOdd(height, width);
 
