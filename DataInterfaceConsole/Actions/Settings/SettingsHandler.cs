@@ -37,7 +37,6 @@ namespace DataInterfaceConsole.Actions.Settings
             AddSetting(new SettingsValuePrimitive<int?>("BlackTime", "Black Clock Timer Base Time", "Time Remaining on the Black Player's Clock", null));
             AddSetting(new SettingsValuePrimitive<int?>("WhiteTimeIncrement", "White Clock Timer Increment", "The Increment of the White Player's Clock", null));
             AddSetting(new SettingsValuePrimitive<int?>("BlackTimeIncrement", "Black Clock Timer Increment", "The Increment of the Black Player's Clock", null));
-
         }
 
 
