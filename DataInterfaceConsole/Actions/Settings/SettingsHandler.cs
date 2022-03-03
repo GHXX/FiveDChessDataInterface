@@ -33,6 +33,10 @@ namespace DataInterfaceConsole.Actions.Settings
             AddSetting(new SettingsValuePrimitive<int?>("Clock2Increment", "Medium Timer Increment", "The increment of the second clock in seconds", null));
             AddSetting(new SettingsValuePrimitive<int?>("Clock3BaseTime", "Long Timer Base Time", "The base time of the third clock in total seconds", null));
             AddSetting(new SettingsValuePrimitive<int?>("Clock3Increment", "Long Timer Increment", "The increment of the third clock in seconds", null));
+            AddSetting(new SettingsValuePrimitive<int?>("WhiteTIme", "White Clock Timer Base Time", "Time Remaining on the White Player's Clock", null));
+            AddSetting(new SettingsValuePrimitive<int?>("BlackTime", "Black Clock Timer Base Time", "Time Remaining on the Black Player's Clock", null));
+            AddSetting(new SettingsValuePrimitive<int?>("WhiteTimeIncrement", "White Clock Timer Increment", "The Increment of the White Player's Clock", null));
+            AddSetting(new SettingsValuePrimitive<int?>("BlackTimeIncrement", "Black Clock Timer Increment", "The Increment of the Black Player's Clock", null));
         }
 
 
@@ -109,6 +113,22 @@ namespace DataInterfaceConsole.Actions.Settings
                     di.MemLocClock3Increment.SetValue(sv3i.Value);
                 else
                     di.MemLocClock3Increment.RestoreOriginal();
+
+                var wtr = (this.settingsStore["WhiteTime"] as SettingsValuePrimitive<int?>).Value;
+                if (wtr.HasValue)
+                    di.MemLocWhiteTime.SetValue(wtr.Value);
+               
+                var btr = (this.settingsStore["BlackTime"] as SettingsValuePrimitive<int?>).Value;
+                if (btr.HasValue)
+                    di.MemLocBlackTime.SetValue(btr.Value);
+
+                var wti = (this.settingsStore["WhiteTimeIncrement"] as SettingsValuePrimitive<int?>).Value;
+                if (wti.HasValue)
+                    di.MemLocWhiteIncrement.SetValue(wti.Value);
+
+                var bti = (this.settingsStore["BlackTimeIncrement"] as SettingsValuePrimitive<int?>).Value;
+                if (bti.HasValue)
+                    di.MemLocBlackIncrement.SetValue(bti.Value);
 
 
 
