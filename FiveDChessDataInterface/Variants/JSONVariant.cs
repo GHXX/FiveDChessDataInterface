@@ -1,9 +1,10 @@
 ﻿using FiveDChessDataInterface.Builders;
+using FiveDChessDataInterface.Exceptions;
 using FiveDChessDataInterface.Util;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-
 
 namespace FiveDChessDataInterface.Variants
 {
@@ -22,7 +23,7 @@ namespace FiveDChessDataInterface.Variants
         [JsonProperty("CosmeticTurnOffset")]
         public int? CosmeticTurnOffset { get; set; } = null;
 
-        private string GetAnyExpandedBoardFen() => FenUtil.ExpandFen(this.Timelines.SelectMany(x => x.Value).First(x => x != null));
+        private string GetAnyExpandedBoardFen() => FenUtil.ExpandFen(Timelines.SelectMany(x => x.Value).First(x => x != null));
 
 
         // Need to expand the fen first, because the digit 8 for example would represent a width of 8, but is only one wide
@@ -32,13 +33,36 @@ namespace FiveDChessDataInterface.Variants
         [JsonIgnore()]
         public int Width => GetAnyExpandedBoardFen().TakeWhile(x => x != '/').Count(); // count number of pieces in the first line
 
+        [JsonProperty("GameBuilderOverride")]
+        public string GameBuilderOverride { get; set; } = null;
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="VariantLoadException">If the given <see cref="GameBuilderOverride"/> is invalid and is not equal to the name of a class that inherits <see cref="BaseGameBuilder"/> </exception>
         public BaseGameBuilder GetGameBuilder()
         {
-            var isEven = this.Timelines.Count % 2 == 0;
-            BaseGameBuilder gameBuilder = isEven ? new GameBuilderEven(this.Width, this.Height) : (BaseGameBuilder)new GameBuilderOdd(this.Width, this.Height);
+            var isEven = Timelines.Count % 2 == 0;
+            BaseGameBuilder gameBuilder;
+            if (GameBuilderOverride == null)
+            {
+                gameBuilder = isEven ? new GameBuilderEven(Width, Height) : (BaseGameBuilder)new GameBuilderOdd(Width, Height);
+            }
+            else
+            {
+                var gbs = typeof(BaseGameBuilder).Assembly.GetTypes().Where(x => typeof(BaseGameBuilder).IsAssignableFrom(x) && x != typeof(BaseGameBuilder)).ToDictionary(x => x.Name, x => x);
+                if (gbs.TryGetValue(GameBuilderOverride, out var gbType))
+                {
+                    gameBuilder = (BaseGameBuilder)Activator.CreateInstance(gbType, new object[] { Width, Height });
+                }
+                else
+                {
+                    throw new VariantLoadException("Invalid gamebuilder given!");
+                }
+            }
 
-            foreach (var tl in this.Timelines)
+            foreach (var tl in Timelines)
             {
                 var timelineIndex = tl.Key;
                 var boards = tl.Value;
@@ -54,8 +78,8 @@ namespace FiveDChessDataInterface.Variants
                 }
             }
 
-            if (this.CosmeticTurnOffset.HasValue)
-                gameBuilder.CosmeticTurnOffset = this.CosmeticTurnOffset.Value;
+            if (CosmeticTurnOffset.HasValue)
+                gameBuilder.CosmeticTurnOffset = CosmeticTurnOffset.Value;
 
             return gameBuilder;
         }
