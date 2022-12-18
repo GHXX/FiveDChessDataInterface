@@ -856,6 +856,18 @@
       ]
     },
     "CosmeticTurnOffset": -128
+  },
+  {
+    "Name": "Standard - Duplicated, White disadvantaged",
+    "Author": "GHXX",
+    "Timelines": {
+      "0L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ],
+      "1L": [
+        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR"
+      ]
+    },
+	"GameBuilderOverride": "GameBuilderOdd"
   }
-
 ]
