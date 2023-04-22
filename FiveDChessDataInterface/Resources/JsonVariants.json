@@ -869,5 +869,32 @@
       ]
     },
 	"GameBuilderOverride": "GameBuilderOdd"
-  }
+  },
+  {
+        "Name": "Oops - All Knights",
+        "Author": "Sanoy1997",
+        "Timelines": {
+            "0L": [
+                "nnnnknnn/nnnnnnnn/8/8/8/8/NNNNNNNN/NNNNKNNN"
+            ]
+        }
+    },
+    {
+        "Name": "Oops - All Bishops",
+        "Author": "Sanoy1997",
+        "Timelines": {
+            "0L": [
+                "bbbbkbbb/bbbbbbbb/8/8/8/8/BBBBBBBB/BBBBKBBB"
+            ]
+        }
+    },
+    {
+        "Name": "Fancy - Hats",
+        "Author": "Sanoy1997",
+        "Timelines": {
+            "0L": [
+                "pppykppp/2pppp2/2pppp2/2pppp2/2PPPP2/2PPPP2/2PPPP2/PPPYKPPP"
+            ]
+        }
+    }
 ]
