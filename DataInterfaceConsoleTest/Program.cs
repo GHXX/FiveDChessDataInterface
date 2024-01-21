@@ -25,6 +25,8 @@ namespace DataInterfaceConsoleTest
                 di.Initialize();
                 Console.WriteLine("Ready!");
 
+                di.MakeMove(new DataInterface.WorldPosition(0, 0, 0, 1, 0), new DataInterface.WorldPosition(0, 0, 0, 2, 0));
+
                 ShowInfoAndRunExamples(di);
                 Console.WriteLine("Game was closed, or died. Rescanning...");
             }

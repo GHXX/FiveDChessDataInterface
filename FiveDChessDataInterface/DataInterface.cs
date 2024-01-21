@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace FiveDChessDataInterface
@@ -651,6 +652,85 @@ namespace FiveDChessDataInterface
                 // Unexpected Data - gs is not 0,1,2,3 or 5
                 return ThrowOrUnknown("gs contains an unexpected value");
             }
+        }
+
+        [StructLayout(LayoutKind.Explicit)] // see https://pastebin.com/hX1a8Tzt
+        public struct WorldPosition
+        {
+            [FieldOffset(0)]
+            readonly uint universe;
+            [FieldOffset(4)]
+            readonly uint time;
+            [FieldOffset(8)]
+            readonly uint player_to_move;
+            [FieldOffset(12)]
+            readonly uint row;
+            [FieldOffset(16)]
+            readonly uint col;
+
+            public WorldPosition(uint universe, uint time, uint player_to_move, uint row, uint col)
+            {
+                this.universe = universe;
+                this.time = time;
+                this.player_to_move = player_to_move;
+                this.row = row;
+                this.col = col;
+            }
+        }
+
+        public void MakeMove(WorldPosition from, WorldPosition to)
+        {
+            // see target func here: https://discord.com/channels/762804376691015681/844734672054517760/1198466021028266135
+            IntPtr functionToCall = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, 
+                new byte?[] {0x55, 0x41, 0x57, 0x41, 0x56, 0x41, 0x55, 0x41, 0x54, 0x56, 0x57, 0x53, 0x48, 0x81, 0xec, null, null, null, null, 0x48, 0x8d, 0xac,
+                    0x24, null, null, null, null, 0x66, 0x0f, 0x7f }).Keys.Single();
+
+
+            var WORLDPOS_SZ = sizeof(uint) * 5;
+            var memPtrStructs = KernelMethods.AllocProcessMemory(GetGameHandle(), 2 * WORLDPOS_SZ, false);
+            var structTargetPtr = Marshal.AllocHGlobal(2 * WORLDPOS_SZ);
+            Marshal.StructureToPtr(from, structTargetPtr, false);
+            Marshal.StructureToPtr(to, structTargetPtr + WORLDPOS_SZ, false);
+
+            var dstByteArray = new byte[2 * WORLDPOS_SZ];
+            Marshal.Copy(structTargetPtr, dstByteArray, 0, 2 * WORLDPOS_SZ);
+            KernelMethods.WriteMemory(GetGameHandle(), memPtrStructs, dstByteArray);
+
+
+            IntPtr arg1 = this.MemLocChessArrayPointer.Location - 56; // rcx
+            IntPtr arg2 = memPtrStructs; // rdx
+            IntPtr arg3 = memPtrStructs + WORLDPOS_SZ; // r8
+
+            IntPtr asmCode = KernelMethods.AllocProcessMemory(GetGameHandle(), 1024, true);
+            var code = new byte[] {
+                0x48, 0xB9, // mov rcx,
+                }
+            .Concat(BitConverter.GetBytes(arg1.ToInt64())) // Arg1 8byte
+            .Concat(new byte[] {
+            0x48, 0xBA, // mov rdx,
+            })
+            .Concat(BitConverter.GetBytes(arg2.ToInt64())) // Arg2 8byte
+            .Concat(new byte[] {
+            0x49, 0xB8, // mov r8,
+            })
+            .Concat(BitConverter.GetBytes(arg3.ToInt64())) // Arg3 8byte
+            .Concat(
+            new byte[]{
+            0x53, // push rbx junk
+            0x48, 0xB8, // mov rax
+            })
+            .Concat(BitConverter.GetBytes(functionToCall.ToInt64())) // TargetFunc() 8byte
+            .Concat(new byte[]
+            {
+                0xFF, 0xD0, // call rax
+                0x5B, // pop rbx -- remove junk
+                0xC3, // ret
+            }).ToArray();
+
+            KernelMethods.WriteMemory(GetGameHandle(), asmCode, code);
+            //KernelMethods.FreeProcessMemory(this.gameHandle, memLocHeapAllocResult.Location, 8);
+
+            KernelMethods.CreateRemoteThread(GetGameHandle(), asmCode);
         }
     }
 }
