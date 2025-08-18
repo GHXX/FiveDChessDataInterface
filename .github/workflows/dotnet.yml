@@ -32,7 +32,7 @@ jobs:
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
       
     - name: Upload ConsoleBuildWinx64Published
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Console_win10_x64_${{github.sha}}
         path: "~/publish/win10_x64/*"
@@ -43,7 +43,7 @@ jobs:
       if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/publish' }}
       
     - name: Upload ConsoleBuildWinx64PublishedStandalone
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: Console_win10_x64_standalone_${{github.sha}}
         path: "~/publish/standalone/win10_x64/*"
