@@ -15,14 +15,9 @@ namespace DataInterfaceConsole.Actions
             int safeBoardLimit = -1;
             try
             {
-                if (!this.di.IsMatchRunning()) // if the match isnt running, then use the trap mode to inject it
+                if (!this.di.IsMatchRunning()) // if the match isnt running, then use the trap technique to inject it
                 {
-                    // MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)this.GameProcess.MainModule.ModuleMemorySize, new byte?[]{0x5b,0x5f,0x5e,0x41,0x5e,0x5d,0xe9})
-                    var trapAddress = MemoryUtil.FindMemoryWithWildcards(this.di.GetGameHandle(), this.di.GetEntryPoint(), (uint)this.di.GameProcess.MainModule.ModuleMemorySize,
-                        new byte?[] { 0xe8, null, null, null, null, 0x48, 0x89, 0xf1, 0x48, 0x83, 0xc4, 0x20, 0x5b, 0x5f, 0x5e, 0x41, 0x5e, 0x5d, 0xe9 });
-
-                    var trapLocation = trapAddress.Single().Key - 17;
-                    at = this.di.asmHelper.PlaceAssemblyTrapAdvanced(trapLocation);
+                    at = di.TrapMainThreadForGameLoad();
                     Console.WriteLine("Main thread trapped. Please start a game, and then check back here.");
                     at.WaitTillHit();
                 }

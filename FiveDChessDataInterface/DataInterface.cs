@@ -166,6 +166,14 @@ namespace FiveDChessDataInterface
             SetupAssemblyHelper();
         }
 
+        public AssemblyTrapAdvanced TrapMainThreadForGameLoad() {
+            var trapAddress = MemoryUtil.FindMemoryWithWildcards(GetGameHandle(), GetEntryPoint(), (uint)GameProcess.MainModule.ModuleMemorySize,
+                        new byte?[] { 0xe8, null, null, null, null, 0x48, 0x89, 0xf1, 0x48, 0x83, 0xc4, 0x20, 0x5b, 0x5f, 0x5e, 0x41, 0x5e, 0x5d, 0xe9 });
+
+            var trapLocation = trapAddress.Single().Key - 17;
+            return this.asmHelper.PlaceAssemblyTrapAdvanced(trapLocation);
+        }
+
 
         IntPtr recalcBitboardsMemLoc;
         private void SetupAssemblyHelper()

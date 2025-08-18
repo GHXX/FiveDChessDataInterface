@@ -223,8 +223,9 @@ namespace FiveDChessDataInterface
 
         // the below values through previousBoardMoveTurn are zero for a board that is active and waiting for a move
 
-        // TODO: investiage if this is actually an int!
+        // TODO: investigate if this is actually an int!
 
+        // this being nonzero (and neither 4 nor 5) triggers drawing an arrow; 0 move sthe present back to this board
         // only the least significatn byte of this number is important (it's probaby an enum that got byte aligned in a struct)
         // 0 means that no move has been made on this board
         // 1 means that a standard physical move has been made on this board
@@ -238,7 +239,7 @@ namespace FiveDChessDataInterface
         public byte bval3;
 
 
-        // Source and destination of the move made from this board
+        // Source and destination of the move made from this board (for arrows)
         public int moveSourceL;
         public int moveSourceT;
         public int moveSourceIsBlack; // the 5th dimension :)
@@ -255,16 +256,24 @@ namespace FiveDChessDataInterface
         public int previousBoardId; // the id of the board that was before this board, or this board branches off after
         public int createdBoardID; // if the move made on this board is branching, this is the board id of the board of the new board
 
-        public int ttPieceOriginId; // the board id where this piece came from, or -1 if no timetravel happened
+        public int ttPieceOriginBoardId; // the board id where this piece came from, or -1 if no timetravel happened
 
         // unconfirmed :
 
-        public int ttMoveSourceY; // source timetravel move y (on the board where the piece disappeared) if source x and y are -1 then the piece is appearing on this board, coming from somewhere else
-        public int ttMoveSourceX; // source timetravel move X
-        public int ttMoveDestY;  // dest timetravel move y (on the board where the piece appeared) if dest x and y are -1 then the piece is disappearing on this board, going to somewhere else
-        public int ttMoveDestX;
+        // src and dest squares of the moves, essentially just highlight that X/Y board coordinate; -1 for no hightlight
+        public int moveSourcePosY; // OUTDATED source timetravel move y (on the board where the piece disappeared) if source x and y are -1 then the piece is appearing on this board, coming from somewhere else
+        public int moveSourcePosX; // OUTDATED source timetravel move X
+        public int moveDestPosY;  // OUTDATED dest timetravel move y (on the board where the piece appeared) if dest x and y are -1 then the piece is disappearing on this board, going to somewhere else
+        public int moveDestPosX;
 
         // -----------
+
+        public void SetHighlightPos(int x, int y) => SetHighlightPos(x,y,-1,-1);
+
+        public void SetHighlightPos(int x, int y, int xDest, int yDest) {
+            moveSourcePosX = x; moveSourcePosY = y;
+            moveDestPosX = xDest; moveDestPosY = yDest;
+        }
 
         public static ChessBoardMemory ParseFromByteArray(byte[] bytes)
         {
@@ -324,14 +333,14 @@ namespace FiveDChessDataInterface
             hash.Add("previousBoardId", this.previousBoardId);
             hash.Add("createdBoardID", this.createdBoardID);
 
-            hash.Add("ttPieceOriginId", this.ttPieceOriginId);
+            hash.Add("ttPieceOriginId", this.ttPieceOriginBoardId);
 
             // unconfirmed :
 
-            hash.Add("ttMoveSourceY", this.ttMoveSourceY);
-            hash.Add("ttMoveSourceX", this.ttMoveSourceX);
-            hash.Add("ttMoveDestY", this.ttMoveDestY);
-            hash.Add("ttMoveDestX", this.ttMoveDestX);
+            hash.Add("moveSourcePosY", this.moveSourcePosY);
+            hash.Add("moveSourcePosX", this.moveSourcePosX);
+            hash.Add("moveDestPosY", this.moveDestPosY);
+            hash.Add("moveDestPosX", this.moveDestPosX);
 
             return hash;
         }

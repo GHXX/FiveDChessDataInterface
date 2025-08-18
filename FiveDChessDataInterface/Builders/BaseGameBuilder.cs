@@ -178,6 +178,48 @@ namespace FiveDChessDataInterface.Builders
                 }
             }
 
+            public struct TravelMove5D {
+                public int sourceL;
+                public int sourceT;
+                public int sourceIsBlack;
+                public int sourceY;
+                public int sourceX;
+                
+                public int destL;
+                public int destT;
+                public int destIsBlack;
+                public int destY;
+                public int destX;
+
+                public TravelMove5D(int sourceL, int sourceT, bool isBlackMove, int sourceY, int sourceX, int destL, int destT, int destY, int destX) {
+                    this.sourceL = sourceL;
+                    this.sourceT = sourceT;
+                    this.sourceIsBlack = isBlackMove ? 1 : 0;
+                    this.sourceY = sourceY;
+                    this.sourceX = sourceX;
+                    this.destL = destL;
+                    this.destT = destT;
+                    this.destIsBlack = this.sourceIsBlack;
+                    this.destY = destY;
+                    this.destX = destX;
+                }
+            }
+
+            public struct Move2D {
+                public int sourceY;
+                public int sourceX;
+                public int destY;
+                public int destX;
+
+                public Move2D(int sourceY, int sourceX, int destY, int destX) {
+                    this.sourceY = sourceY;
+                    this.sourceX = sourceX;
+                    this.destY = destY;
+                    this.destX = destX;
+                }
+            }
+
+
             public class ChessBoardData
             {
                 private readonly int boardHeight;
@@ -185,6 +227,9 @@ namespace FiveDChessDataInterface.Builders
                 internal ChessBoard.ChessPiece[,] pieces;
                 internal int turn;
                 internal bool isBlackBoard;
+                internal TravelMove5D? travelMove;
+                internal Move2D? normalMove;
+
 
                 private ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard)
                 {
@@ -328,24 +373,55 @@ namespace FiveDChessDataInterface.Builders
 
                     cbm.creatingMoveNumber = lastBoardId;
                     cbm.nextInTimelineBoardId = -1;
+                    cbm.previousBoardId = lastBoardId;
+                    cbm.createdBoardID = -1;
+
+                    cbm.ttPieceOriginBoardId = lastBoardId;
+                    cbm.moveSourcePosY = -1;
+                    cbm.moveSourcePosX = -1;
+                    cbm.moveDestPosY = -1;
+                    cbm.moveDestPosX = -1;
+
+                    if (board.travelMove.HasValue) {
+                        var m = board.travelMove.Value;
+                        cbm.moveSourceL = m.sourceL;
+                        cbm.moveSourceT = m.sourceT;
+                        cbm.moveSourceY = m.sourceY;
+                        cbm.moveSourceX = m.sourceX;
+                        cbm.moveSourceIsBlack = m.sourceIsBlack;
+
+                        cbm.moveDestL = m.destL;
+                        cbm.moveDestT = m.destT;
+                        cbm.moveDestY = m.destY;
+                        cbm.moveDestX = m.destX;
+                        cbm.moveDestIsBlack = m.destIsBlack;
+
+                        cbm.moveSourcePosY = m.sourceY;
+                        cbm.moveSourcePosX = m.sourceX;
+                        cbm.moveDestPosY = m.destY;
+                        cbm.moveDestPosX = m.destX;
+                    }
+
+                    if (board.normalMove.HasValue) {
+                        var m = board.normalMove.Value;
+                        cbm.SetHighlightPos(m.sourceX, m.sourceY, m.destX, m.destY);
+                    }
 
                     if (lastBoardId != -1) // set the nextintimelineboardid of the last board to the current id
                     {
                         var lastCbm = timelineCbms.Last();
                         timelineCbms.RemoveAt(timelineCbms.Count - 1);
                         lastCbm.nextInTimelineBoardId = cbm.boardId;
-                        lastCbm.moveType = 5;
+                        if(lastCbm.moveType != 2)
+                            lastCbm.moveType = 5;
                         timelineCbms.Add(lastCbm);
                     }
+                    if (board.travelMove.HasValue) {
+                        var m = board.travelMove.Value;
+                        cbm.moveType = (byte)((m.sourceT != m.destT || m.sourceL != m.destL) ? 2 : 1);
+                    }
 
-                    cbm.previousBoardId = lastBoardId;
-                    cbm.createdBoardID = -1;
 
-                    cbm.ttPieceOriginId = -1;
-                    cbm.ttMoveSourceY = -1;
-                    cbm.ttMoveSourceX = -1;
-                    cbm.ttMoveDestY = -1;
-                    cbm.ttMoveDestX = -1;
                     lastBoardId = cbm.boardId;
 
                     timelineCbms.Add(cbm);
@@ -396,7 +472,7 @@ namespace FiveDChessDataInterface.Builders
                     var splitted = line.Split('.');
                     if (!int.TryParse(splitted[0], out _))
                     {
-                        throw new FormatException($"Period on line {i + 1} was interpreted as a delimeter between turncount and moveset. BUt the left side of the period was not a number.");
+                        throw new FormatException($"Period on line {i + 1} was interpreted as a delimeter between turncount and moveset. But the left side of the period was not a number.");
                     }
 
                     lines[i] = splitted[1].Trim();
@@ -430,7 +506,8 @@ namespace FiveDChessDataInterface.Builders
                         var moveFixed = moveold.Replace(">>", ">").Replace(">", ">>"); // treat >> and > the same
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
                         var srcBoardSplit = srcBoardName.Split('T');
-                        var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcBoardSplit[0]}L");
+                        var srcTimelineId = int.Parse(srcBoardSplit[0]);
+                        var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcTimelineId}L");
                         var pgnTurn = int.Parse(srcBoardSplit[1]) - 1;
 
 
@@ -460,12 +537,13 @@ namespace FiveDChessDataInterface.Builders
                             var splitted = moveFixed.Split(new[] { ">>" }, StringSplitOptions.None);
                             var dstBoardName = string.Join(null, splitted[1].Skip(1).TakeWhile(x => x != ')'));
                             var dstBoardSplit = dstBoardName.Split('T');
-                            var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstBoardSplit[0]}L");
-                            var dstturn = int.Parse(dstBoardSplit[1]) - 1 - cosmeticTurnOffset;
-                            var dstindex = dstturn * 2 + pmsi;
+                            var dstTimelineId = int.Parse(dstBoardSplit[0]);
+                            var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstTimelineId}L");
+                            var dstTurn = int.Parse(dstBoardSplit[1]) - 1 - (cosmeticTurnOffset??0);
+                            var dstindex = dstTurn * 2 + pmsi;
                             // if the destboard has already been played on
                             var dstBoardAlreadyPlayed = dstTL.Boards.Any(x => (x.turn * 2 + (x.isBlackBoard ? 1 : 0) > dstindex));
-                            var dstBoard = dstTL.Boards.Single(x => x.turn == dstturn && x.isBlackBoard == (pmsi == 1));
+                            var dstBoard = dstTL.Boards.Single(x => x.turn == dstTurn && x.isBlackBoard == (pmsi == 1));
 
                             var srcPos = string.Join(null, splitted[0].Reverse().Take(2).Reverse());
                             var dstPos = string.Join(null, splitted[1].Reverse().Take(2).Reverse());
@@ -477,6 +555,7 @@ namespace FiveDChessDataInterface.Builders
                             newCbm1.isBlackBoard ^= true;
                             // ---
                             newCbm1.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                            
 
                             srcTL.Boards.Add(newCbm1);
 
@@ -486,9 +565,13 @@ namespace FiveDChessDataInterface.Builders
                             newCbm2.turn += newCbm2.isBlackBoard ? 1 : 0;
                             newCbm2.isBlackBoard ^= true;
                             // ---
-                            newCbm2.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] =
-                                srcBoard.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
+                            var dstPosX = dstPos.ToLowerInvariant()[0] - 97;
+                            var dstPosY = int.Parse(dstPos.Substring(1, 1)) - 1;
+                            var srcPosX = srcPos.ToLowerInvariant()[0] - 97;
+                            var srcPosY = int.Parse(srcPos.Substring(1, 1)) - 1;
+                            newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
 
+                            srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, pgnTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
                             if (branchExpected != dstBoardAlreadyPlayed)
                                 throw new FormatException($"Expected a different type of move (branching vs nonbranching timtetravel move). At move: {moveold}");
 
@@ -517,6 +600,10 @@ namespace FiveDChessDataInterface.Builders
                             var movechars = string.Join(null, moveFixed.Reverse().Take(4).Reverse());
                             var srcPos = movechars.Substring(0, 2);
                             var dstPos = movechars.Substring(2, 2);
+                            var dstPosX = dstPos.ToLowerInvariant()[0] - 97;
+                            var dstPosY = int.Parse(dstPos.Substring(1, 1)) - 1;
+                            var srcPosX = srcPos.ToLowerInvariant()[0] - 97;
+                            var srcPosY = int.Parse(srcPos.Substring(1, 1)) - 1;
 
                             var newCbm = new Timeline.ChessBoardData(srcBoard);
                             // incrememnt turn
@@ -526,6 +613,7 @@ namespace FiveDChessDataInterface.Builders
                             newCbm.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] = newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
                             newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
 
+                            newCbm.normalMove = new Timeline.Move2D(srcPosY, srcPosX, dstPosY, dstPosX);
                             srcTL.Boards.Add(newCbm);
                         }
                     }

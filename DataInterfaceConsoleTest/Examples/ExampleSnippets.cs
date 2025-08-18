@@ -32,7 +32,7 @@ namespace DataInterfaceConsoleTest.Examples
         {
             // TODO autoresolve
             // 5dchesswithmultiversetimetravel.exe+91843 
-            var at = di.asmHelper.PlaceAssemblyTrapAdvanced(IntPtr.Add(di.GameProcess.MainModule.BaseAddress, 0x289C2));
+            var at = di.TrapMainThreadForGameLoad();
             Console.WriteLine("Trap placed!");
             at.WaitTillHit();
             // other trap addresses:
@@ -111,6 +111,7 @@ namespace DataInterfaceConsoleTest.Examples
             //Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
             #endregion
 
+            Console.WriteLine($"Chessboards are located at 0x{di.MemLocChessArrayPointer.GetValue().ToString("X16")}");
             at.ReleaseTrap();
             Console.WriteLine("Trap released!");
         }
