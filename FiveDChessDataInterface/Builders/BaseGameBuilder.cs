@@ -229,7 +229,7 @@ namespace FiveDChessDataInterface.Builders
                 internal bool isBlackBoard;
                 internal TravelMove5D? travelMove;
                 internal Move2D? normalMove;
-
+                internal ChessBoardData previousBoardOverride;
 
                 private ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard)
                 {
@@ -328,6 +328,7 @@ namespace FiveDChessDataInterface.Builders
         public ChessBoardMemory[] BuildCbms()
         {
             // TODO maybe validate all timelines are nonempty?
+            var boardToIdMap = new Dictionary<Timeline.ChessBoardData, int>();
             var allBoards = new List<ChessBoardMemory>();
             int nextFreeId = 0;
             foreach (var tl in this.Timelines)
@@ -339,6 +340,7 @@ namespace FiveDChessDataInterface.Builders
                     var cbm = new ChessBoardMemory();
 
                     cbm.boardId = nextFreeId++;
+                    boardToIdMap.Add(board, cbm.boardId); 
                     cbm.timeline = tl.timelineIndex.isNegative ? -(tl.timelineIndex.timeline + (this.EvenNumberOfStartingTimelines ? 1 : 0)) : tl.timelineIndex.timeline;
                     cbm.turn = board.turn;
                     cbm.isBlacksMove = board.isBlackBoard ? 1 : 0;
@@ -419,6 +421,10 @@ namespace FiveDChessDataInterface.Builders
                     if (board.travelMove.HasValue) {
                         var m = board.travelMove.Value;
                         cbm.moveType = (byte)((m.sourceT != m.destT || m.sourceL != m.destL) ? 2 : 1);
+                    }
+
+                    if (board.previousBoardOverride != null) {
+                        cbm.previousBoardId = boardToIdMap[board.previousBoardOverride];
                     }
 
 
@@ -572,6 +578,7 @@ namespace FiveDChessDataInterface.Builders
                             newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
 
                             srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, pgnTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
+                            newCbm2.previousBoardOverride = dstBoard;
                             if (branchExpected != dstBoardAlreadyPlayed)
                                 throw new FormatException($"Expected a different type of move (branching vs nonbranching timtetravel move). At move: {moveold}");
 
