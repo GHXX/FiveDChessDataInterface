@@ -1,8 +1,5 @@
 currBranch=$(git branch --show-current)
 
-echo "syncing master"
-git sync master
-
 echo "Merging master into publish"
 git checkout publish && git merge master
 
