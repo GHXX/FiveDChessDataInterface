@@ -582,6 +582,8 @@ namespace FiveDChessDataInterface.Builders
                             if (branchExpected != dstBoardAlreadyPlayed)
                                 throw new FormatException($"Expected a different type of move (branching vs nonbranching timtetravel move). At move: {moveold}");
 
+                            newCbm2.normalMove = new Timeline.Move2D(-1, -1, dstPosY, dstPosX);
+
                             if (dstBoardAlreadyPlayed) // make a new TL
                             {
                                 var orderedTls = this.Timelines.OrderBy(x => (x.timelineIndex.timeline + 0.5) * (x.timelineIndex.isNegative ? -1 : 1));
