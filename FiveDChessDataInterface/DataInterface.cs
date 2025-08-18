@@ -108,7 +108,7 @@ namespace FiveDChessDataInterface
         /// Returns whether this <see cref="DataInterface"/> instance is still valid. Possible reasons for this becoming invalid are:
         /// *) Game process exiting
         /// </summary>
-        public bool IsValid() => !this.GameProcess.HasExited;
+        public bool IsValid() => !this.GameProcess.HasExited && this.asmHelper != null;
 
         public static bool TryCreateAutomatically(out DataInterface di)
         {

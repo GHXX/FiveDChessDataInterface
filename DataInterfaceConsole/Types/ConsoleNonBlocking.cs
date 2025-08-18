@@ -15,11 +15,11 @@ namespace DataInterfaceConsole.Types
             Task.Run(ReadLines);
         }
 
-        private static async Task ReadLines()
+        private static async Task ReadLines() 
         {
+            var s = new StreamReader(Console.OpenStandardInput(), Console.InputEncoding);
             while (true)
             {
-                var s = new StreamReader(Console.OpenStandardInput(), Console.InputEncoding);
                 var l = await s.ReadLineAsync();
                 readLines.Enqueue(l);
             }
