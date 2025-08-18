@@ -398,10 +398,10 @@ namespace FiveDChessDataInterface.Builders
                         cbm.moveDestX = m.destX;
                         cbm.moveDestIsBlack = m.destIsBlack;
 
-                        cbm.moveSourcePosY = m.sourceY;
-                        cbm.moveSourcePosX = m.sourceX;
-                        cbm.moveDestPosY = m.destY;
-                        cbm.moveDestPosX = m.destX;
+                        //cbm.moveSourcePosY = m.sourceY;
+                        //cbm.moveSourcePosX = m.sourceX;
+                        //cbm.moveDestPosY = m.destY;
+                        //cbm.moveDestPosX = m.destX;
                     }
 
                     if (board.normalMove.HasValue) {
@@ -578,6 +578,7 @@ namespace FiveDChessDataInterface.Builders
                             newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
 
                             srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, pgnTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
+                            newCbm1.normalMove = new Timeline.Move2D(srcPosY, srcPosX, -1, -1);
                             newCbm2.previousBoardOverride = dstBoard;
                             if (branchExpected != dstBoardAlreadyPlayed)
                                 throw new FormatException($"Expected a different type of move (branching vs nonbranching timtetravel move). At move: {moveold}");
