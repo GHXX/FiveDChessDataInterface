@@ -32,84 +32,51 @@ namespace DataInterfaceConsoleTest.Examples
         {
             // TODO autoresolve
             // 5dchesswithmultiversetimetravel.exe+91843 
-            var at = di.TrapMainThreadForGameLoad();
-            Console.WriteLine("Trap placed!");
-            at.WaitTillHit();
+
             // other trap addresses:
             // 0x91843 -- inside main update loop
             // 0x289f0 -- load_variant
             // 5dchesswithmultiversetimetravel.exe+289C2 -- post load_variant
+            var pgn = """
+                [Mode "5D"]
+                [Result "1-0"]
+                [Date "2024.07.27"]
+                [Time "21:25:41 (+02:00)"]
+                [Size "8x8"]
+                [White "andrey"]
+                [Black "mauer01"]
+                [Event "anniversary"]
+                [Game "2"]
+                [Board "custom"]
+                [r*nbqk*bnr*/p*p*p*p*p*p*p*p*/8/8/8/8/P*P*P*P*P*P*P*P*/R*NBQK*BNR*:0:0:b]
+                [r*nbqk*bnr*/p*p*p*p*p*p*p*p*/8/8/8/8/P*P*P*P*P*P*P*P*/R*NBQK*BNR*:0:1:w]
+                1.{10:03}(0T1)Ng1f3 / {10:03}(0T1)Ng8f6 
+                2.{10:02}(0T2)d2d4 / {10:02}(0T2)e7e6 
+                3.{10:01}(0T3)c2c3 / {10:03}(0T3)c7c5 
+                4.{9:42}(0T4)Bc1g5 / {10:02}(0T4)c5d4 
+                5.{8:55}(0T5)Qd1d4 / {10:02}(0T5)Nb8c6 
+                6.{8:46}(0T6)Bg5f6 / {10:02}(0T6)g7f6 
+                7.{7:59}(0T7)Qd4h4 / {10:02}(0T7)Qd8e7 
+                8.{7:28}(0T8)e2e3 / {9:49}(0T8)d7d5 
+                9.{7:07}(0T9)Bf1b5 / {9:45}(0T9)Bc8d7 
+                10.{6:43}(0T10)Nb1d2 / {9:40}(0T10)Ra8d8 
+                11.{6:16}(0T11)Nd2b3 / {8:46}(0T11)Nc6e5 
+                12.{5:38}(0T12)Nf3e5 / {8:09}(0T12)Bd7b5 
+                13.{5:18}(0T13)Ne5f7 / {8:06}(0T13)Qe7f7 
+                14.{5:18}(0T14)Nb3d4 / {7:27}(0T14)Bb5d7 
+                15.{5:17}(0T15)Nd4e6 / {7:02}(0T15)Qf7e6 
+                16.{5:17}(0T16)Qh4h5 / {7:05}(0T16)Qe6f7 
+                17.{5:19}(0T17)Qh5>>(0T15)f7 / {6:49}(1T15)Ke8f7 
+                18.{5:19}(1T16)Nd4f5 / {6:49}(1T16)e6f5 
+                19.{5:22}(1T17)Qh4h5 / {6:41}(0T17)Qf7>>(1T16)g6 
+                20.{5:19}(-1T17)Qh4h7 
+                """;
+            var gb = BaseGameBuilder.CreateFromFullPgn(pgn);
 
-            var gb2 = new GameBuilderOdd(8, 8);
-            gb2["0L"].AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR");
-            gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)e2e3 / (0T1)Ng8f6 \n2.(0T2)Ng1f3 / (0T2)c7c5 \n3.(0T3)c2c4 / (0T3)Nb8c6 \n4.(0T4)Nb1c3 / (0T4)h7h6 \n5.(0T5)h2h3 / (0T5)a7a6 \n6.(0T6)a2a3 / (0T6)Ra8b8 \n7.(0T7)Bf1d3 / (0T7)g7g6 \n8.(0T8)Nc3d5 / (0T8)e7e6 \n9.(0T9)Qd1c2 / (0T9)Rh8g8 \n10.(0T10)g2g3 / (0T10)Nc6d4 \n11.(0T11)Qc2d1 / (0T11)b7b5 \n12.(0T12)Nf3e5 / (0T12)Nd4f5 \n13.(0T13)Qd1f3 / (0T13)Bf8e7 \n14.(0T14)Bd3f5 / (0T14)e6f5 \n15.(0T15)Nd5f6 / (0T15)Be7f6 \n16.(0T16)Qf3d5 / (0T16)Rg8f8 \n17.(0T17)Qd5>>(0T15)f7 / (0T17)Qd8>>(0T14)a5 \n18.(-1T15)Nd5f6 / (-1T15)Ke8>>(0T14)f8 \n19.(-2T15)Nd5f6");
-
-            //// turn zero with normal turn numbers
-            //gb2["0L"].SetTurnOffset(0, true).AddBoardFromFen("rnbqkbnr/8*p/8/8/8/8/8*P/RNBQKBNR").CopyPrevious(1);
-            //gb2.Add5DPGNMoves("[Mode \"5D\"]\n1.(0T1)Nb1c3 / (0T1)e7e6 \n2.(0T2)Ng1f3 / (0T2)Qd8f6 \n3.(0T3)Nc3e4 / (0T3)Qf6f5 \n4.(0T4)Ne4g3 / (0T4)Qf5c5 \n5.(0T5)d2d4 / (0T5)Qc5>>(0T2)f2 \n6.(-1T3)Ke1f2 / (-1T3)Bf8c5 \n7.(-1T4)d2d4 / (-1T4)Bc5d4 \n8.(-1T5)Qd1d4 / (-1T5)c7c5 \n9.(-1T6)Qd4g7 (0T6)Bc1g5 / (-1T6)Qd8b6 (0T6)Bf8b4 \n10.(0T7)c2c3 (-1T7)Qg7f7 / (-1T7)Ke8f7 (0T7)Bb4c3 \n11.(-1T8)Nf3e5 (0T8)b2c3 / (-1T8)Kf7f8 (0T8)f7f6 \n12.(-1T9)Ne5>(0T9)e7 / (0T9)Ng8e7 (-1T9)c5c4 \n13.(-1T10)Bc1e3 (0T10)Bg5f4 / (-1T10)Qb6b4 (0T10)b7b6 \n14.(-1T11)Be3f4 (0T11)Bf4c7 / (-1T11)Qb4>(0T11)c3 \n15.(-1T12)Bf4>>(-1T9)c4 / (1T9)Qb6d6 \n16.(1T10)Ne5>>(0T10)e7 / (1T10)Qd6d4 (2T10)Ke8e7");
-
-
-            di.SetChessBoardArrayFromBuilder(gb2);
-
-            // demo code
-            /*
-            var timelineCnt = 9;
-            var turnCnt = 8;
-            var boardHeight = 8;
-            var boardWidth = 8;
-            bool useWhite = true;
-            var piece = "q";
-
-           piece = useWhite ? piece.ToUpperInvariant() : piece.ToLowerInvariant();
-
-            int subturnOffset = useWhite ? 1 : 0;
-
-            var gb2 = new GameBuilderOdd(boardHeight, boardWidth);
-            var timelineMatrix = Enumerable.Range(-timelineCnt / 2, timelineCnt).Select(x => $"{x}L");
-            foreach (var tl in timelineMatrix)
-            {
-                gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight))).CopyPrevious(turnCnt * 2 - 1 - 1 + subturnOffset);
-
-                if (tl == "0L")
-                {
-                    var leftspace = boardWidth / 2;
-                    var rightspace = boardWidth - 1 - leftspace;
-                    gb2[tl].AddBoardFromFen(string.Join("/", Enumerable.Repeat(boardWidth.ToString(), boardHeight - 1)) + $"/{leftspace}{piece}{rightspace}");
-                }
-                else
-                {
-                    gb2[tl].CopyPrevious();
-                }
-            }
-            di.SetChessBoardArrayFromBuilder(gb2);*/
-
-            #region oldcode
-            //var height = 3;
-            //var width = 3;
-            //// example for odd timelines
-            //var gb = new GameBuilderOdd(height, width);
-
-            //gb["-4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
-            //gb["-3L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            //gb["-2L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            //gb["-1L"].SetTurnOffset(1, true).AddBoardFromFen("cyc/3/1P1").AddBoardFromFen("cyc/3/1P1").CopyPrevious(10);
-            //gb["0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
-            //gb["1L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            //gb["2L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            //gb["3L"].SetTurnOffset(1, true).AddBoardFromFen("1p1/3/CYC").AddBoardFromFen("1p1/3/CYC").CopyPrevious(10);
-            //gb["4L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").AddBoardFromFen("ppp/3/PPP").CopyPrevious(10);
-
-            //// example for even timelines
-            //var gb = new GameBuilderEven(height, width);
-
-            //gb["-1L"].SetTurnOffset(0, true).AddBoardFromFen("ckc/3/PCP").CopyPrevious(1);
-            //gb["-0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
-            //gb["+0L"].SetTurnOffset(0, true).AddBoardFromFen("ppp/3/PPP").CopyPrevious(1);
-            //gb["+1L"].SetTurnOffset(0, true).AddBoardFromFen("pcp/3/CKC").CopyPrevious(1);
-            //Console.WriteLine("Old Array ptr:" + di.MemLocChessArrayPointer.ToString());
-            //di.SetChessBoardArrayFromBuilder(gb);
-            //Console.WriteLine("New Array ptr:" + di.MemLocChessArrayPointer.ToString());
-            #endregion
+            var at = di.TrapMainThreadForGameLoad();
+            Console.WriteLine("Trap placed!");
+            at.WaitTillHit();
+            di.SetChessBoardArrayFromBuilder(gb);
 
             Console.WriteLine($"Chessboards are located at 0x{di.MemLocChessArrayPointer.GetValue().ToString("X16")}");
             at.ReleaseTrap();

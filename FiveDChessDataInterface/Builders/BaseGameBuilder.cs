@@ -526,10 +526,10 @@ namespace FiveDChessDataInterface.Builders
                         else if (cosmeticTurnOffset.Value != expectedOffset)
                             throw new Exception("Inconsistent turn value.");
 
-                        var turn = pgnTurn - cosmeticTurnOffset;
+                        var srcTurn = pgnTurn - (cosmeticTurnOffset ?? 0);
 
 
-                        var srcBoard = srcTL.Boards.Single(x => x.turn == turn && x.isBlackBoard == (pmsi == 1));
+                        var srcBoard = srcTL.Boards.Single(x => x.turn == srcTurn && x.isBlackBoard == (pmsi == 1));
 
                         if (srcBoard.isBlackBoard != lastboard.isBlackBoard)
                             throw new Exception("Tried to play a move on a board that belongs to the other player!");
@@ -579,7 +579,7 @@ namespace FiveDChessDataInterface.Builders
                             var srcPosY = int.Parse(srcPos.Substring(1, 1)) - 1;
                             newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
 
-                            srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, pgnTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
+                            srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, srcTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
                             newCbm1.normalMove = new Timeline.Move2D(srcPosY, srcPosX, -1, -1);
                             newCbm2.previousBoardOverride = dstBoard;
                             if (branchExpected != dstBoardAlreadyPlayed)
