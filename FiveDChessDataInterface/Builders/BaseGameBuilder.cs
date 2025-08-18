@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace FiveDChessDataInterface.Builders
 {
@@ -506,8 +507,9 @@ namespace FiveDChessDataInterface.Builders
                     string moveSet = playerMoveSets[pmsi];
 
                     var moves = moveSet.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var moveold in moves)
+                    foreach (var moveRaw in moves)
                     {
+                        var moveold = Regex.Replace(moveRaw, "{.*?}", "");
                         var branchExpected = moveold.Contains(">>");
                         var moveFixed = moveold.Replace(">>", ">").Replace(">", ">>"); // treat >> and > the same
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
@@ -632,6 +634,62 @@ namespace FiveDChessDataInterface.Builders
 
             this.CosmeticTurnOffset = cosmeticTurnOffset ?? 0;
             return this;
+        }
+
+        private struct PgnFenBoard {
+            public string Fen;
+            public string Timeline;
+            public int Turn;
+            public bool IsBlack;
+
+            public PgnFenBoard(string s) {
+                var splitted = s.Split(':').Select(x=>x.Trim()).ToArray();
+                Fen = splitted[0];
+                Timeline = splitted[1].TrimEnd('L') + "L";
+                Turn = int.Parse(splitted[2]); 
+                IsBlack = splitted[3].Single() switch { 'w' => false, 'b' => true, _=> throw new Exception("invalid color")};
+            }
+
+            public PgnFenBoard NormalizeSign() {
+                return new PgnFenBoard() {
+                    Fen = this.Fen,
+                    Timeline = this.Timeline[0] == '-' ? this.Timeline : ("+"+this.Timeline.TrimStart('+')),
+                    Turn = this.Turn,
+                    IsBlack = this.IsBlack
+                };
+            }
+        }
+        public static BaseGameBuilder CreateFromFullPgn(string fullPgn) {
+            var lines = fullPgn.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Select(x=>x.Trim()).Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
+            var fens = lines.Reverse().SkipWhile(x => char.IsDigit(x[0])).TakeWhile(x => x[0] == '[' && !x.Contains('"')).Reverse().Select(x=>new PgnFenBoard(x.Substring(1,x.Length-2))).ToArray();
+
+            var headerFields = lines.TakeWhile(x => x[0] == '[' && x.Contains('"'))
+                .Select(x => x.Substring(1, x.Length - 2).Split(' ').Where(x => x.Length > 0).ToArray())
+                .ToDictionary(x => x[0], x => x[1].Trim('"'));
+
+            if (headerFields["Mode"] != "5D")
+                throw new Exception("\"Mode\" must be 5D");
+
+            var size = headerFields["Size"].Split('x').Select(x=>int.Parse(x)).ToArray();
+            bool isEven = fens.Any(x => x.Timeline == "+0" || x.Timeline == "-0");
+
+            BaseGameBuilder gb2 = isEven ? (BaseGameBuilder)new GameBuilderEven(size[0], size[1]) : new GameBuilderOdd(size[0], size[1]);
+            var timelines = fens.Select(x => x.NormalizeSign()).GroupBy(x => x.Timeline);
+            int cosmeticTurnOffset = timelines.Min(grp => grp.First().Turn);
+
+            gb2.CosmeticTurnOffset = cosmeticTurnOffset;
+            foreach (var tl in timelines) {
+                var ordered = tl.OrderBy(x => x.Turn + (x.IsBlack ? 0.5f : 0)).ToArray();
+                var builderTimeline = gb2[tl.Key];
+                builderTimeline.SetTurnOffset(ordered[0].Turn - cosmeticTurnOffset, ordered[0].IsBlack);
+                foreach (var board in ordered) {
+                    builderTimeline.AddBoardFromFen(board.Fen);
+                }
+            }
+
+            var pgnMoves = string.Join("\n", lines.Reverse().TakeWhile(x => Regex.IsMatch(x, @"^\d{1,}.")).Reverse().ToArray());
+            gb2.Add5DPGNMoves(pgnMoves);
+            return gb2;
         }
     }
 }
