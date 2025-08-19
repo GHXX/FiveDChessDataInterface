@@ -609,6 +609,8 @@ namespace FiveDChessDataInterface.Builders
                         }
                         else
                         {
+                            var movedPiece = char.ToUpperInvariant(moveFixed.Reverse().Skip(4).First());
+                            bool isKing = movedPiece == 'K';
                             var movechars = string.Join(null, moveFixed.Reverse().Take(4).Reverse());
                             var srcPos = movechars.Substring(0, 2);
                             var dstPos = movechars.Substring(2, 2);
@@ -622,8 +624,20 @@ namespace FiveDChessDataInterface.Builders
                             newCbm.turn += newCbm.isBlackBoard ? 1 : 0;
                             newCbm.isBlackBoard ^= true;
                             // ---
-                            newCbm.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] = newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
+                            var srcPiece = newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
+                            newCbm.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] = srcPiece;
                             newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+
+                            if (isKing && (Math.Abs(srcPosX - dstPosX) > 1 || Math.Abs(srcPosY - dstPosY) > 1)) {
+                                var rookDstPosX = (srcPosX + dstPosX) / 2;
+                                var rookDstPosY = (srcPosY + dstPosY) / 2;
+
+                                var rookSrcPosX = dstPosX + (rookDstPosX - srcPosX);
+                                var rookSrcPosY = dstPosY + (rookDstPosY - srcPosY);
+
+                                newCbm.pieces[rookDstPosX, rookDstPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Rook, srcPiece.IsBlack);
+                                newCbm.pieces[rookSrcPosX, rookSrcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                            }
 
                             newCbm.normalMove = new Timeline.Move2D(srcPosY, srcPosX, dstPosY, dstPosX);
                             srcTL.Boards.Add(newCbm);
