@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace FiveDChessDataInterface.MemoryHelpers
-{
-    public class KernelMethods
-    {
+namespace FiveDChessDataInterface.MemoryHelpers {
+    public class KernelMethods {
         [DllImport("Kernel32.dll")]
         private static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, uint nSize, ref uint lpNumberOfBytesRead);
 
-        public static byte[] ReadMemory(IntPtr handle, IntPtr address, uint size)
-        {
+        public static byte[] ReadMemory(IntPtr handle, IntPtr address, uint size) {
             byte[] buffer = new byte[size];
             uint bytesRead = 0;
             ReadProcessMemory(handle, address, buffer, size, ref bytesRead);
@@ -25,8 +22,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         [DllImport("kernel32.dll")]
         private static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpBaseAddress, byte[] lpBuffer, int nSize, ref uint lpNumberOfBytesWritten);
 
-        public static void WriteMemory(IntPtr handle, IntPtr address, byte[] newData)
-        {
+        public static void WriteMemory(IntPtr handle, IntPtr address, byte[] newData) {
             uint bytesWrittenCount = 0;
             WriteProcessMemory(handle, address, newData, newData.Length, ref bytesWrittenCount);
 
@@ -40,16 +36,14 @@ namespace FiveDChessDataInterface.MemoryHelpers
         private static extern IntPtr VirtualAllocEx(IntPtr hProcess, IntPtr lpBaseAddress, int dwSize, int flAllocationType, int flProtect);
         // lpBaseAddress = NULL -> automatically determine location
 
-        public static IntPtr AllocProcessMemory(IntPtr handle, int size, bool executable)
-        {
+        public static IntPtr AllocProcessMemory(IntPtr handle, int size, bool executable) {
             return VirtualAllocEx(handle, IntPtr.Zero, size, 0x00001000 | 0x00002000 /* MEM_COMMIT | MEM_RESERVE */, executable ? 0x40 /* PAGE_EXEC_READWRITE */ : 0x04 /* PAGE_READWRITE */);
         }
 
         [DllImport("kernel32.dll")]
         private static extern IntPtr VirtualFreeEx(IntPtr hProcess, IntPtr lpBaseAddress, int dwSize, int deFreeType);
 
-        public static IntPtr FreeProcessMemory(IntPtr handle, IntPtr baseAddress, int size)
-        {
+        public static IntPtr FreeProcessMemory(IntPtr handle, IntPtr baseAddress, int size) {
             return VirtualFreeEx(handle, baseAddress, size, 0x00008000 /* MEM_RELEASE */);
         }
 
@@ -64,8 +58,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         // dwCreationFlags: 0 -> runs immediately; 4-> starts suspended
         // lpThreadId == NULL: then no thread identifier is returned
 
-        public static IntPtr CreateRemoteThread(IntPtr handle, IntPtr startAddress, int stackSize = 0, bool startSuspended = false)
-        {
+        public static IntPtr CreateRemoteThread(IntPtr handle, IntPtr startAddress, int stackSize = 0, bool startSuspended = false) {
             return CreateRemoteThread(handle, IntPtr.Zero, stackSize, startAddress, IntPtr.Zero, startSuspended ? 4 : 0, IntPtr.Zero);
         }
 
@@ -93,8 +86,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         /// <param name="size">the size of the range to change the proection of</param>
         /// <param name="newProtectionValue">a value indicating the new proection status</param>
         /// <returns>the old protection status</returns>
-        public static FlPageProtect ChangePageProtection(IntPtr handle, IntPtr baseAddress, int size, FlPageProtect newProtectionValue)
-        {
+        public static FlPageProtect ChangePageProtection(IntPtr handle, IntPtr baseAddress, int size, FlPageProtect newProtectionValue) {
             int oldProtect = 0;
             VirtualProtectEx(handle, baseAddress, size, (int)newProtectionValue, ref oldProtect); // return value is always zero???
             var error_code = Marshal.GetLastWin32Error();
@@ -105,8 +97,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
         [Flags]
-        public enum FlPageProtect : int
-        {
+        public enum FlPageProtect : int {
             PAGE_NOACCESS = 0x1,
             PAGE_READONLY = 0x2,
             PAGE_READWRITE = 0x4,

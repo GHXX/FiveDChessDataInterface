@@ -6,11 +6,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FiveDChessDataInterface.Variants
-{
+namespace FiveDChessDataInterface.Variants {
     [JsonObject(ItemNullValueHandling = NullValueHandling.Include)]
-    public class JSONVariant
-    {
+    public class JSONVariant {
         [JsonProperty("Name")]
         public string Name { get; set; }
 
@@ -41,29 +39,21 @@ namespace FiveDChessDataInterface.Variants
         /// </summary>
         /// <returns></returns>
         /// <exception cref="VariantLoadException">If the given <see cref="GameBuilderOverride"/> is invalid and is not equal to the name of a class that inherits <see cref="BaseGameBuilder"/> </exception>
-        public BaseGameBuilder GetGameBuilder()
-        {
+        public BaseGameBuilder GetGameBuilder() {
             var isEven = Timelines.Count % 2 == 0;
             BaseGameBuilder gameBuilder;
-            if (GameBuilderOverride == null)
-            {
+            if (GameBuilderOverride == null) {
                 gameBuilder = isEven ? new GameBuilderEven(Width, Height) : (BaseGameBuilder)new GameBuilderOdd(Width, Height);
-            }
-            else
-            {
+            } else {
                 var gbs = typeof(BaseGameBuilder).Assembly.GetTypes().Where(x => typeof(BaseGameBuilder).IsAssignableFrom(x) && x != typeof(BaseGameBuilder)).ToDictionary(x => x.Name, x => x);
-                if (gbs.TryGetValue(GameBuilderOverride, out var gbType))
-                {
+                if (gbs.TryGetValue(GameBuilderOverride, out var gbType)) {
                     gameBuilder = (BaseGameBuilder)Activator.CreateInstance(gbType, new object[] { Width, Height });
-                }
-                else
-                {
+                } else {
                     throw new VariantLoadException("Invalid gamebuilder given!");
                 }
             }
 
-            foreach (var tl in Timelines)
-            {
+            foreach (var tl in Timelines) {
                 var timelineIndex = tl.Key;
                 var boards = tl.Value;
 
@@ -72,8 +62,7 @@ namespace FiveDChessDataInterface.Variants
                 var isBlack = nullBoardCount % 2 == 1; // check if the first existent board will be black
                 var turnOffset = nullBoardCount / 2;
                 gameBuilder[timelineIndex].SetTurnOffset(turnOffset, isBlack);
-                foreach (var board in boards.Skip(nullBoardCount))
-                {
+                foreach (var board in boards.Skip(nullBoardCount)) {
                     gameBuilder[timelineIndex].AddBoardFromFen(board);
                 }
             }

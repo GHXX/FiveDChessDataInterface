@@ -2,10 +2,8 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace FiveDChessDataInterface.Util
-{
-    public static class FenUtil
-    {
+namespace FiveDChessDataInterface.Util {
+    public static class FenUtil {
         /// <summary>
         /// Expands notations such as individual numbers, such as 8 to 8*1, and expands N*X to a repetition of X N times
         /// </summary>
@@ -20,8 +18,7 @@ namespace FiveDChessDataInterface.Util
                 compressedFen = Regex.Replace(compressedFen, @"(\D)\*", @"$1"); // turns [A-z]\* into [A-z] e.g. P* -> P
 
             var lines = compressedFen.Split('/');
-            foreach (var line in lines)
-            {
+            foreach (var line in lines) {
                 string processedLine = line;
 
                 // expand {n*x} to {new string(x,n)}
@@ -32,18 +29,15 @@ namespace FiveDChessDataInterface.Util
 
                     bool ok = int.TryParse(processedLine.Substring(asteriskIndex - 1, 1), out int coefficient);
                     if (!ok)
-                        if (removeExtraAsterisks)
-                        {
+                        if (removeExtraAsterisks) {
                             throw new Exception("Fen parsing failed even though extra asterisks should be ignored. Please report this.");
-                        }
-                        else
-                        {
+                        } else {
                             throw new FormatException($"Unable to expand asterisk expression at line {processedLine}, " +
                                 $"at position index {asteriskIndex}, because there is no number at position index {asteriskIndex - 1}");
                         }
 
                     var toCopy = processedLine[asteriskIndex + 1];
-                    processedLine = processedLine.Replace($"{ coefficient}*{toCopy}", new string(toCopy, coefficient));
+                    processedLine = processedLine.Replace($"{coefficient}*{toCopy}", new string(toCopy, coefficient));
                 }
 
                 for (int i = 2; i <= 9; i++)

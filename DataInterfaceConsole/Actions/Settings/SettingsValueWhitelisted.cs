@@ -2,49 +2,42 @@
 using System;
 using System.Linq;
 
-namespace DataInterfaceConsole.Actions.Settings
-{
-    class SettingsValueWhitelisted<T> : ISettingsValue
-    {
-        public string Id { get; }
-        public string Name { get; }
-        public string Description { get; }
+namespace DataInterfaceConsole.Actions.Settings;
 
-        public T[] AllowedValues { get; private set; }
+internal class SettingsValueWhitelisted<T> : ISettingsValue {
+    public string Id { get; }
+    public string Name { get; }
+    public string Description { get; }
 
-        public T Value { get; private set; }
+    public T[] AllowedValues { get; private set; }
 
-        public object GetValue()
-        {
-            return this.Value;
-        }
+    public T Value { get; private set; }
 
-        public void SetValueDirect(JToken newValue)
-        {
-            var v = newValue.Value<T>() ?? throw new InvalidCastException("Value<T> returned null!");
-            SetValue(v);
-        }
+    public object GetValue() {
+        return Value;
+    }
 
-        public void SetValue(T newValue)
-        {
-            if (!this.AllowedValues.Contains(newValue))
-                throw new InvalidOperationException("The given value is not contained in the whitelist");
+    public void SetValueDirect(JToken newValue) {
+        var v = newValue.Value<T>() ?? throw new InvalidCastException("Value<T> returned null!");
+        SetValue(v);
+    }
 
-            this.Value = newValue;
-        }
+    public void SetValue(T newValue) {
+        if (!AllowedValues.Contains(newValue))
+            throw new InvalidOperationException("The given value is not contained in the whitelist");
 
-        public string GetValueAsString()
-        {
-            return this.Value.ToString();
-        }
+        Value = newValue;
+    }
 
-        public SettingsValueWhitelisted(string id, string name, string description, T[] allowedValues, T defaultValue)
-        {
-            this.Id = id;
-            this.Name = name;
-            this.Description = description;
-            this.AllowedValues = allowedValues;
-            SetValue(defaultValue);
-        }
+    public string GetValueAsString() {
+        return Value.ToString();
+    }
+
+    public SettingsValueWhitelisted(string id, string name, string description, T[] allowedValues, T defaultValue) {
+        Id = id;
+        Name = name;
+        Description = description;
+        AllowedValues = allowedValues;
+        SetValue(defaultValue);
     }
 }

@@ -4,15 +4,12 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace FiveDChessDataInterface.MemoryHelpers
-{
-    public class AssemblyHelper
-    {
+namespace FiveDChessDataInterface.MemoryHelpers {
+    public class AssemblyHelper {
         internal readonly IntPtr gameHandle;
         internal readonly DataInterface di;
 
-        public AssemblyHelper(DataInterface di)
-        {
+        public AssemblyHelper(DataInterface di) {
             this.gameHandle = di.GetGameHandle();
             this.di = di;
         }
@@ -22,21 +19,18 @@ namespace FiveDChessDataInterface.MemoryHelpers
         /// </summary>
         /// <param name="codeToLoad"></param>
         /// <returns></returns>
-        public IntPtr AllocMemAndInjectCode(byte[] codeToLoad)
-        {
+        public IntPtr AllocMemAndInjectCode(byte[] codeToLoad) {
             var ptr = KernelMethods.AllocProcessMemory(this.gameHandle, codeToLoad.Length, true);
             KernelMethods.WriteMemory(this.gameHandle, ptr, codeToLoad);
             return ptr;
         }
 
-        public IntPtr AllocCodeInTargetProcessWithJump(byte[] codeToLoad, IntPtr addressToJumpTo)
-        {
+        public IntPtr AllocCodeInTargetProcessWithJump(byte[] codeToLoad, IntPtr addressToJumpTo) {
             var bytes = codeToLoad.ToList().Concat(GetAbsoluteJumpCode(addressToJumpTo)).ToArray();
             return AllocMemAndInjectCode(bytes);
         }
 
-        private byte[] GetAbsoluteJumpCode(IntPtr targetLocation)
-        {
+        private byte[] GetAbsoluteJumpCode(IntPtr targetLocation) {
             var bytes = new byte[]
             {
                 0x48, 0xB8, // MOVABS RAX,
@@ -51,10 +45,8 @@ namespace FiveDChessDataInterface.MemoryHelpers
         }
 
         // TODO maybe free the old memory, if the game allows it
-        public void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity)
-        {
-            this.di.ExecuteWhileGameSuspendedLocked(() =>
-            {
+        public void EnsureArrayCapacity(MemoryLocation<IntPtr> existingArrayPointerLocation, int arrayElementSize, int minCapacity) {
+            this.di.ExecuteWhileGameSuspendedLocked(() => {
                 var memLocElementCnt = new MemoryLocation<int>(this.gameHandle, existingArrayPointerLocation.Location - 0x8);
                 var memLocCapacity = new MemoryLocation<int>(this.gameHandle, existingArrayPointerLocation.Location - 0x4);
 
@@ -92,15 +84,12 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         // TODO implement memory freeing if memleak is a problem
         [Obsolete("Use the malloc version instead!")]
-        public IntPtr AllocHeapMem(int size)
-        {
+        public IntPtr AllocHeapMem(int size) {
             ProcessModule k32Module = null;
             var modules = this.di.GameProcess.Modules;
-            for (int i = 0; i < modules.Count; i++)
-            {
+            for (int i = 0; i < modules.Count; i++) {
                 var m = modules[i];
-                if (m.ModuleName == "KERNEL32.DLL")
-                {
+                if (m.ModuleName == "KERNEL32.DLL") {
                     k32Module = m;
                     break;
                 }
@@ -181,8 +170,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             var ptr = AllocMemAndInjectCode(code);
             KernelMethods.CreateRemoteThread(this.gameHandle, ptr);
             IntPtr result = IntPtr.Zero;
-            SpinWait.SpinUntil(() =>
-            {
+            SpinWait.SpinUntil(() => {
                 result = memLocHeapAllocResult.GetValue();
                 return result.ToInt64() != -1;
             });
@@ -194,8 +182,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             return result;
         }
 
-        public IntPtr GameMalloc(int size, bool initMemToZero)
-        {
+        public IntPtr GameMalloc(int size, bool initMemToZero) {
             ProcessModule gameModule = this.di.GameProcess.MainModule;
             //var modules = this.di.GameProcess.Modules;
             //ProcessModule msvcrtModule = null;
@@ -212,7 +199,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             if (gameModule == null)
                 throw new DllNotFoundException("Could not resolve game module in the game process!");
 
-            var mallocPtr = MemoryUtil.FindMemoryWithWildcards(di.GetGameHandle(), di.GetEntryPoint(), (uint)di.GameProcess.MainModule.ModuleMemorySize,
+            var mallocPtr = MemoryUtil.FindMemoryWithWildcards(this.di.GetGameHandle(), this.di.GetEntryPoint(), (uint)this.di.GameProcess.MainModule.ModuleMemorySize,
                 new byte?[] { 0x40, 0x53, 0x48, 0x83, 0xec, 0x20, 0x48, 0x8b, 0xd9, 0x48, 0x83, 0xf9 }).Keys.Single(); // TODO move to shared file
 
 
@@ -289,8 +276,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
             var ptr = AllocMemAndInjectCode(code);
             KernelMethods.CreateRemoteThread(this.gameHandle, ptr);
             IntPtr result = IntPtr.Zero;
-            SpinWait.SpinUntil(() =>
-            {
+            SpinWait.SpinUntil(() => {
                 result = memLocHeapAllocResult.GetValue();
                 return result.ToInt64() != -1;
             });

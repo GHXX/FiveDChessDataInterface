@@ -1,7 +1,5 @@
-﻿namespace FiveDChessDataInterface.Types
-{
-    public enum GameState : int
-    {
+﻿namespace FiveDChessDataInterface.Types {
+    public enum GameState : int {
         NotStarted,
         Running,
         EndedDraw,

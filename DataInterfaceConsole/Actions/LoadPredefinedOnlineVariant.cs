@@ -1,9 +1,7 @@
-﻿namespace DataInterfaceConsole.Actions
-{
-    class LoadPredefinedOnlineVariant : BaseLoadPredefinedVariant
-    {
-        public override string Name => "Load Predefined Variant [ONLINE]";
+﻿namespace DataInterfaceConsole.Actions;
 
-        protected override bool UseOnlineVariants => true;
-    }
+internal class LoadPredefinedOnlineVariant : BaseLoadPredefinedVariant {
+    public override string Name => "Load Predefined Variant [ONLINE]";
+
+    protected override bool UseOnlineVariants => true;
 }

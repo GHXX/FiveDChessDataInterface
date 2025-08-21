@@ -4,10 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace FiveDChessDataInterface.Builders
-{
-    public abstract class BaseGameBuilder
-    {
+namespace FiveDChessDataInterface.Builders {
+    public abstract class BaseGameBuilder {
         public readonly int boardHeight;
         public readonly int boardWidth;
         public int CosmeticTurnOffset { get; set; }
@@ -15,33 +13,29 @@ namespace FiveDChessDataInterface.Builders
         public List<Timeline> Timelines { get; }
         public bool EvenNumberOfStartingTimelines { get; }
 
-        public BaseGameBuilder(bool evenNumberOfStartingTimelines, int boardHeight, int boardWidth)
-        {
+        public BaseGameBuilder(bool evenNumberOfStartingTimelines, int boardHeight, int boardWidth) {
             this.boardHeight = boardHeight;
             this.boardWidth = boardWidth;
 
-            this.Timelines = new List<Timeline>();
-            this.EvenNumberOfStartingTimelines = evenNumberOfStartingTimelines;
+            Timelines = new List<Timeline>();
+            EvenNumberOfStartingTimelines = evenNumberOfStartingTimelines;
 
             SetupInitialTimelines();
         }
 
-        public Timeline this[Timeline.TimelineIndex tli, bool autocreate = true]
-        {
-            get
-            {
-                if (!this.EvenNumberOfStartingTimelines && tli.timeline == 0 && tli.isNegative)
+        public Timeline this[Timeline.TimelineIndex tli, bool autocreate = true] {
+            get {
+                if (!EvenNumberOfStartingTimelines && tli.timeline == 0 && tli.isNegative)
                     throw new ArgumentException("You cannot specify a timeline of -0L for a game with an odd number of starting timelines.");
 
-                if (!this.Timelines.Any(x => x.timelineIndex == tli))
-                {
+                if (!Timelines.Any(x => x.timelineIndex == tli)) {
                     if (autocreate)
                         CreateAndAddNewTimeline(tli);
                     else
                         throw new KeyNotFoundException("The specified timeline could not be found!");
                 }
 
-                return this.Timelines.Single(x => x.timelineIndex == tli);
+                return Timelines.Single(x => x.timelineIndex == tli);
             }
         }
 
@@ -50,8 +44,7 @@ namespace FiveDChessDataInterface.Builders
         /// </summary>
         protected abstract void SetupInitialTimelines();
 
-        public class Timeline
-        {
+        public class Timeline {
             private readonly int boardHeight;
             private readonly int boardWidth;
             public ChessBoardData previousBoardIfBranching = null;
@@ -59,17 +52,15 @@ namespace FiveDChessDataInterface.Builders
             public readonly TimelineIndex timelineIndex;
             private int subturnOffset = 0; // TODO set the cosmetic turn offset somehow
 
-            public Timeline(int boardHeight, int boardWidth, TimelineIndex timelineIndex)
-            {
+            public Timeline(int boardHeight, int boardWidth, TimelineIndex timelineIndex) {
                 this.boardHeight = boardHeight;
                 this.boardWidth = boardWidth;
                 this.timelineIndex = timelineIndex;
-                this.Boards = new List<ChessBoardData>();
+                Boards = new List<ChessBoardData>();
             }
 
-            public Timeline SetTurnOffset(int firstBoardTurn, bool isBlackSubturn)
-            {
-                if (this.Boards.Any())
+            public Timeline SetTurnOffset(int firstBoardTurn, bool isBlackSubturn) {
+                if (Boards.Any())
                     throw new InvalidOperationException("The turn offset cannot be set if any boards were added to this timeline. Set it before adding any boards.");
 
                 if (firstBoardTurn < 0)
@@ -79,61 +70,50 @@ namespace FiveDChessDataInterface.Builders
                 return this;
             }
 
-            public Timeline AddBoardFromFen(string fen)
-            {
+            public Timeline AddBoardFromFen(string fen) {
 
-                if (fen != null)
-                {
+                if (fen != null) {
                     // last subturn + 1, or the offset if there are no boards
                     int nextSubturn;
-                    if (this.Boards.Any())
-                    {
-                        var lastValid = this.Boards.FindLastIndex(x => x != null);
-                        var nullBoardsAfter = this.Boards.Count() - lastValid - 1; // count nullboards
-                        var b2 = this.Boards[lastValid];
+                    if (Boards.Any()) {
+                        var lastValid = Boards.FindLastIndex(x => x != null);
+                        var nullBoardsAfter = Boards.Count() - lastValid - 1; // count nullboards
+                        var b2 = Boards[lastValid];
                         nextSubturn = b2.turn * 2 + (b2.isBlackBoard ? 1 : 0) + 1 + nullBoardsAfter;
-                    }
-                    else
-                    {
+                    } else {
                         nextSubturn = this.subturnOffset;
                     }
                     var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, fen);
-                    this.Boards.Add(b);
-                }
-                else
-                {
-                    this.Boards.Add(null);
+                    Boards.Add(b);
+                } else {
+                    Boards.Add(null);
                 }
                 return this;
             }
 
             public Timeline AddEmptyBoard() => AddBoardFromFen(string.Join("/", Enumerable.Repeat(this.boardWidth, this.boardHeight)));
 
-            public Timeline CopyPrevious(int repetitionCount = 1)
-            {
-                if (!this.Boards.Any())
+            public Timeline CopyPrevious(int repetitionCount = 1) {
+                if (!Boards.Any())
                     throw new InvalidOperationException("There is no board in this timeline. Therefore no board can be copied!");
 
-                for (int i = 0; i < repetitionCount; i++)
-                {
+                for (int i = 0; i < repetitionCount; i++) {
                     // last subturn + 1, or the offset if there are no boards
-                    var nextSubturn = this.Boards.Any() ? this.Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
+                    var nextSubturn = Boards.Any() ? Boards.Max(x => x.turn * 2 + (x.isBlackBoard ? 1 : 0)) + 1 : this.subturnOffset;
 
-                    var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, this.Boards.Last().pieces);
-                    this.Boards.Add(b);
+                    var b = new ChessBoardData(this.boardHeight, this.boardWidth, nextSubturn / 2, nextSubturn % 2 == 1, Boards.Last().pieces);
+                    Boards.Add(b);
                 }
 
                 return this;
             }
 
-            public override string ToString() => $"{this.timelineIndex} Boardcnt: {this.Boards.Count}";
+            public override string ToString() => $"{this.timelineIndex} Boardcnt: {Boards.Count}";
 
-            public readonly struct TimelineIndex
-            {
+            public readonly struct TimelineIndex {
                 public readonly bool isNegative;
                 public readonly int timeline;
-                public TimelineIndex(bool isNegative, int timeline)
-                {
+                public TimelineIndex(bool isNegative, int timeline) {
                     if (timeline < 0)
                         throw new ArgumentOutOfRangeException(nameof(timeline) + " may not be negative! Set the sign instead.");
 
@@ -141,8 +121,7 @@ namespace FiveDChessDataInterface.Builders
                     this.timeline = timeline;
                 }
 
-                public static implicit operator TimelineIndex(string s)
-                {
+                public static implicit operator TimelineIndex(string s) {
                     // TODO cleanup
 
                     if (s[0] != '+' && s[0] != '-') // automatically add plus signs, if necessary
@@ -155,8 +134,7 @@ namespace FiveDChessDataInterface.Builders
 
                     var number = int.Parse(s.Substring(1, s.Length - 2));
 
-                    if (sign == '+' || sign == '-')
-                    {
+                    if (sign == '+' || sign == '-') {
                         return new TimelineIndex(sign == '-', number);
                     }
 
@@ -168,13 +146,11 @@ namespace FiveDChessDataInterface.Builders
 
                 public override string ToString() => $"{(this.isNegative ? "-" : "+")}{this.timeline}L";
 
-                public override bool Equals(object obj)
-                {
+                public override bool Equals(object obj) {
                     return obj is TimelineIndex tli && this == tli;
                 }
 
-                public override int GetHashCode()
-                {
+                public override int GetHashCode() {
                     return (this.isNegative ? (0x1 << 31) : 0) | this.timeline; // simply set the msb to the sign.
                 }
             }
@@ -185,7 +161,7 @@ namespace FiveDChessDataInterface.Builders
                 public int sourceIsBlack;
                 public int sourceY;
                 public int sourceX;
-                
+
                 public int destL;
                 public int destT;
                 public int destIsBlack;
@@ -221,8 +197,7 @@ namespace FiveDChessDataInterface.Builders
             }
 
 
-            public class ChessBoardData
-            {
+            public class ChessBoardData {
                 private readonly int boardHeight;
                 private readonly int boardWidth;
                 internal ChessBoard.ChessPiece[,] pieces;
@@ -232,8 +207,7 @@ namespace FiveDChessDataInterface.Builders
                 internal Move2D? normalMove;
                 internal ChessBoardData previousBoardOverride;
 
-                private ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard)
-                {
+                private ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard) {
                     this.boardHeight = boardHeight;
                     this.boardWidth = boardWidth;
                     this.turn = turn;
@@ -248,26 +222,21 @@ namespace FiveDChessDataInterface.Builders
                 }
 
                 public ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard, string fenCode)
-                    : this(boardHeight, boardWidth, turn, isBlackBoard)
-                {
+                    : this(boardHeight, boardWidth, turn, isBlackBoard) {
                     LoadFEN(fenCode);
                 }
 
                 public ChessBoardData(int boardHeight, int boardWidth, int turn, bool isBlackBoard, ChessBoard.ChessPiece[,] pieceData)
-                    : this(boardHeight, boardWidth, turn, isBlackBoard)
-                {
+                    : this(boardHeight, boardWidth, turn, isBlackBoard) {
                     this.pieces = pieceData;
                 }
 
                 public ChessBoardData(ChessBoardData original) : this(original.boardHeight, original.boardWidth, original.turn,
-                    original.isBlackBoard, (ChessBoard.ChessPiece[,])original.pieces.Clone())
-                { }
+                    original.isBlackBoard, (ChessBoard.ChessPiece[,])original.pieces.Clone()) { }
 
 
-                private void LoadFEN(string compressedFen)
-                {
-                    if (compressedFen is null)
-                    {
+                private void LoadFEN(string compressedFen) {
+                    if (compressedFen is null) {
                         throw new ArgumentNullException(nameof(compressedFen));
                     }
 
@@ -277,22 +246,18 @@ namespace FiveDChessDataInterface.Builders
                     if (lines.Length != this.boardHeight)
                         throw new ArgumentException($"The number of line-segments in the provided board is {lines.Length}, which does not match the board height of {this.boardHeight}!");
 
-                    for (int y = 0; y < this.boardHeight; y++)
-                    {
+                    for (int y = 0; y < this.boardHeight; y++) {
                         var currentLine = lines[y];
                         var x = 0;
-                        for (int i = 0; i < currentLine.Length; i++)
-                        {
+                        for (int i = 0; i < currentLine.Length; i++) {
                             var currChar = currentLine[i];
                             if (char.IsDigit(currChar)) // empty pieces
                             {
-                                for (int n = 0; n < int.Parse(currChar.ToString()); n++)
-                                {
+                                for (int n = 0; n < int.Parse(currChar.ToString()); n++) {
                                     this.pieces[x++, this.boardHeight - y - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
                                 }
-                            }
-                            else // not an empty piece
-                            {
+                            } else // not an empty piece
+                              {
                                 var isWhite = char.IsUpper(currChar);
                                 this.pieces[x++, this.boardHeight - y - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.SingleLetterPieceTable.Keys
                                         .Single(x => string.Equals(ChessBoard.ChessPiece.SingleLetterPieceTable[x], currChar.ToString(), StringComparison.InvariantCultureIgnoreCase)
@@ -307,51 +272,43 @@ namespace FiveDChessDataInterface.Builders
             }
         }
 
-        public Timeline CreateAndAddNewTimeline(Timeline.TimelineIndex tli)
-        {
+        public Timeline CreateAndAddNewTimeline(Timeline.TimelineIndex tli) {
             var newTl = new Timeline(this.boardHeight, this.boardWidth, tli);
-            this.Timelines.Add(newTl);
+            Timelines.Add(newTl);
             return newTl;
         }
 
 
-        public Timeline CreateAndAddNewWhiteTimeline()
-        {
-            var newWhiteIndex = this.Timelines.Where(x => !x.timelineIndex.isNegative).Max(x => x.timelineIndex.timeline) + 1;
+        public Timeline CreateAndAddNewWhiteTimeline() {
+            var newWhiteIndex = Timelines.Where(x => !x.timelineIndex.isNegative).Max(x => x.timelineIndex.timeline) + 1;
             return CreateAndAddNewTimeline(new Timeline.TimelineIndex(false, newWhiteIndex));
         }
-        public Timeline CreateAndAddNewBlackTimeline()
-        {
-            var newBlackIndex = this.Timelines.Where(x => x.timelineIndex.isNegative).Max(x => x.timelineIndex.timeline) + 1;
+        public Timeline CreateAndAddNewBlackTimeline() {
+            var newBlackIndex = Timelines.Where(x => x.timelineIndex.isNegative).Max(x => x.timelineIndex.timeline) + 1;
             return CreateAndAddNewTimeline(new Timeline.TimelineIndex(true, newBlackIndex));
         }
 
-        public ChessBoardMemory[] BuildCbms()
-        {
+        public ChessBoardMemory[] BuildCbms() {
             // TODO maybe validate all timelines are nonempty?
             var boardToIdMap = new Dictionary<Timeline.ChessBoardData, int>();
             var allBoards = new List<ChessBoardMemory>();
             int nextFreeId = 0;
-            foreach (var tl in this.Timelines)
-            {
+            foreach (var tl in Timelines) {
                 int lastBoardId = -1;
                 var timelineCbms = new List<ChessBoardMemory>();
-                foreach (var board in tl.Boards.Where(x => x != null))
-                {
+                foreach (var board in tl.Boards.Where(x => x != null)) {
                     var cbm = new ChessBoardMemory();
 
                     cbm.boardId = nextFreeId++;
-                    boardToIdMap.Add(board, cbm.boardId); 
-                    cbm.timeline = tl.timelineIndex.isNegative ? -(tl.timelineIndex.timeline + (this.EvenNumberOfStartingTimelines ? 1 : 0)) : tl.timelineIndex.timeline;
+                    boardToIdMap.Add(board, cbm.boardId);
+                    cbm.timeline = tl.timelineIndex.isNegative ? -(tl.timelineIndex.timeline + (EvenNumberOfStartingTimelines ? 1 : 0)) : tl.timelineIndex.timeline;
                     cbm.turn = board.turn;
                     cbm.isBlacksMove = board.isBlackBoard ? 1 : 0;
 
                     // array of (KIND,COLOR) Color: 0 = empty, 1 = white, 2 = black
                     cbm.positionData = new byte[8 * 8 * 2];
-                    for (int col = 0; col < this.boardWidth; col++)
-                    {
-                        for (int row = 0; row < this.boardWidth; row++)
-                        {
+                    for (int col = 0; col < this.boardWidth; col++) {
+                        for (int row = 0; row < this.boardWidth; row++) {
                             var index = (row * 8 + col) * 2;
                             var piece = board.pieces[row, col];
                             var pb = piece.ToByteArray();
@@ -415,7 +372,7 @@ namespace FiveDChessDataInterface.Builders
                         var lastCbm = timelineCbms.Last();
                         timelineCbms.RemoveAt(timelineCbms.Count - 1);
                         lastCbm.nextInTimelineBoardId = cbm.boardId;
-                        if(lastCbm.moveType != 2)
+                        if (lastCbm.moveType != 2)
                             lastCbm.moveType = 5;
                         timelineCbms.Add(lastCbm);
                     }
@@ -447,54 +404,43 @@ namespace FiveDChessDataInterface.Builders
 
         public ChessBoard[] Build() => BuildCbms().Select(x => new ChessBoard(x, this.boardWidth, this.boardHeight)).ToArray();
 
-        public BaseGameBuilder Add5DPGNMoves(string pgn)
-        {
+        public BaseGameBuilder Add5DPGNMoves(string pgn) {
             if (string.IsNullOrWhiteSpace(pgn))
                 throw new ArgumentNullException("Argument " + nameof(pgn) + " was empty!");
 
             var lines = pgn.Replace("\r\n", "\n").Replace("\r", "\n").Split(new[] { "\n" }, StringSplitOptions.RemoveEmptyEntries).Select(x => x.Trim()).ToList();
 
             const string modeValue = "[Mode";
-            if (lines[0].StartsWith(modeValue))
-            {
+            if (lines[0].StartsWith(modeValue)) {
                 var mode = string.Join(null, lines[0].Substring(modeValue.Length).SkipWhile(c => c != '"').Skip(1).TakeWhile(c => c != '"'));
-                if (mode.ToLowerInvariant() == "5d")
-                {
+                if (mode.ToLowerInvariant() == "5d") {
                     lines.RemoveAt(0);
-                }
-                else
-                {
+                } else {
                     throw new FormatException($"Invalid pgn supplied. Mode was expected to be 5D, but instead is '{mode}'!");
                 }
             }
 
-            for (int i = 0; i < lines.Count; i++)
-            {
+            for (int i = 0; i < lines.Count; i++) {
                 var line = lines[i];
                 var dotcnt = line.Count(x => x == '.');
                 if (dotcnt == 0)
                     continue;
-                else if (dotcnt == 1)
-                {
+                else if (dotcnt == 1) {
                     var splitted = line.Split('.');
-                    if (!int.TryParse(splitted[0], out _))
-                    {
+                    if (!int.TryParse(splitted[0], out _)) {
                         throw new FormatException($"Period on line {i + 1} was interpreted as a delimeter between turncount and moveset. But the left side of the period was not a number.");
                     }
 
                     lines[i] = splitted[1].Trim();
                     continue;
-                }
-                else
-                {
+                } else {
                     throw new FormatException($"Line {i + 1} contained {dotcnt} periods, even though at most one was expected.");
                 }
             }
 
             int? cosmeticTurnOffset = null;
 
-            for (int i = 0; i < lines.Count; i++)
-            {
+            for (int i = 0; i < lines.Count; i++) {
                 string line = lines[i];
                 var cnt = line.Count(x => x == '/');
                 if (cnt > 1)
@@ -502,20 +448,18 @@ namespace FiveDChessDataInterface.Builders
 
 
                 var playerMoveSets = line.Split('/');
-                for (int pmsi = 0; pmsi < playerMoveSets.Length; pmsi++)
-                {
+                for (int pmsi = 0; pmsi < playerMoveSets.Length; pmsi++) {
                     string moveSet = playerMoveSets[pmsi];
 
                     var moves = moveSet.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
-                    foreach (var moveRaw in moves)
-                    {
+                    foreach (var moveRaw in moves) {
                         var moveold = Regex.Replace(moveRaw, "{.*?}", "");
                         var branchExpected = moveold.Contains(">>");
                         var moveFixed = moveold.Replace(">>", ">").Replace(">", ">>"); // treat >> and > the same
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
                         var srcBoardSplit = srcBoardName.Split('T');
                         var srcTimelineId = int.Parse(srcBoardSplit[0]);
-                        var srcTL = this.Timelines.Single(x => x.timelineIndex == $"{srcTimelineId}L");
+                        var srcTL = Timelines.Single(x => x.timelineIndex == $"{srcTimelineId}L");
                         var pgnTurn = int.Parse(srcBoardSplit[1]) - 1;
 
 
@@ -540,14 +484,13 @@ namespace FiveDChessDataInterface.Builders
 
 
                         var isTT = moveFixed.Contains(">>");
-                        if (isTT)
-                        {
+                        if (isTT) {
                             var splitted = moveFixed.Split(new[] { ">>" }, StringSplitOptions.None);
                             var dstBoardName = string.Join(null, splitted[1].Skip(1).TakeWhile(x => x != ')'));
                             var dstBoardSplit = dstBoardName.Split('T');
                             var dstTimelineId = int.Parse(dstBoardSplit[0]);
-                            var dstTL = this.Timelines.Single(x => x.timelineIndex == $"{dstTimelineId}L");
-                            var dstTurn = int.Parse(dstBoardSplit[1]) - 1 - (cosmeticTurnOffset??0);
+                            var dstTL = Timelines.Single(x => x.timelineIndex == $"{dstTimelineId}L");
+                            var dstTurn = int.Parse(dstBoardSplit[1]) - 1 - (cosmeticTurnOffset ?? 0);
                             var dstindex = dstTurn * 2 + pmsi;
                             // if the destboard has already been played on
                             var dstBoardAlreadyPlayed = dstTL.Boards.Any(x => (x.turn * 2 + (x.isBlackBoard ? 1 : 0) > dstindex));
@@ -563,7 +506,7 @@ namespace FiveDChessDataInterface.Builders
                             newCbm1.isBlackBoard ^= true;
                             // ---
                             newCbm1.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
-                            
+
 
                             srcTL.Boards.Add(newCbm1);
 
@@ -579,7 +522,7 @@ namespace FiveDChessDataInterface.Builders
                             var srcPosY = int.Parse(srcPos.Substring(1, 1)) - 1;
                             newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
 
-                            srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, srcTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY,dstPosX);
+                            srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, srcTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY, dstPosX);
                             newCbm1.normalMove = new Timeline.Move2D(srcPosY, srcPosX, -1, -1);
                             newCbm2.previousBoardOverride = dstBoard;
                             if (branchExpected != dstBoardAlreadyPlayed)
@@ -589,7 +532,7 @@ namespace FiveDChessDataInterface.Builders
 
                             if (dstBoardAlreadyPlayed) // make a new TL
                             {
-                                var orderedTls = this.Timelines.OrderBy(x => (x.timelineIndex.timeline + 0.5) * (x.timelineIndex.isNegative ? -1 : 1));
+                                var orderedTls = Timelines.OrderBy(x => (x.timelineIndex.timeline + 0.5) * (x.timelineIndex.isNegative ? -1 : 1));
                                 var newTLIndex = srcBoard.isBlackBoard ?
                                     // if black made the move
                                     orderedTls.First().timelineIndex :
@@ -599,16 +542,13 @@ namespace FiveDChessDataInterface.Builders
                                 {
                                     previousBoardIfBranching = srcBoard
                                 };
-                                this.Timelines.Add(tl);
+                                Timelines.Add(tl);
                                 tl.Boards.Add(newCbm2);
-                            }
-                            else // append onto dest tl
-                            {
+                            } else // append onto dest tl
+                              {
                                 dstTL.Boards.Add(newCbm2); // TODO set previous board properly
                             }
-                        }
-                        else
-                        {
+                        } else {
                             var movedPiece = char.ToUpperInvariant(moveFixed.Reverse().Skip(4).First());
                             bool isKing = movedPiece == 'K';
                             var movechars = string.Join(null, moveFixed.Reverse().Take(4).Reverse());
@@ -646,7 +586,7 @@ namespace FiveDChessDataInterface.Builders
                 }
             }
 
-            this.CosmeticTurnOffset = cosmeticTurnOffset ?? 0;
+            CosmeticTurnOffset = cosmeticTurnOffset ?? 0;
             return this;
         }
 
@@ -657,25 +597,25 @@ namespace FiveDChessDataInterface.Builders
             public bool IsBlack;
 
             public PgnFenBoard(string s) {
-                var splitted = s.Split(':').Select(x=>x.Trim()).ToArray();
-                Fen = splitted[0];
-                Timeline = splitted[1].TrimEnd('L') + "L";
-                Turn = int.Parse(splitted[2]); 
-                IsBlack = splitted[3].Single() switch { 'w' => false, 'b' => true, _=> throw new Exception("invalid color")};
+                var splitted = s.Split(':').Select(x => x.Trim()).ToArray();
+                this.Fen = splitted[0];
+                this.Timeline = splitted[1].TrimEnd('L') + "L";
+                this.Turn = int.Parse(splitted[2]);
+                this.IsBlack = splitted[3].Single() switch { 'w' => false, 'b' => true, _ => throw new Exception("invalid color") };
             }
 
             public PgnFenBoard NormalizeSign() {
                 return new PgnFenBoard() {
                     Fen = this.Fen,
-                    Timeline = this.Timeline[0] == '-' ? this.Timeline : ("+"+this.Timeline.TrimStart('+')),
+                    Timeline = this.Timeline[0] == '-' ? this.Timeline : ("+" + this.Timeline.TrimStart('+')),
                     Turn = this.Turn,
                     IsBlack = this.IsBlack
                 };
             }
         }
         public static BaseGameBuilder CreateFromFullPgn(string fullPgn) {
-            var lines = fullPgn.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Select(x=>x.Trim()).Where(x=>!string.IsNullOrWhiteSpace(x)).ToArray();
-            var fens = lines.Reverse().SkipWhile(x => char.IsDigit(x[0])).TakeWhile(x => x[0] == '[' && !x.Contains('"')).Reverse().Select(x=>new PgnFenBoard(x.Substring(1,x.Length-2))).ToArray();
+            var lines = fullPgn.Replace("\r\n", "\n").Replace('\r', '\n').Split('\n').Select(x => x.Trim()).Where(x => !string.IsNullOrWhiteSpace(x)).ToArray();
+            var fens = lines.Reverse().SkipWhile(x => char.IsDigit(x[0])).TakeWhile(x => x[0] == '[' && !x.Contains('"')).Reverse().Select(x => new PgnFenBoard(x.Substring(1, x.Length - 2))).ToArray();
 
             var headerFields = lines.TakeWhile(x => x[0] == '[' && x.Contains('"'))
                 .Select(x => x.Substring(1, x.Length - 2).Split(' ').Where(x => x.Length > 0).ToArray())
@@ -684,7 +624,7 @@ namespace FiveDChessDataInterface.Builders
             if (headerFields["Mode"] != "5D")
                 throw new Exception("\"Mode\" must be 5D");
 
-            var size = headerFields["Size"].Split('x').Select(x=>int.Parse(x)).ToArray();
+            var size = headerFields["Size"].Split('x').Select(x => int.Parse(x)).ToArray();
             bool isEven = fens.Any(x => x.Timeline == "+0" || x.Timeline == "-0");
 
             BaseGameBuilder gb2 = isEven ? (BaseGameBuilder)new GameBuilderEven(size[0], size[1]) : new GameBuilderOdd(size[0], size[1]);

@@ -2,17 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace FiveDChessDataInterface.Util
-{
-    public static class GameUtil
-    {
+namespace FiveDChessDataInterface.Util {
+    public static class GameUtil {
         /// <summary>
         /// Reassigns the chessboard ids, to match the required constraints in the game. Preserves references.
         /// </summary>
         /// <param name="cbms"></param>
         /// <returns></returns>
-        public static ChessBoardMemory[] ReassignBoardIds(ChessBoardMemory[] cbms)
-        {
+        public static ChessBoardMemory[] ReassignBoardIds(ChessBoardMemory[] cbms) {
             if (cbms.DistinctBy(x => x.boardId).Count() != cbms.Length)
                 throw new ArgumentException("There are duplicate board ids!");
 
@@ -30,8 +27,7 @@ namespace FiveDChessDataInterface.Util
 
             var lastId = sorted.Last();
             var retArr = sorted;
-            for (int currWantedBoardId = 0; currWantedBoardId < cbms.Length; currWantedBoardId++)
-            {
+            for (int currWantedBoardId = 0; currWantedBoardId < cbms.Length; currWantedBoardId++) {
                 var board = retArr[currWantedBoardId];
                 if (board.boardId != currWantedBoardId)
                     retArr = SwapTwoBoardIds(retArr, board.boardId, currWantedBoardId);
@@ -45,8 +41,7 @@ namespace FiveDChessDataInterface.Util
             return retArr;
         }
 
-        private static ChessBoardMemory[] SwapTwoBoardIds(ChessBoardMemory[] cbms, int id1, int id2)
-        {
+        private static ChessBoardMemory[] SwapTwoBoardIds(ChessBoardMemory[] cbms, int id1, int id2) {
             if (id1 == id2)
                 return cbms;
 
@@ -58,21 +53,18 @@ namespace FiveDChessDataInterface.Util
             return renamedTempTo2;
         }
 
-        private static ChessBoardMemory[] ChangeBoardId(ChessBoardMemory[] cbms, int idToChange, int newId)
-        {
+        private static ChessBoardMemory[] ChangeBoardId(ChessBoardMemory[] cbms, int idToChange, int newId) {
             if (idToChange == newId)
                 return cbms;
 
             var ret = new List<ChessBoardMemory>();
 
-            void SwapIntIfEq(ref int baseValue, int search, int newValue)
-            {
+            void SwapIntIfEq(ref int baseValue, int search, int newValue) {
                 if (baseValue == search)
                     baseValue = newValue;
             }
 
-            foreach (var c in cbms)
-            {
+            foreach (var c in cbms) {
                 var c2 = c;
 
                 SwapIntIfEq(ref c2.boardId, idToChange, newId);

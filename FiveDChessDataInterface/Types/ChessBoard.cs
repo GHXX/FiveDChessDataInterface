@@ -4,24 +4,19 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace FiveDChessDataInterface
-{
-    public class ChessBoard
-    {
+namespace FiveDChessDataInterface {
+    public class ChessBoard {
         private ChessPiece[] _pieces;
 
         /// <summary>
         /// Contains a neater representation of the pieces that are available.
         /// WARNING: WRITING TO THIS WILL UPDATE THE INTERNAL STATE, BUT NOT WRITE IT TO GAME MEMORY!
         /// </summary>
-        public ChessPiece[] Pieces
-        {
-            get
-            {
+        public ChessPiece[] Pieces {
+            get {
                 return this._pieces; // TODO maybe make readonly
             }
-            set
-            {
+            set {
                 SetPieces(value);
             }
         }
@@ -30,17 +25,14 @@ namespace FiveDChessDataInterface
         /// THIS MODIFIES THE CHESSBOARD VALUES, BUT DOES NOT UPDATE THE BITBOARDS JUST YET. SO ONLY REPLACE PIECES, BUT DONT ADD OR REMOVE!
         /// </summary>
         /// <param name="newPieces"></param>
-        public void SetPieces(ChessPiece[] newPieces)
-        {
+        public void SetPieces(ChessPiece[] newPieces) {
             // TODO FIND AND UPDATE BITBOARDS!
 
-            if (newPieces.Length * 2 > this.cbm.positionData.Length)
-            {
+            if (newPieces.Length * 2 > this.cbm.positionData.Length) {
                 throw new ArgumentException("Array size mismatch!");
             }
 
-            for (int i = 0; i < newPieces.Length; i++)
-            {
+            for (int i = 0; i < newPieces.Length; i++) {
                 var newPiecesRow = i / this.width;
                 var newPiecesCol = i % this.width;
 
@@ -56,8 +48,7 @@ namespace FiveDChessDataInterface
             if (this._pieces.Length != newPieces.Length)
                 throw new Exception("Write validation length check failed!");
 
-            for (int i = 0; i < this._pieces.Length; i++)
-            {
+            for (int i = 0; i < this._pieces.Length; i++) {
                 if (!this._pieces[i].Equals(newPieces[i]))
                     throw new Exception("Write validation failed!");
             }
@@ -72,38 +63,31 @@ namespace FiveDChessDataInterface
 
         public ChessBoardMemory cbm;
 
-        public ChessBoard(ChessBoardMemory mem, int width, int height)
-        {
+        public ChessBoard(ChessBoardMemory mem, int width, int height) {
             this.width = width;
             this.height = height;
             this.cbm = mem;
             UpdatePieceArrayFromInternalData();
         }
 
-        private void UpdatePieceArrayFromInternalData()
-        {
+        private void UpdatePieceArrayFromInternalData() {
             this._pieces = new ChessPiece[this.width * this.height];
-            for (int x = 0; x < this.width; x++)
-            {
-                for (int y = this.height - 1; y >= 0; y--)
-                {
+            for (int x = 0; x < this.width; x++) {
+                for (int y = this.height - 1; y >= 0; y--) {
                     var srcIndex = (x * 8 + y) * 2;
                     this._pieces[x * this.height + y] = ChessPiece.ParseFromTwoByteNotation(this.cbm.positionData[srcIndex], this.cbm.positionData[srcIndex + 1]);
                 }
             }
         }
 
-        public class ChessPiece
-        {
+        public class ChessPiece {
             public PieceKind Kind { get; }
             public bool IsBlack { get; }
-            public bool IsWhite { get => this.Kind != PieceKind.Empty && !this.IsBlack; }
-            public bool IsEmpty { get => this.Kind == PieceKind.Empty; }
+            public bool IsWhite { get => Kind != PieceKind.Empty && !IsBlack; }
+            public bool IsEmpty { get => Kind == PieceKind.Empty; }
 
-            public static ChessPiece ParseFromTwoByteNotation(int pieceByte, byte colorByte)
-            {
-                if (colorByte > 2)
-                {
+            public static ChessPiece ParseFromTwoByteNotation(int pieceByte, byte colorByte) {
+                if (colorByte > 2) {
                     throw new InvalidDataException("Color data for this piece was bigger than 2! " + colorByte);
                 }
 
@@ -113,21 +97,18 @@ namespace FiveDChessDataInterface
                 return new ChessPiece(kind, isBlack);
             }
 
-            public override string ToString()
-            {
-                if (this.Kind == PieceKind.Empty)
-                {
+            public override string ToString() {
+                if (Kind == PieceKind.Empty) {
                     return string.Empty;
                 }
 
-                return $"[{(this.IsBlack ? "B" : "W")}]{this.Kind}";
+                return $"[{(IsBlack ? "B" : "W")}]{Kind}";
             }
 
-            public byte[] ToByteArray() => new byte[] { this.IsEmpty ? (byte)0 : (byte)this.Kind, this.IsEmpty ? (byte)0 : (this.IsWhite ? (byte)1 : (byte)2) };
+            public byte[] ToByteArray() => new byte[] { IsEmpty ? (byte)0 : (byte)Kind, IsEmpty ? (byte)0 : (IsWhite ? (byte)1 : (byte)2) };
 
-            public string SingleLetterNotation()
-            {
-                if (SingleLetterPieceTable.TryGetValue(this.Kind, out string result))
+            public string SingleLetterNotation() {
+                if (SingleLetterPieceTable.TryGetValue(Kind, out string result))
                     return result;
                 else
                     throw new NotImplementedException("This piece is not defined!");
@@ -151,14 +132,12 @@ namespace FiveDChessDataInterface
                 { PieceKind.CommonKing, "C"}
             };
 
-            public ChessPiece(PieceKind kind, bool isBlack)
-            {
-                this.Kind = kind;
-                this.IsBlack = isBlack;
+            public ChessPiece(PieceKind kind, bool isBlack) {
+                Kind = kind;
+                IsBlack = isBlack;
             }
 
-            public enum PieceKind : int
-            {
+            public enum PieceKind : int {
                 Unknown = -1,
                 Empty = 0,
                 Pawn,
@@ -176,23 +155,20 @@ namespace FiveDChessDataInterface
                 CommonKing
             }
 
-            public override int GetHashCode()
-            {
+            public override int GetHashCode() {
                 return base.GetHashCode();
             }
 
-            public override bool Equals(object obj)
-            {
+            public override bool Equals(object obj) {
                 if (obj is ChessPiece cp)
-                    return this.Kind == cp.Kind && this.IsBlack == cp.IsBlack;
+                    return Kind == cp.Kind && IsBlack == cp.IsBlack;
                 else
                     return false;
 
             }
         }
 
-        public override string ToString()
-        {
+        public override string ToString() {
             var nonempty = this._pieces.Where(x => x.Kind != ChessPiece.PieceKind.Empty).ToList();
             return $"Id: {this.cbm.boardId}, T{this.cbm.turn + 1}L{this.cbm.timeline}, PieceCount: {nonempty.Count(x => x.IsWhite)}/{nonempty.Count(x => x.IsBlack)} ";
         }
@@ -200,8 +176,7 @@ namespace FiveDChessDataInterface
 
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct ChessBoardMemory
-    {
+    public struct ChessBoardMemory {
         public const int structSize = 228;
 
         // when a board is created it is given a boardID, these are given sequentially
@@ -268,15 +243,14 @@ namespace FiveDChessDataInterface
 
         // -----------
 
-        public void SetHighlightPos(int x, int y) => SetHighlightPos(x,y,-1,-1);
+        public void SetHighlightPos(int x, int y) => SetHighlightPos(x, y, -1, -1);
 
         public void SetHighlightPos(int x, int y, int xDest, int yDest) {
-            moveSourcePosX = x; moveSourcePosY = y;
-            moveDestPosX = xDest; moveDestPosY = yDest;
+            this.moveSourcePosX = x; this.moveSourcePosY = y;
+            this.moveDestPosX = xDest; this.moveDestPosY = yDest;
         }
 
-        public static ChessBoardMemory ParseFromByteArray(byte[] bytes)
-        {
+        public static ChessBoardMemory ParseFromByteArray(byte[] bytes) {
             if (Marshal.SizeOf<ChessBoardMemory>() != structSize)
                 throw new InvalidOperationException("The size of this struct is not what it should be.");
 
@@ -288,8 +262,7 @@ namespace FiveDChessDataInterface
             return s;
         }
 
-        public static byte[] ToByteArray(ChessBoardMemory cbm)
-        {
+        public static byte[] ToByteArray(ChessBoardMemory cbm) {
             var size = Marshal.SizeOf<ChessBoardMemory>();
 
             var ptr = Marshal.AllocHGlobal(size);
@@ -305,8 +278,7 @@ namespace FiveDChessDataInterface
          * Returns a dictionary of all the fields, with their name
          * this is just so we can easily print out all the fields with their name
          */
-        public Dictionary<string, int> GetFieldsWithNames()
-        {
+        public Dictionary<string, int> GetFieldsWithNames() {
             Dictionary<string, int> hash = new Dictionary<string, int>();
             hash.Add("boardId", this.boardId);
             hash.Add("timeline", this.timeline);
@@ -350,8 +322,7 @@ namespace FiveDChessDataInterface
         /// </summary>
         public int GetSubturnIndex() => this.turn * 2 + (this.isBlacksMove == 1 ? 1 : 0);
 
-        public override string ToString()
-        {
+        public override string ToString() {
             return $"T{this.turn}{(this.isBlacksMove == 1 ? "Blck" : "Whte")}L{this.timeline} Id:{this.boardId}";
         }
     }

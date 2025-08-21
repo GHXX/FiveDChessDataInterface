@@ -1,14 +1,11 @@
-﻿namespace FiveDChessDataInterface.Types
-{
-    public struct ChessBoardSize
-    {
+﻿namespace FiveDChessDataInterface.Types {
+    public struct ChessBoardSize {
         public int Width { get; }
         public int Height { get; }
 
-        public ChessBoardSize(int width, int height)
-        {
-            this.Width = width;
-            this.Height = height;
+        public ChessBoardSize(int width, int height) {
+            Width = width;
+            Height = height;
         }
     }
 }

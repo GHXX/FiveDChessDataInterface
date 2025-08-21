@@ -1,38 +1,32 @@
 ﻿using Newtonsoft.Json.Linq;
 
-namespace DataInterfaceConsole.Actions.Settings
-{
-    class SettingsValuePrimitive<T> : ISettingsValue
-    {
-        public string Id { get; }
-        public string Name { get; }
-        public string Description { get; }
+namespace DataInterfaceConsole.Actions.Settings;
 
-        public T Value { get; private set; }
+internal class SettingsValuePrimitive<T> : ISettingsValue {
+    public string Id { get; }
+    public string Name { get; }
+    public string Description { get; }
 
-        public SettingsValuePrimitive(string id, string name, string description, T defaultValue)
-        {
-            this.Id = id;
-            this.Name = name;
-            this.Description = description;
-            this.Value = defaultValue;
-        }
+    public T Value { get; private set; }
 
-        public object GetValue()
-        {
-            return this.Value;
-        }
+    public SettingsValuePrimitive(string id, string name, string description, T defaultValue) {
+        Id = id;
+        Name = name;
+        Description = description;
+        Value = defaultValue;
+    }
 
-        public void SetPrimitive(T newValue) => this.Value = newValue;
+    public object GetValue() {
+        return Value;
+    }
 
-        public string GetValueAsString()
-        {
-            return $"\"{this.Value}\"";
-        }
+    public void SetPrimitive(T newValue) => Value = newValue;
 
-        public void SetValueDirect(JToken newValue)
-        {
-            this.Value = newValue.Value<T>();
-        }
+    public string GetValueAsString() {
+        return $"\"{Value}\"";
+    }
+
+    public void SetValueDirect(JToken newValue) {
+        Value = newValue.Value<T>();
     }
 }

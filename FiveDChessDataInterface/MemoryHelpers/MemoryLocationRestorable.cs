@@ -1,9 +1,7 @@
 ﻿using System;
 
-namespace FiveDChessDataInterface.MemoryHelpers
-{
-    public class MemoryLocationRestorable<T> : MemoryLocation<T>
-    {
+namespace FiveDChessDataInterface.MemoryHelpers {
+    public class MemoryLocationRestorable<T> : MemoryLocation<T> {
         private bool valueWasEverChanged = false;
         private T originalValue;
         private T lastValue;
@@ -12,8 +10,7 @@ namespace FiveDChessDataInterface.MemoryHelpers
 
         public MemoryLocationRestorable(IntPtr handle, IntPtr location, int offset) : base(handle, location, offset) { }
 
-        public override void SetValue(T newValue)
-        {
+        public override void SetValue(T newValue) {
             if (!this.valueWasEverChanged)
                 this.lastValue = this.originalValue = GetValue();
             else
@@ -25,21 +22,18 @@ namespace FiveDChessDataInterface.MemoryHelpers
             base.SetValue(newValue);
         }
 
-        public void RestoreLast()
-        {
+        public void RestoreLast() {
             if (this.valueWasEverChanged)
                 base.SetValue(this.lastValue);
         }
 
-        public void RestoreOriginal()
-        {
+        public void RestoreOriginal() {
             if (this.valueWasEverChanged)
                 base.SetValue(this.originalValue);
         }
 
-        public new MemoryLocationRestorable<NewT> WithOffset<NewT>(int offset)
-        {
-            return new MemoryLocationRestorable<NewT>(this.Handle, IntPtr.Add(this.Location, offset));
+        public new MemoryLocationRestorable<NewT> WithOffset<NewT>(int offset) {
+            return new MemoryLocationRestorable<NewT>(Handle, IntPtr.Add(Location, offset));
         }
     }
 }

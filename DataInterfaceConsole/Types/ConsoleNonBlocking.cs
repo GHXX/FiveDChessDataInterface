@@ -4,38 +4,32 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DataInterfaceConsole.Types
-{
-    internal static class ConsoleNonBlocking
-    {
-        private static readonly ConcurrentQueue<string> readLines = new ConcurrentQueue<string>();
+namespace DataInterfaceConsole.Types;
 
-        internal static void Init()
-        {
-            Task.Run(ReadLines);
-        }
+internal static class ConsoleNonBlocking {
+    private static readonly ConcurrentQueue<string> readLines = new ConcurrentQueue<string>();
 
-        private static async Task ReadLines() 
-        {
-            var s = new StreamReader(Console.OpenStandardInput(), Console.InputEncoding);
-            while (true)
-            {
-                var l = await s.ReadLineAsync();
-                readLines.Enqueue(l);
-            }
-        }
-
-        public static int Count => readLines.Count;
-        public static bool TryPeek(out string val) => readLines.TryPeek(out val);
-        public static bool TryDequeue(out string val) => readLines.TryDequeue(out val);
-
-        public static string ReadLineBlocking()
-        {
-            string s = null;
-            SpinWait.SpinUntil(() => TryDequeue(out s));
-            return s;
-        }
-
-        public static void ClearInputLines() => readLines.Clear();
+    internal static void Init() {
+        Task.Run(ReadLines);
     }
+
+    private static async Task ReadLines() {
+        var s = new StreamReader(Console.OpenStandardInput(), Console.InputEncoding);
+        while (true) {
+            var l = await s.ReadLineAsync();
+            readLines.Enqueue(l);
+        }
+    }
+
+    public static int Count => readLines.Count;
+    public static bool TryPeek(out string val) => readLines.TryPeek(out val);
+    public static bool TryDequeue(out string val) => readLines.TryDequeue(out val);
+
+    public static string ReadLineBlocking() {
+        string s = null;
+        SpinWait.SpinUntil(() => TryDequeue(out s));
+        return s;
+    }
+
+    public static void ClearInputLines() => readLines.Clear();
 }
