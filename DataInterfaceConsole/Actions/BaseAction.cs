@@ -20,7 +20,9 @@ namespace DataInterfaceConsole.Actions
         public void Run(DataInterface di)
         {
             this.di = di ?? throw new ArgumentNullException(nameof(di));
+            try {
             Run();
+            } catch (Exception) { throw; } // for forcing try-finally to run
         }
 
         protected abstract void Run();
