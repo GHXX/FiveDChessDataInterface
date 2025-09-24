@@ -55,6 +55,19 @@ namespace FiveDChessDataInterface {
         public MemoryLocation<int> MemLocBlackIncrement { get; private set; }
         public MemoryLocation<int> MemLocTimeTravelAnimationEnabled { get; private set; }
 
+
+        public MemoryLocation<byte> MemLocUndoMoveReducedByValue { get; private set; } // setting this to 0 allows pressing Undo an arbitrary amount of times
+
+        /// <summary>
+        /// Sequential, inline (no derefs) storage of the 6 piece values that make up the code, followed by an int32 specifying the numberof digits that were already entered
+        /// </summary>
+        public MemoryLocation<InlineMemoryArray<int>> MemLocJoiningRoomCodeArray { get; private set; } 
+        public MemoryLocation<int> MemLocShowEndOfGameDesc { get; private set; } // Whether to show the text that states "game finished, black/white won", or "puzzle incomplete/complete"
+        public MemoryLocation<int> MemLocShowFinishGameButton { get; private set; }
+        public MemoryLocation<int> MemLocBackgroundColorChange { get; private set; } // This changes the Background Color sometimes when end of game is reached
+        public MemoryLocation<int> MemLocPropertyAtEndOfGame { get; private set; } // Some property that also changes when the game ends, though currently unknown what it actually does
+
+
         [RequiredForSave("CosmeticTurnOffset")]
         public MemoryLocation<int> MemLocCosmeticTurnOffset { get; private set; }
 
@@ -222,7 +235,12 @@ namespace FiveDChessDataInterface {
             MemLocWhiteIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B0);
             MemLocBlackIncrement = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x1B4);
             MemLocTimeTravelAnimationEnabled = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x3E8);
-
+            MemLocUndoMoveReducedByValue = new MemoryLocation<byte>(GetGameHandle(), chessboardPointerLocation - 0xE8A23);
+            MemLocJoiningRoomCodeArray = new MemoryLocation<InlineMemoryArray<int>>(GetGameHandle(), chessboardPointerLocation - 0xF8);
+            MemLocShowFinishGameButton = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xC8);
+            MemLocShowEndOfGameDesc = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xD0);
+            MemLocBackgroundColorChange = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0x3DC);
+            MemLocPropertyAtEndOfGame = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, 0xD4);
             // set to -1 for even starting timeline cnt, and to 0 for odd starting timeline cnt
             MemLocTimelineValueOffset = new MemoryLocation<int>(GetGameHandle(), chessboardPointerLocation, -0x34);
             MemLocWhiteTimelineCountInternal = new MemoryLocation<uint>(GetGameHandle(), chessboardPointerLocation, -0x30);

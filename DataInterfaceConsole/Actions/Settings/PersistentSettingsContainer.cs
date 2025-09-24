@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace DataInterfaceConsole.Actions.Settings;
 
-internal class SettingsHandler {
+internal class PersistentSettingsContainer : ISettingsContainer {
     private const string settingsFilePath = "settings.json";
 
     public ISettingsValue[] GetSettings() => this.settingsStore.Values.ToArray();
@@ -20,9 +20,9 @@ internal class SettingsHandler {
     private ISettingsValue GetSetting(string Id) => this.settingsStore[Id];
 
 
-    public SettingsHandler() {
+    public PersistentSettingsContainer() {
         AddSetting(new SettingsValueWhitelisted<string>("ForceTimetravelAnimationValue", "Force timetravel animation value", "Whether or not to force the timetravel button to a certain state",
-            new[] { "ignore", "always_on", "always_off" }, "ignore"));
+            ["ignore", "always_on", "always_off"], "ignore"));
 
         AddSetting(new SettingsValuePrimitive<int?>("Clock1BaseTime", "Short Timer Base Time", "The base time of the first clock in total seconds", null));
         AddSetting(new SettingsValuePrimitive<int?>("Clock1Increment", "Short Timer Increment", "The increment of the first clock in seconds", null));
@@ -33,8 +33,8 @@ internal class SettingsHandler {
     }
 
 
-    public static SettingsHandler LoadOrCreateNew() {
-        var sh = new SettingsHandler();
+    public static PersistentSettingsContainer LoadOrCreateNew() {
+        var sh = new PersistentSettingsContainer();
 
         if (File.Exists(settingsFilePath)) {
             var str = File.ReadAllText(settingsFilePath);
@@ -49,6 +49,7 @@ internal class SettingsHandler {
         return sh;
     }
 
+    void ISettingsContainer.OnSettingsChanged() => Save();
     public void Save() {
         var str = JsonConvert.SerializeObject(this.settingsStore.ToDictionary(x => x.Key, x => x.Value.GetValue()), Formatting.Indented);
         File.WriteAllText(settingsFilePath, str);

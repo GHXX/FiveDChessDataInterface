@@ -16,6 +16,7 @@ internal sealed class SettingsValue<T> : ISettingsValue {
     public string Description { get; }
     public T Value { get; private set; }
 
+    public bool HideOutputValue { get; init; } = false;
 
     private SettingsValue(string id, string name, string description) {
         Id = id;

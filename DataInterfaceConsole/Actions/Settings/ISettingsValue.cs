@@ -9,4 +9,5 @@ public interface ISettingsValue {
     void SetValueDirect(JToken newValue);
     object GetValue();
     string GetValueAsString();
+    bool HideOutputValue { get; }
 }

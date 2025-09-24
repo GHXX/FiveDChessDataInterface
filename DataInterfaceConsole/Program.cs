@@ -1,4 +1,5 @@
 ﻿using DataInterfaceConsole.Actions;
+using DataInterfaceConsole.Actions.EphemeralSettings;
 using DataInterfaceConsole.Actions.Settings;
 using DataInterfaceConsole.Types;
 using DataInterfaceConsole.Types.Exceptions;
@@ -14,7 +15,8 @@ internal class Program {
     internal static Program instance = new Program();
     private Thread backgroundThread;
     public DataInterface di;
-    public SettingsHandler sh;
+    public PersistentSettingsContainer sh;
+    public EphemeralSettingsContainer eh;
 
     private static void Main() {
         ConsoleNonBlocking.Init();
@@ -24,7 +26,8 @@ internal class Program {
 
     private void Run() {
         Console.WriteLine("Some output will occasionally be provided via the console title.");
-        this.sh = SettingsHandler.LoadOrCreateNew();
+        this.sh = PersistentSettingsContainer.LoadOrCreateNew();
+        this.eh = new EphemeralSettingsContainer();
 
         this.backgroundThread = new Thread(BackgroundThreadRun) {
             Name = "BackgroundThread"
