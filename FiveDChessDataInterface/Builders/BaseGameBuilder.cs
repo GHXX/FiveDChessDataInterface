@@ -642,7 +642,9 @@ namespace FiveDChessDataInterface.Builders {
             }
 
             var pgnMoves = string.Join("\n", lines.Reverse().TakeWhile(x => Regex.IsMatch(x, @"^\d{1,}.")).Reverse().ToArray());
-            gb2.Add5DPGNMoves(pgnMoves);
+            if (pgnMoves.Any())
+                gb2.Add5DPGNMoves(pgnMoves);
+            
             return gb2;
         }
     }
