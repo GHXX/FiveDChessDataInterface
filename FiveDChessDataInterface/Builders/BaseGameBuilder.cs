@@ -628,7 +628,7 @@ namespace FiveDChessDataInterface.Builders {
             bool isEven = fens.Any(x => x.Timeline == "+0" || x.Timeline == "-0");
 
             BaseGameBuilder gb2 = isEven ? (BaseGameBuilder)new GameBuilderEven(size[0], size[1]) : new GameBuilderOdd(size[0], size[1]);
-            var timelines = fens.Select(x => x.NormalizeSign()).GroupBy(x => x.Timeline);
+            var timelines = fens.Select(x => x.NormalizeSign()).OrderBy(x => x.Turn).GroupBy(x => x.Timeline);
             int cosmeticTurnOffset = timelines.Min(grp => grp.First().Turn);
 
             gb2.CosmeticTurnOffset = cosmeticTurnOffset;
@@ -644,7 +644,7 @@ namespace FiveDChessDataInterface.Builders {
             var pgnMoves = string.Join("\n", lines.Reverse().TakeWhile(x => Regex.IsMatch(x, @"^\d{1,}.")).Reverse().ToArray());
             if (pgnMoves.Any())
                 gb2.Add5DPGNMoves(pgnMoves);
-            
+
             return gb2;
         }
     }
