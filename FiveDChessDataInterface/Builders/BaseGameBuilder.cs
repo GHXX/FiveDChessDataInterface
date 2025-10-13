@@ -631,7 +631,7 @@ namespace FiveDChessDataInterface.Builders {
             var timelines = fens.Select(x => x.NormalizeSign()).OrderBy(x => x.Turn).GroupBy(x => x.Timeline);
             int cosmeticTurnOffset = timelines.Min(grp => grp.First().Turn);
 
-            gb2.CosmeticTurnOffset = cosmeticTurnOffset;
+            gb2.CosmeticTurnOffset = cosmeticTurnOffset - 1;
             foreach (var tl in timelines) {
                 var ordered = tl.OrderBy(x => x.Turn + (x.IsBlack ? 0.5f : 0)).ToArray();
                 var builderTimeline = gb2[tl.Key];
