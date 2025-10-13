@@ -92,6 +92,7 @@ namespace FiveDChessDataInterface.Builders {
             }
 
             public Timeline AddEmptyBoard() => AddBoardFromFen(string.Join("/", Enumerable.Repeat(this.boardWidth, this.boardHeight)));
+            public Timeline AddNullBoard() => AddBoardFromFen(null);
 
             public Timeline CopyPrevious(int repetitionCount = 1) {
                 if (!Boards.Any())
@@ -636,8 +637,20 @@ namespace FiveDChessDataInterface.Builders {
                 var ordered = tl.OrderBy(x => x.Turn + (x.IsBlack ? 0.5f : 0)).ToArray();
                 var builderTimeline = gb2[tl.Key];
                 builderTimeline.SetTurnOffset(ordered[0].Turn - cosmeticTurnOffset, ordered[0].IsBlack);
+                int? previouslyAddedTurnAndSubTurn = null;
                 foreach (var board in ordered) {
+                    int newSubTurn = board.Turn * 2 + (board.IsBlack ? 1 : 0);
+                    if (previouslyAddedTurnAndSubTurn.HasValue) {
+                        while (newSubTurn - previouslyAddedTurnAndSubTurn > 1) { // 1 would be fine as the new board sub turn is of course larger by 1
+                            builderTimeline.AddNullBoard();
+                            previouslyAddedTurnAndSubTurn++;
+                        }
+                        if (newSubTurn != previouslyAddedTurnAndSubTurn + 1)
+                            throw new Exception("Timeline gap filling failed");
+                    }
+
                     builderTimeline.AddBoardFromFen(board.Fen);
+                    previouslyAddedTurnAndSubTurn = newSubTurn;
                 }
             }
 
