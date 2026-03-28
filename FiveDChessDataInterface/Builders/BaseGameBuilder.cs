@@ -570,14 +570,40 @@ namespace FiveDChessDataInterface.Builders {
                             newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
 
                             if (isKing && (Math.Abs(srcPosX - dstPosX) > 1 || Math.Abs(srcPosY - dstPosY) > 1)) {
-                                var rookDstPosX = (srcPosX + dstPosX) / 2;
-                                var rookDstPosY = (srcPosY + dstPosY) / 2;
+                                // points towards where the source rook was, as the king and rook get swapped
+                                var kingMoveVectorX = Math.Sign(dstPosX - srcPosX);
+                                var kingMoveVectorY = Math.Sign(dstPosY - srcPosY);
 
-                                var rookSrcPosX = dstPosX + (rookDstPosX - srcPosX);
-                                var rookSrcPosY = dstPosY + (rookDstPosY - srcPosY);
 
-                                newCbm.pieces[rookDstPosX, rookDstPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Rook, srcPiece.IsBlack);
-                                newCbm.pieces[rookSrcPosX, rookSrcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                                var rookPiece = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Rook, srcPiece.IsBlack);
+                                int rookSrcX = srcPosX;
+                                int rookSrcY = srcPosY;
+                                while (true) {
+                                    rookSrcX += kingMoveVectorX; // go one step
+                                    rookSrcY += kingMoveVectorY;
+
+                                    var piece = srcBoard.pieces[rookSrcX, rookSrcY];
+                                    if (!piece.IsEmpty) // find first piece along this vector
+                                        break;
+                                }
+
+                                if (!srcBoard.pieces[rookSrcX, rookSrcY].Equals(rookPiece)) {
+                                    throw new Exception("couldnt find the rook that participated in the castling move?");
+                                }
+
+                                // it might be that the king has moved to where the rook used to be, in that case we dont have to remove the old rook
+                                if (!newCbm.pieces[rookSrcX, rookSrcY].IsEmpty && newCbm.pieces[rookSrcX, rookSrcY].Kind != ChessBoard.ChessPiece.PieceKind.King)
+                                    newCbm.pieces[rookSrcX, rookSrcY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+
+                                var rookDstPosX = dstPosX- kingMoveVectorX;
+                                var rookDstPosY = dstPosY - kingMoveVectorY;
+                                if (newCbm.pieces[rookDstPosX, rookDstPosY].IsEmpty ||
+                                    newCbm.pieces[rookDstPosX, rookDstPosY].Equals(new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.King, srcPiece.IsBlack))) {
+                                    // if all went well, the original piece should have been empty or a king, then we should replace that with the rook
+                                    newCbm.pieces[rookDstPosX, rookDstPosY] = rookPiece;
+                                } else {
+                                    throw new Exception("tried to replace a non-empty and non-king piece during castling");
+                                }
                             }
 
                             newCbm.normalMove = new Timeline.Move2D(srcPosY, srcPosX, dstPosY, dstPosX);
