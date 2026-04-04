@@ -521,7 +521,14 @@ namespace FiveDChessDataInterface.Builders {
                             var dstPosY = int.Parse(dstPos.Substring(1, 1)) - 1;
                             var srcPosX = srcPos.ToLowerInvariant()[0] - 97;
                             var srcPosY = int.Parse(srcPos.Substring(1, 1)) - 1;
-                            newCbm2.pieces[dstPosX, dstPosY] = srcBoard.pieces[srcPosX, srcPosY];
+
+                            // promotion
+                            int promotionRow = srcBoard.pieces[srcPosX, srcPosY].IsBlack ? 0 : (newCbm2.pieces.GetLength(0) /*aka height*/ - 1);
+                            bool isPromotion = (dstPosY == promotionRow) && (srcBoard.pieces[srcPosX, srcPosY].Kind == ChessBoard.ChessPiece.PieceKind.Pawn);
+                            newCbm2.pieces[dstPosX, dstPosY] = isPromotion ?
+                                new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Queen, srcBoard.pieces[srcPosX, srcPosY].IsBlack) :
+                                srcBoard.pieces[srcPosX, srcPosY];
+                            // ---
 
                             srcBoard.travelMove = new Timeline.TravelMove5D(srcTimelineId, srcTurn, srcBoard.isBlackBoard, srcPosY, srcPosX, dstTimelineId, dstTurn, dstPosY, dstPosX);
                             newCbm1.normalMove = new Timeline.Move2D(srcPosY, srcPosX, -1, -1);
@@ -565,9 +572,15 @@ namespace FiveDChessDataInterface.Builders {
                             newCbm.turn += newCbm.isBlackBoard ? 1 : 0;
                             newCbm.isBlackBoard ^= true;
                             // ---
-                            var srcPiece = newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1];
-                            newCbm.pieces[dstPos.ToLowerInvariant()[0] - 97, int.Parse(dstPos.Substring(1, 1)) - 1] = srcPiece;
-                            newCbm.pieces[srcPos.ToLowerInvariant()[0] - 97, int.Parse(srcPos.Substring(1, 1)) - 1] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                            var srcPiece = newCbm.pieces[srcPosX, srcPosY];
+                            // promotion
+                            int promotionRow = srcBoard.pieces[srcPosX, srcPosY].IsBlack ? 0 : (srcBoard.pieces.GetLength(0) /*aka height*/ - 1);
+                            bool isPromotion = (dstPosY == promotionRow) && (srcBoard.pieces[srcPosX, srcPosY].Kind == ChessBoard.ChessPiece.PieceKind.Pawn);
+                            newCbm.pieces[dstPosX, dstPosY] = isPromotion ?
+                                new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Queen, srcBoard.pieces[srcPosX, srcPosY].IsBlack) :
+                                srcPiece;
+                            // ---
+                            newCbm.pieces[srcPosX, srcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
 
                             if (isKing && (Math.Abs(srcPosX - dstPosX) > 1 || Math.Abs(srcPosY - dstPosY) > 1)) {
                                 // points towards where the source rook was, as the king and rook get swapped
@@ -595,7 +608,7 @@ namespace FiveDChessDataInterface.Builders {
                                 if (!newCbm.pieces[rookSrcX, rookSrcY].IsEmpty && newCbm.pieces[rookSrcX, rookSrcY].Kind != ChessBoard.ChessPiece.PieceKind.King)
                                     newCbm.pieces[rookSrcX, rookSrcY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
 
-                                var rookDstPosX = dstPosX- kingMoveVectorX;
+                                var rookDstPosX = dstPosX - kingMoveVectorX;
                                 var rookDstPosY = dstPosY - kingMoveVectorY;
                                 if (newCbm.pieces[rookDstPosX, rookDstPosY].IsEmpty ||
                                     newCbm.pieces[rookDstPosX, rookDstPosY].Equals(new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.King, srcPiece.IsBlack))) {
