@@ -455,6 +455,9 @@ namespace FiveDChessDataInterface.Builders {
                     var moves = moveSet.Split(new[] { " " }, StringSplitOptions.RemoveEmptyEntries);
                     foreach (var moveRaw in moves) {
                         var moveold = Regex.Replace(moveRaw, "{.*?}", "");
+                        if (Regex.IsMatch(moveold, @"^\(-?\d+T-?\d+\)([a-h][1-8]){1,2}(|>.+)$"))
+                            moveold = moveold.Replace(")", ")P");
+
                         var branchExpected = moveold.Contains(">>");
                         var moveFixed = moveold.Replace(">>", ">").Replace(">", ">>"); // treat >> and > the same
                         var srcBoardName = string.Join(null, moveFixed.Skip(1).TakeWhile(x => x != ')'));
