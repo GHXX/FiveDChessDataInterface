@@ -585,6 +585,7 @@ namespace FiveDChessDataInterface.Builders {
                             // ---
                             newCbm.pieces[srcPosX, srcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
 
+                            // castling
                             if (isKing && (Math.Abs(srcPosX - dstPosX) > 1 || Math.Abs(srcPosY - dstPosY) > 1)) {
                                 // points towards where the source rook was, as the king and rook get swapped
                                 var kingMoveVectorX = Math.Sign(dstPosX - srcPosX);
@@ -621,6 +622,12 @@ namespace FiveDChessDataInterface.Builders {
                                     throw new Exception("tried to replace a non-empty and non-king piece during castling");
                                 }
                             }
+                            // ---
+                            // en passant -- deleting the opponent piece
+                            if (movedPiece == 'P' && (dstPosX != srcPosX)) {
+                                newCbm.pieces[dstPosX, srcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                            }
+                            // ---
 
                             newCbm.normalMove = new Timeline.Move2D(srcPosY, srcPosX, dstPosY, dstPosX);
                             srcTL.Boards.Add(newCbm);
