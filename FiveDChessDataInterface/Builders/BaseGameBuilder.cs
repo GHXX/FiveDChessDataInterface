@@ -405,6 +405,19 @@ namespace FiveDChessDataInterface.Builders {
 
         public ChessBoard[] Build() => BuildCbms().Select(x => new ChessBoard(x, this.boardWidth, this.boardHeight)).ToArray();
 
+        private struct PawnEnPassantMemoryEntry {
+            readonly int Timeline, Turn, DestX, DestY;
+            readonly bool IsWhite;
+
+            public PawnEnPassantMemoryEntry(int timeline, int turn, int destX, int destY, bool isWhite) {
+                Timeline = timeline;
+                Turn = turn;
+                DestX = destX;
+                DestY = destY;
+                IsWhite = isWhite;
+            }
+        }
+
         public BaseGameBuilder Add5DPGNMoves(string pgn) {
             if (string.IsNullOrWhiteSpace(pgn))
                 throw new ArgumentNullException("Argument " + nameof(pgn) + " was empty!");
@@ -440,6 +453,7 @@ namespace FiveDChessDataInterface.Builders {
             }
 
             int? cosmeticTurnOffset = null;
+            HashSet<PawnEnPassantMemoryEntry> enPassantMemory = new HashSet<PawnEnPassantMemoryEntry>();
 
             for (int i = 0; i < lines.Count; i++) {
                 string line = lines[i];
@@ -624,8 +638,22 @@ namespace FiveDChessDataInterface.Builders {
                             }
                             // ---
                             // en passant -- deleting the opponent piece
-                            if (movedPiece == 'P' && (dstPosX != srcPosX)) {
-                                newCbm.pieces[dstPosX, srcPosY] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                            if (movedPiece == 'P') {
+                                // ---
+                                // en passant -- deleting the opponent piece
+                                if (dstPosX != srcPosX) {
+                                    var enPassantHitPos = (X: dstPosX, Y: srcPosY);
+                                    var enPassantHitPosExistingPiece = newCbm.pieces[enPassantHitPos.X, enPassantHitPos.Y];
+
+                                    // but only perform deletion if enPassantHitPosExistingPiece contains an opponent pawn that double-moved last turn
+                                    if (!enPassantHitPosExistingPiece.IsEmpty && (enPassantHitPosExistingPiece.IsWhite != srcPiece.IsWhite)) {
+                                        if (enPassantMemory.Contains(new PawnEnPassantMemoryEntry(srcTimelineId, srcTurn-(srcPiece.IsWhite ? 1 : 0), enPassantHitPos.X, enPassantHitPos.Y, !srcPiece.IsWhite))) {
+                                            newCbm.pieces[enPassantHitPos.X, enPassantHitPos.Y] = new ChessBoard.ChessPiece(ChessBoard.ChessPiece.PieceKind.Empty, false);
+                                        }
+                                    }
+                                } else if (Math.Abs(dstPosY - srcPosY) == 2) { // only moved across Y and was doublemove in Y
+                                    enPassantMemory.Add(new PawnEnPassantMemoryEntry(srcTimelineId, srcTurn, dstPosX, dstPosY, srcPiece.IsWhite));
+                                }
                             }
                             // ---
 
